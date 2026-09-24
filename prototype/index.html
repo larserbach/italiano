@@ -1,0 +1,2568 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coniugazione — Italienisch üben</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF6EC;
+    --paper-raised: #F2EBDA;
+    --ink: #22303F;
+    --ink-soft: #5C6B78;
+    --gold: #B9902E;
+    --gold-soft: #E4D2A0;
+    --olive: #5B7553;
+    --olive-bg: #E4ECDE;
+    --brick: #A6483A;
+    --brick-bg: #F3DFDA;
+    --line: #DAD0B8;
+    --font-display: 'Fraunces', serif;
+    --font-body: 'IBM Plex Sans', sans-serif;
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper: #1C2128;
+      --paper-raised: #262C35;
+      --ink: #EDE7D9;
+      --ink-soft: #A8AFB8;
+      --gold: #D4B45E;
+      --gold-soft: #4A4126;
+      --olive: #8FB07F;
+      --olive-bg: #2A3527;
+      --brick: #D98A7C;
+      --brick-bg: #3D2825;
+      --line: #3A3F47;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #1C2128;
+    --paper-raised: #262C35;
+    --ink: #EDE7D9;
+    --ink-soft: #A8AFB8;
+    --gold: #D4B45E;
+    --gold-soft: #4A4126;
+    --olive: #8FB07F;
+    --olive-bg: #2A3527;
+    --brick: #D98A7C;
+    --brick-bg: #3D2825;
+    --line: #3A3F47;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 32px 18px 60px;
+  }
+
+  .wrap {
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(28px, 6vw, 38px);
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .lede {
+    color: var(--ink-soft);
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 44ch;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ---------- settings screen ---------- */
+
+  header.settings-header { margin-bottom: 28px; }
+
+  .back-link {
+    display: inline-block;
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    padding: 0;
+    margin-bottom: 18px;
+    cursor: pointer;
+  }
+
+  .feature-card {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: border-color 0.15s ease;
+  }
+  .feature-card h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 19px;
+    color: var(--ink);
+    margin: 0 0 5px;
+  }
+  .feature-card p {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .control-label {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 7px;
+  }
+
+  .control-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .verb-group {
+    margin-bottom: 12px;
+  }
+  .verb-group:last-child { margin-bottom: 0; }
+
+  .verb-group-label {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--ink);
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .chip-with-ring {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 13px 5px 6px;
+  }
+  .verb-ring { flex-shrink: 0; }
+  .verb-ring text {
+    fill: var(--ink);
+    font-family: var(--font-body);
+    font-size: 9px;
+    font-weight: 600;
+  }
+
+  .chip.active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+    font-weight: 500;
+  }
+  .chip.recent-mistake { border-color: var(--brick); }
+
+  .tense-chip-wrap {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--paper-raised);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .tense-chip-wrap.active {
+    background: var(--gold-soft);
+    border-color: var(--gold);
+  }
+  .tense-chip-main {
+    border: none;
+    background: transparent;
+    padding: 7px 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .tense-chip-wrap.active .tense-chip-main { font-weight: 500; }
+  .tense-chip-info {
+    border: none;
+    border-left: 1px solid var(--line);
+    background: transparent;
+    width: 28px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .tense-chip-wrap.active .tense-chip-info { border-left-color: var(--gold); }
+
+  .btn-start {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 500;
+    border: none;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .settings-hint {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    min-height: 18px;
+  }
+
+  /* ---------- lesson screen ---------- */
+
+  .lesson-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+
+  .btn-quit {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    width: 0%;
+    transition: width 0.25s ease;
+  }
+
+  .progress-count {
+    font-size: 13px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    min-width: 46px;
+    text-align: right;
+  }
+
+  .card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 22px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .tense-tag {
+    font-size: 12.5px;
+    color: var(--gold);
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-block;
+    text-decoration: underline;
+    text-decoration-color: var(--gold-soft);
+    text-underline-offset: 3px;
+  }
+
+  .static-tag {
+    font-size: 12.5px;
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .verb-link {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: var(--gold-soft);
+    text-underline-offset: 3px;
+  }
+
+  .aux-infinitive {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .aux-blank {
+    display: inline-block;
+    width: 44px;
+    height: 0.9em;
+    border-bottom: 2px solid var(--ink-soft);
+    margin: 0 10px;
+    vertical-align: middle;
+  }
+
+  .aux-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 4px 0 6px;
+  }
+  .aux-option {
+    width: 100%;
+    padding: 14px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .aux-option.correct { border-color: var(--olive); background: var(--olive-bg); }
+  .aux-option.wrong { border-color: var(--brick); background: var(--brick-bg); }
+  .aux-option:disabled { cursor: default; }
+
+  .round-tag {
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .prompt {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 6.5vw, 32px);
+    line-height: 1.2;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+
+  .prompt-pronoun-de {
+    font-weight: 400;
+    color: var(--ink-soft);
+    margin-right: 9px;
+  }
+
+  .verb-tag {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 0;
+  }
+
+  .answer-shell {
+    display: flex;
+    align-items: stretch;
+    border: 1.5px solid var(--line);
+    border-radius: 9px;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .answer-shell:focus-within { border-color: var(--gold); }
+  .answer-shell.correct { border-color: var(--olive); background: var(--olive-bg); }
+  .answer-shell.wrong { border-color: var(--brick); background: var(--brick-bg); }
+
+  .pronoun-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    background: var(--paper-raised);
+    border-right: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .pronoun-label.hidden { display: none; }
+
+  .hidden { display: none !important; }
+
+  input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-body);
+    font-size: 18px;
+    padding: 11px 14px;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    text-align: center;
+  }
+  input[type="text"]:focus { outline: none; }
+
+  button {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: 9px;
+    padding: 11px 18px;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .feedback {
+    min-height: 20px;
+    font-size: 14px;
+    margin: 10px 0 2px;
+  }
+  .feedback.correct { color: var(--olive); }
+  .feedback.wrong { color: var(--brick); }
+
+  .action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .btn-check { flex: 1; }
+
+  .btn-icon {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-icon:disabled { opacity: 0.35; cursor: default; }
+
+  input[type="text"]:disabled, input[type="text"]:read-only { opacity: 0.7; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost.btn-full { width: 100%; margin-top: 10px; }
+
+  /* ---------- summary screen ---------- */
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 26px 0;
+  }
+  .summary-stat {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 10px;
+    text-align: center;
+  }
+  .summary-stat .num {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 500;
+  }
+  .summary-stat .label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .missed-list {
+    margin: 0 0 28px;
+    padding: 0;
+    list-style: none;
+  }
+  .missed-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14.5px;
+  }
+  .missed-list .who { color: var(--ink-soft); }
+  .missed-list .form { font-weight: 600; }
+
+  .summary-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .summary-actions button { flex: 1; }
+  .summary-actions .btn-icon { flex: 0 0 auto; }
+
+  footer {
+    margin-top: 26px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- overlay ---------- */
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+  .overlay.open { display: flex; }
+
+  .overlay-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    max-width: 500px;
+    width: 100%;
+    padding: 26px 24px 22px;
+    text-align: left;
+  }
+
+  .overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .overlay-card h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 24px;
+    margin: 0;
+  }
+
+  .overlay-close {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .overlay-translation {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  .overlay-section { margin-bottom: 16px; }
+  .overlay-section h3 {
+    font-size: 13px;
+    color: var(--gold);
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+  .overlay-section p {
+    margin: 0 0 8px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  .overlay-section ul {
+    margin: 0 0 8px;
+    padding-left: 18px;
+  }
+  .overlay-section li {
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin-bottom: 6px;
+  }
+  .overlay-section li:last-child { margin-bottom: 0; }
+  .overlay-section li b { color: var(--ink); font-weight: 600; }
+
+  .endings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .endings-table th, .endings-table td {
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .endings-table th {
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 12.5px;
+  }
+  .endings-table td:first-child, .endings-table th:first-child {
+    color: var(--ink-soft);
+  }
+  /* Hover-Effekte nur für Geräte mit echtem Zeiger (Maus) -- verhindert */
+  /* "haengenbleibende" Hover-Zustaende nach einem Tap auf Touchscreens.   */
+  @media (hover: hover) {
+    .back-link:hover { color: var(--gold); }
+    .feature-card:hover { border-color: var(--gold); }
+    .chip:hover { border-color: var(--gold); }
+    .tense-chip-info:hover { color: var(--gold); }
+    .btn-start:hover { opacity: 0.9; }
+    .btn-quit:hover { border-color: var(--ink-soft); }
+    .tense-tag:hover { text-decoration-color: var(--gold); }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-icon:hover { border-color: var(--ink-soft); }
+    .btn-ghost:hover { border-color: var(--ink-soft); }
+    .overlay-close:hover { border-color: var(--ink-soft); }
+    .aux-option:hover:not(:disabled) { border-color: var(--gold); }
+    .verb-link:hover { text-decoration-color: var(--gold); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ HOME SCREEN ============ -->
+  <div class="screen active" id="screen-home">
+    <header class="settings-header">
+      <h1>Italiano</h1>
+      <p class="lede">Wähle eine Übung.</p>
+    </header>
+    <div id="feature-list"></div>
+  </div>
+
+  <!-- ============ SETTINGS SCREEN ============ -->
+  <div class="screen" id="screen-settings">
+    <button type="button" class="back-link" id="home-link">← Alle Übungen</button>
+    <header class="settings-header">
+      <h1>Coniugazione</h1>
+      <p class="lede">Wenige Verben, viele Formen. Stell deine Lektion zusammen, dann geht's los.</p>
+    </header>
+
+    <div class="controls">
+      <div>
+        <div class="control-label">Verben</div>
+        <div class="control-row" id="verb-chips"></div>
+      </div>
+      <div>
+        <div class="control-label">Zeiten</div>
+        <div class="control-row" id="tense-chips"></div>
+      </div>
+      <div>
+        <div class="control-label">Richtung</div>
+        <div class="control-row" id="direction-chips"></div>
+      </div>
+      <div>
+        <div class="control-label">Lektionslänge</div>
+        <div class="control-row" id="length-chips"></div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-start" id="start-btn">Lektion starten</button>
+    <div class="settings-hint" id="settings-hint"></div>
+  </div>
+
+  <!-- ============ LESSON SCREEN ============ -->
+  <div class="screen" id="screen-lesson">
+    <div class="lesson-top">
+      <button type="button" class="btn-quit" id="quit-btn">Abbrechen</button>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-count" id="progress-count">0/0</div>
+    </div>
+
+    <div class="card">
+      <div class="meta-row">
+        <span class="tense-tag" id="tense-tag">—</span>
+        <span class="round-tag hidden" id="round-tag"></span>
+      </div>
+      <div class="prompt">
+        <span class="prompt-pronoun-de hidden" id="prompt-de-pronoun"></span><span id="prompt-verb">parlare</span>
+      </div>
+      <div class="verb-tag" id="verb-tag"></div>
+
+      <form id="answer-form" autocomplete="off">
+        <div class="answer-shell" id="answer-shell">
+          <span class="pronoun-label" id="prompt-pronoun">io</span>
+          <input type="text" id="answer-input" placeholder="deine Antwort" autocapitalize="off" spellcheck="false">
+        </div>
+
+        <div class="action-row">
+          <button type="submit" class="btn-primary btn-check" id="check-btn">Prüfen</button>
+          <button type="button" class="btn-icon" id="reveal-btn" title="Ich weiß es nicht" aria-label="Ich weiß es nicht">?</button>
+        </div>
+      </form>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <!-- ============ ROUND COMPLETE SCREEN ============ -->
+  <div class="screen" id="screen-round-complete">
+    <header class="settings-header">
+      <h1 id="round-complete-title">Runde geschafft!</h1>
+      <p class="lede" id="round-complete-lede"></p>
+    </header>
+    <button type="button" class="btn-start" id="continue-round-btn">Weiter</button>
+    <button type="button" class="btn-ghost btn-full" id="round-quit-btn">Abbrechen</button>
+  </div>
+
+  <!-- ============ SUMMARY SCREEN ============ -->
+  <div class="screen" id="screen-summary">
+    <header class="settings-header">
+      <h1>Lektion fertig!</h1>
+      <p class="lede" id="summary-lede"></p>
+    </header>
+
+    <div class="summary-stats">
+      <div class="summary-stat"><div class="num" id="sum-total">0</div><div class="label">Aufgaben</div></div>
+      <div class="summary-stat"><div class="num" id="sum-first">0</div><div class="label">Auf Anhieb</div></div>
+      <div class="summary-stat"><div class="num" id="sum-accuracy">0%</div><div class="label">Trefferquote</div></div>
+    </div>
+
+    <div id="missed-wrap">
+      <div class="control-label">Diese Formen waren kniffelig</div>
+      <ul class="missed-list" id="missed-list"></ul>
+    </div>
+
+    <div class="summary-actions">
+      <button type="button" class="btn-icon" id="settings-btn" title="Neue Einstellungen" aria-label="Neue Einstellungen">←</button>
+      <button type="button" class="btn-primary" id="repeat-btn">Lektion wiederholen</button>
+    </div>
+  </div>
+
+  <!-- ============ ESSERE/AVERE: SETTINGS ============ -->
+  <div class="screen" id="screen-aux-settings">
+    <button type="button" class="back-link" id="aux-home-link">← Alle Übungen</button>
+    <header class="settings-header">
+      <h1>Essere o avere?</h1>
+      <p class="lede">Für jedes Verb entscheidest du, welches Hilfsverb das Passato prossimo bildet — und in welcher Form.</p>
+    </header>
+
+    <div class="controls">
+      <div>
+        <div class="control-label">Verben</div>
+        <div id="aux-verb-chips"></div>
+      </div>
+      <div>
+        <div class="control-label">Länge</div>
+        <div class="control-row" id="aux-length-chips"></div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-start" id="aux-start-btn">Start</button>
+    <div class="settings-hint" id="aux-settings-hint"></div>
+  </div>
+
+  <!-- ============ ESSERE/AVERE: QUIZ ============ -->
+  <div class="screen" id="screen-aux-quiz">
+    <div class="lesson-top">
+      <button type="button" class="btn-quit" id="aux-quit-btn">Abbrechen</button>
+      <div class="progress-track"><div class="progress-fill" id="aux-progress-fill"></div></div>
+      <div class="progress-count" id="aux-progress-count">0/0</div>
+    </div>
+
+    <div class="card">
+      <div class="meta-row">
+        <span class="static-tag">Passato prossimo</span>
+        <span class="round-tag hidden" id="aux-round-tag"></span>
+      </div>
+      <div class="aux-infinitive" id="aux-infinitive">arrivare</div>
+      <div class="prompt">
+        <span id="aux-pronoun">tu</span><span class="aux-blank"></span><span id="aux-participle">arrivato</span>
+      </div>
+
+      <div class="aux-options">
+        <button type="button" class="aux-option" id="aux-option-0">ho</button>
+        <button type="button" class="aux-option" id="aux-option-1">sono</button>
+      </div>
+
+      <div class="feedback" id="aux-feedback"></div>
+
+      <div class="action-row" id="aux-continue-row" style="display:none;">
+        <button type="button" class="btn-primary btn-check" id="aux-continue-btn">Weiter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ESSERE/AVERE: ROUND COMPLETE ============ -->
+  <div class="screen" id="screen-aux-round-complete">
+    <header class="settings-header">
+      <h1 id="aux-round-complete-title">Runde geschafft!</h1>
+      <p class="lede" id="aux-round-complete-lede"></p>
+    </header>
+    <button type="button" class="btn-start" id="aux-continue-round-btn">Weiter</button>
+    <button type="button" class="btn-ghost btn-full" id="aux-round-quit-btn">Abbrechen</button>
+  </div>
+
+  <!-- ============ ESSERE/AVERE: SUMMARY ============ -->
+  <div class="screen" id="screen-aux-summary">
+    <header class="settings-header">
+      <h1>Fertig!</h1>
+      <p class="lede" id="aux-summary-lede"></p>
+    </header>
+
+    <div class="summary-stats">
+      <div class="summary-stat"><div class="num" id="aux-sum-total">0</div><div class="label">Fragen</div></div>
+      <div class="summary-stat"><div class="num" id="aux-sum-correct">0</div><div class="label">Auf Anhieb</div></div>
+      <div class="summary-stat"><div class="num" id="aux-sum-accuracy">0%</div><div class="label">Trefferquote</div></div>
+    </div>
+
+    <div id="aux-missed-wrap">
+      <div class="control-label">Diese Verben waren kniffelig</div>
+      <ul class="missed-list" id="aux-missed-list"></ul>
+    </div>
+
+    <div class="summary-actions">
+      <button type="button" class="btn-icon" id="aux-home-btn" title="Neue Einstellungen" aria-label="Neue Einstellungen">←</button>
+      <button type="button" class="btn-primary" id="aux-repeat-btn">Nochmal</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <div class="overlay-header">
+      <h2 id="overlay-title">—</h2>
+      <button type="button" class="overlay-close" id="overlay-close">✕</button>
+    </div>
+    <div class="overlay-translation" id="overlay-translation"></div>
+    <div id="overlay-body"></div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const PRONOUNS_IT = ["io", "tu", "lui/lei", "noi", "voi", "loro"];
+  const PRONOUNS_DE = ["ich", "du", "er/sie", "wir", "ihr", "sie"];
+
+  const VERBS = {
+    // -are
+    parlare: {
+      group: "-are", meaning: "sprechen",
+      presente:  ["parlo","parli","parla","parliamo","parlate","parlano"],
+      imperfetto:["parlavo","parlavi","parlava","parlavamo","parlavate","parlavano"],
+      futuro:    ["parlerò","parlerai","parlerà","parleremo","parlerete","parleranno"],
+      de: {
+        presente:   ["spreche","sprichst","spricht","sprechen","sprecht","sprechen"],
+        imperfetto: ["sprach","sprachst","sprach","sprachen","spracht","sprachen"],
+        futuro:     ["werde sprechen","wirst sprechen","wird sprechen","werden sprechen","werdet sprechen","werden sprechen"]
+      }
+    },
+    guardare: {
+      group: "-are", meaning: "schauen",
+      presente:  ["guardo","guardi","guarda","guardiamo","guardate","guardano"],
+      imperfetto:["guardavo","guardavi","guardava","guardavamo","guardavate","guardavano"],
+      futuro:    ["guarderò","guarderai","guarderà","guarderemo","guarderete","guarderanno"],
+      de: {
+        presente:   ["schaue","schaust","schaut","schauen","schaut","schauen"],
+        imperfetto: ["schaute","schautest","schaute","schauten","schautet","schauten"],
+        futuro:     ["werde schauen","wirst schauen","wird schauen","werden schauen","werdet schauen","werden schauen"]
+      }
+    },
+    lavorare: {
+      group: "-are", meaning: "arbeiten",
+      presente:  ["lavoro","lavori","lavora","lavoriamo","lavorate","lavorano"],
+      imperfetto:["lavoravo","lavoravi","lavorava","lavoravamo","lavoravate","lavoravano"],
+      futuro:    ["lavorerò","lavorerai","lavorerà","lavoreremo","lavorerete","lavoreranno"],
+      de: {
+        presente:   ["arbeite","arbeitest","arbeitet","arbeiten","arbeitet","arbeiten"],
+        imperfetto: ["arbeitete","arbeitetest","arbeitete","arbeiteten","arbeitetet","arbeiteten"],
+        futuro:     ["werde arbeiten","wirst arbeiten","wird arbeiten","werden arbeiten","werdet arbeiten","werden arbeiten"]
+      }
+    },
+    abitare: {
+      group: "-are", meaning: "wohnen",
+      presente:  ["abito","abiti","abita","abitiamo","abitate","abitano"],
+      imperfetto:["abitavo","abitavi","abitava","abitavamo","abitavate","abitavano"],
+      futuro:    ["abiterò","abiterai","abiterà","abiteremo","abiterete","abiteranno"],
+      de: {
+        presente:   ["wohne","wohnst","wohnt","wohnen","wohnt","wohnen"],
+        imperfetto: ["wohnte","wohntest","wohnte","wohnten","wohntet","wohnten"],
+        futuro:     ["werde wohnen","wirst wohnen","wird wohnen","werden wohnen","werdet wohnen","werden wohnen"]
+      }
+    },
+
+    // -are, Passato prossimo mit avere
+    camminare: {
+      group: "-are", meaning: "laufen",
+      presente:  ["cammino","cammini","cammina","camminiamo","camminate","camminano"],
+      imperfetto:["camminavo","camminavi","camminava","camminavamo","camminavate","camminavano"],
+      futuro:    ["camminerò","camminerai","camminerà","cammineremo","camminerete","cammineranno"],
+      de: {
+        presente:   ["laufe","läufst","läuft","laufen","lauft","laufen"],
+        imperfetto: ["lief","liefst","lief","liefen","lieft","liefen"],
+        futuro:     ["werde laufen","wirst laufen","wird laufen","werden laufen","werdet laufen","werden laufen"]
+      }
+    },
+    viaggiare: {
+      group: "-are", meaning: "reisen",
+      presente:  ["viaggio","viaggi","viaggia","viaggiamo","viaggiate","viaggiano"],
+      imperfetto:["viaggiavo","viaggiavi","viaggiava","viaggiavamo","viaggiavate","viaggiavano"],
+      futuro:    ["viaggerò","viaggerai","viaggerà","viaggeremo","viaggerete","viaggeranno"],
+      de: {
+        presente:   ["reise","reist","reist","reisen","reist","reisen"],
+        imperfetto: ["reiste","reistest","reiste","reisten","reistet","reisten"],
+        futuro:     ["werde reisen","wirst reisen","wird reisen","werden reisen","werdet reisen","werden reisen"]
+      }
+    },
+    passeggiare: {
+      group: "-are", meaning: "spazieren gehen",
+      presente:  ["passeggio","passeggi","passeggia","passeggiamo","passeggiate","passeggiano"],
+      imperfetto:["passeggiavo","passeggiavi","passeggiava","passeggiavamo","passeggiavate","passeggiavano"],
+      futuro:    ["passeggerò","passeggerai","passeggerà","passeggeremo","passeggerete","passeggeranno"],
+      de: {
+        presente:   ["gehe spazieren","gehst spazieren","geht spazieren","gehen spazieren","geht spazieren","gehen spazieren"],
+        imperfetto: ["ging spazieren","gingst spazieren","ging spazieren","gingen spazieren","gingt spazieren","gingen spazieren"],
+        futuro:     ["werde spazieren gehen","wirst spazieren gehen","wird spazieren gehen","werden spazieren gehen","werdet spazieren gehen","werden spazieren gehen"]
+      }
+    },
+    guidare: {
+      group: "-are", meaning: "fahren",
+      presente:  ["guido","guidi","guida","guidiamo","guidate","guidano"],
+      imperfetto:["guidavo","guidavi","guidava","guidavamo","guidavate","guidavano"],
+      futuro:    ["guiderò","guiderai","guiderà","guideremo","guiderete","guideranno"],
+      de: {
+        presente:   ["fahre","fährst","fährt","fahren","fahrt","fahren"],
+        imperfetto: ["fuhr","fuhrst","fuhr","fuhren","fuhrt","fuhren"],
+        futuro:     ["werde fahren","wirst fahren","wird fahren","werden fahren","werdet fahren","werden fahren"]
+      }
+    },
+    nuotare: {
+      group: "-are", meaning: "schwimmen",
+      presente:  ["nuoto","nuoti","nuota","nuotiamo","nuotate","nuotano"],
+      imperfetto:["nuotavo","nuotavi","nuotava","nuotavamo","nuotavate","nuotavano"],
+      futuro:    ["nuoterò","nuoterai","nuoterà","nuoteremo","nuoterete","nuoteranno"],
+      de: {
+        presente:   ["schwimme","schwimmst","schwimmt","schwimmen","schwimmt","schwimmen"],
+        imperfetto: ["schwamm","schwammst","schwamm","schwammen","schwammt","schwammen"],
+        futuro:     ["werde schwimmen","wirst schwimmen","wird schwimmen","werden schwimmen","werdet schwimmen","werden schwimmen"]
+      }
+    },
+    sciare: {
+      group: "-are", meaning: "Ski fahren",
+      presente:  ["scio","scii","scia","sciamo","sciate","sciano"],
+      imperfetto:["sciavo","sciavi","sciava","sciavamo","sciavate","sciavano"],
+      futuro:    ["scierò","scierai","scierà","scieremo","scierete","scieranno"],
+      de: {
+        presente:   ["fahre Ski","fährst Ski","fährt Ski","fahren Ski","fahrt Ski","fahren Ski"],
+        imperfetto: ["fuhr Ski","fuhrst Ski","fuhr Ski","fuhren Ski","fuhrt Ski","fuhren Ski"],
+        futuro:     ["werde Ski fahren","wirst Ski fahren","wird Ski fahren","werden Ski fahren","werdet Ski fahren","werden Ski fahren"]
+      }
+    },
+    ballare: {
+      group: "-are", meaning: "tanzen",
+      presente:  ["ballo","balli","balla","balliamo","ballate","ballano"],
+      imperfetto:["ballavo","ballavi","ballava","ballavamo","ballavate","ballavano"],
+      futuro:    ["ballerò","ballerai","ballerà","balleremo","ballerete","balleranno"],
+      de: {
+        presente:   ["tanze","tanzt","tanzt","tanzen","tanzt","tanzen"],
+        imperfetto: ["tanzte","tanztest","tanzte","tanzten","tanztet","tanzten"],
+        futuro:     ["werde tanzen","wirst tanzen","wird tanzen","werden tanzen","werdet tanzen","werden tanzen"]
+      }
+    },
+
+    // -are, Passato prossimo mit essere
+    arrivare: {
+      group: "-are", meaning: "ankommen",
+      presente:  ["arrivo","arrivi","arriva","arriviamo","arrivate","arrivano"],
+      imperfetto:["arrivavo","arrivavi","arrivava","arrivavamo","arrivavate","arrivavano"],
+      futuro:    ["arriverò","arriverai","arriverà","arriveremo","arriverete","arriveranno"],
+      de: {
+        presente:   ["komme an","kommst an","kommt an","kommen an","kommt an","kommen an"],
+        imperfetto: ["kam an","kamst an","kam an","kamen an","kamt an","kamen an"],
+        futuro:     ["werde ankommen","wirst ankommen","wird ankommen","werden ankommen","werdet ankommen","werden ankommen"]
+      }
+    },
+    diventare: {
+      group: "-are", meaning: "werden",
+      presente:  ["divento","diventi","diventa","diventiamo","diventate","diventano"],
+      imperfetto:["diventavo","diventavi","diventava","diventavamo","diventavate","diventavano"],
+      futuro:    ["diventerò","diventerai","diventerà","diventeremo","diventerete","diventeranno"],
+      de: {
+        presente:   ["werde","wirst","wird","werden","werdet","werden"],
+        imperfetto: ["wurde","wurdest","wurde","wurden","wurdet","wurden"],
+        futuro:     ["werde werden","wirst werden","wird werden","werden werden","werdet werden","werden werden"]
+      }
+    },
+    durare: {
+      group: "-are", meaning: "dauern",
+      presente:  ["duro","duri","dura","duriamo","durate","durano"],
+      imperfetto:["duravo","duravi","durava","duravamo","duravate","duravano"],
+      futuro:    ["durerò","durerai","durerà","dureremo","durerete","dureranno"],
+      de: {
+        presente:   ["dauere","dauerst","dauert","dauern","dauert","dauern"],
+        imperfetto: ["dauerte","dauertest","dauerte","dauerten","dauertet","dauerten"],
+        futuro:     ["werde dauern","wirst dauern","wird dauern","werden dauern","werdet dauern","werden dauern"]
+      }
+    },
+    entrare: {
+      group: "-are", meaning: "eintreten",
+      presente:  ["entro","entri","entra","entriamo","entrate","entrano"],
+      imperfetto:["entravo","entravi","entrava","entravamo","entravate","entravano"],
+      futuro:    ["entrerò","entrerai","entrerà","entreremo","entrerete","entreranno"],
+      de: {
+        presente:   ["trete ein","trittst ein","tritt ein","treten ein","tretet ein","treten ein"],
+        imperfetto: ["trat ein","tratst ein","trat ein","traten ein","tratet ein","traten ein"],
+        futuro:     ["werde eintreten","wirst eintreten","wird eintreten","werden eintreten","werdet eintreten","werden eintreten"]
+      }
+    },
+    mancare: {
+      group: "-are", meaning: "fehlen",
+      presente:  ["manco","manchi","manca","manchiamo","mancate","mancano"],
+      imperfetto:["mancavo","mancavi","mancava","mancavamo","mancavate","mancavano"],
+      futuro:    ["mancherò","mancherai","mancherà","mancheremo","mancherete","mancheranno"],
+      de: {
+        presente:   ["fehle","fehlst","fehlt","fehlen","fehlt","fehlen"],
+        imperfetto: ["fehlte","fehltest","fehlte","fehlten","fehltet","fehlten"],
+        futuro:     ["werde fehlen","wirst fehlen","wird fehlen","werden fehlen","werdet fehlen","werden fehlen"]
+      }
+    },
+    restare: {
+      group: "-are", meaning: "bleiben",
+      presente:  ["resto","resti","resta","restiamo","restate","restano"],
+      imperfetto:["restavo","restavi","restava","restavamo","restavate","restavano"],
+      futuro:    ["resterò","resterai","resterà","resteremo","resterete","resteranno"],
+      de: {
+        presente:   ["bleibe","bleibst","bleibt","bleiben","bleibt","bleiben"],
+        imperfetto: ["blieb","bliebst","blieb","blieben","bliebt","blieben"],
+        futuro:     ["werde bleiben","wirst bleiben","wird bleiben","werden bleiben","werdet bleiben","werden bleiben"]
+      }
+    },
+    sembrare: {
+      group: "-are", meaning: "scheinen",
+      presente:  ["sembro","sembri","sembra","sembriamo","sembrate","sembrano"],
+      imperfetto:["sembravo","sembravi","sembrava","sembravamo","sembravate","sembravano"],
+      futuro:    ["sembrerò","sembrerai","sembrerà","sembreremo","sembrerete","sembreranno"],
+      de: {
+        presente:   ["scheine","scheinst","scheint","scheinen","scheint","scheinen"],
+        imperfetto: ["schien","schienst","schien","schienen","schient","schienen"],
+        futuro:     ["werde scheinen","wirst scheinen","wird scheinen","werden scheinen","werdet scheinen","werden scheinen"]
+      }
+    },
+    tornare: {
+      group: "-are", meaning: "zurückkehren",
+      presente:  ["torno","torni","torna","torniamo","tornate","tornano"],
+      imperfetto:["tornavo","tornavi","tornava","tornavamo","tornavate","tornavano"],
+      futuro:    ["tornerò","tornerai","tornerà","torneremo","tornerete","torneranno"],
+      de: {
+        presente:   ["kehre zurück","kehrst zurück","kehrt zurück","kehren zurück","kehrt zurück","kehren zurück"],
+        imperfetto: ["kehrte zurück","kehrtest zurück","kehrte zurück","kehrten zurück","kehrtet zurück","kehrten zurück"],
+        futuro:     ["werde zurückkehren","wirst zurückkehren","wird zurückkehren","werden zurückkehren","werdet zurückkehren","werden zurückkehren"]
+      }
+    },
+    bastare: {
+      group: "-are", meaning: "reichen",
+      presente:  ["basto","basti","basta","bastiamo","bastate","bastano"],
+      imperfetto:["bastavo","bastavi","bastava","bastavamo","bastavate","bastavano"],
+      futuro:    ["basterò","basterai","basterà","basteremo","basterete","basteranno"],
+      de: {
+        presente:   ["reiche","reichst","reicht","reichen","reicht","reichen"],
+        imperfetto: ["reichte","reichtest","reichte","reichten","reichtet","reichten"],
+        futuro:     ["werde reichen","wirst reichen","wird reichen","werden reichen","werdet reichen","werden reichen"]
+      }
+    },
+
+    // -ere
+    credere: {
+      group: "-ere", meaning: "glauben",
+      presente:  ["credo","credi","crede","crediamo","credete","credono"],
+      imperfetto:["credevo","credevi","credeva","credevamo","credevate","credevano"],
+      futuro:    ["crederò","crederai","crederà","crederemo","crederete","crederanno"],
+      de: {
+        presente:   ["glaube","glaubst","glaubt","glauben","glaubt","glauben"],
+        imperfetto: ["glaubte","glaubtest","glaubte","glaubten","glaubtet","glaubten"],
+        futuro:     ["werde glauben","wirst glauben","wird glauben","werden glauben","werdet glauben","werden glauben"]
+      }
+    },
+    vendere: {
+      group: "-ere", meaning: "verkaufen",
+      presente:  ["vendo","vendi","vende","vendiamo","vendete","vendono"],
+      imperfetto:["vendevo","vendevi","vendeva","vendevamo","vendevate","vendevano"],
+      futuro:    ["venderò","venderai","venderà","venderemo","venderete","venderanno"],
+      de: {
+        presente:   ["verkaufe","verkaufst","verkauft","verkaufen","verkauft","verkaufen"],
+        imperfetto: ["verkaufte","verkauftest","verkaufte","verkauften","verkauftet","verkauften"],
+        futuro:     ["werde verkaufen","wirst verkaufen","wird verkaufen","werden verkaufen","werdet verkaufen","werden verkaufen"]
+      }
+    },
+    ricevere: {
+      group: "-ere", meaning: "bekommen",
+      presente:  ["ricevo","ricevi","riceve","riceviamo","ricevete","ricevono"],
+      imperfetto:["ricevevo","ricevevi","riceveva","ricevevamo","ricevevate","ricevevano"],
+      futuro:    ["riceverò","riceverai","riceverà","riceveremo","riceverete","riceveranno"],
+      de: {
+        presente:   ["bekomme","bekommst","bekommt","bekommen","bekommt","bekommen"],
+        imperfetto: ["bekam","bekamst","bekam","bekamen","bekamt","bekamen"],
+        futuro:     ["werde bekommen","wirst bekommen","wird bekommen","werden bekommen","werdet bekommen","werden bekommen"]
+      }
+    },
+    temere: {
+      group: "-ere", meaning: "fürchten",
+      presente:  ["temo","temi","teme","temiamo","temete","temono"],
+      imperfetto:["temevo","temevi","temeva","temevamo","temevate","temevano"],
+      futuro:    ["temerò","temerai","temerà","temeremo","temerete","temeranno"],
+      de: {
+        presente:   ["fürchte","fürchtest","fürchtet","fürchten","fürchtet","fürchten"],
+        imperfetto: ["fürchtete","fürchtetest","fürchtete","fürchteten","fürchtetet","fürchteten"],
+        futuro:     ["werde fürchten","wirst fürchten","wird fürchten","werden fürchten","werdet fürchten","werden fürchten"]
+      }
+    },
+
+    // -ire (regelmäßig, ohne -isc-)
+    dormire: {
+      group: "-ire", meaning: "schlafen",
+      presente:  ["dormo","dormi","dorme","dormiamo","dormite","dormono"],
+      imperfetto:["dormivo","dormivi","dormiva","dormivamo","dormivate","dormivano"],
+      futuro:    ["dormirò","dormirai","dormirà","dormiremo","dormirete","dormiranno"],
+      de: {
+        presente:   ["schlafe","schläfst","schläft","schlafen","schlaft","schlafen"],
+        imperfetto: ["schlief","schliefst","schlief","schliefen","schlieft","schliefen"],
+        futuro:     ["werde schlafen","wirst schlafen","wird schlafen","werden schlafen","werdet schlafen","werden schlafen"]
+      }
+    },
+    seguire: {
+      group: "-ire", meaning: "folgen",
+      presente:  ["seguo","segui","segue","seguiamo","seguite","seguono"],
+      imperfetto:["seguivo","seguivi","seguiva","seguivamo","seguivate","seguivano"],
+      futuro:    ["seguirò","seguirai","seguirà","seguiremo","seguirete","seguiranno"],
+      de: {
+        presente:   ["folge","folgst","folgt","folgen","folgt","folgen"],
+        imperfetto: ["folgte","folgtest","folgte","folgten","folgtet","folgten"],
+        futuro:     ["werde folgen","wirst folgen","wird folgen","werden folgen","werdet folgen","werden folgen"]
+      }
+    },
+    sentire: {
+      group: "-ire", meaning: "fühlen",
+      presente:  ["sento","senti","sente","sentiamo","sentite","sentono"],
+      imperfetto:["sentivo","sentivi","sentiva","sentivamo","sentivate","sentivano"],
+      futuro:    ["sentirò","sentirai","sentirà","sentiremo","sentirete","sentiranno"],
+      de: {
+        presente:   ["fühle","fühlst","fühlt","fühlen","fühlt","fühlen"],
+        imperfetto: ["fühlte","fühltest","fühlte","fühlten","fühltet","fühlten"],
+        futuro:     ["werde fühlen","wirst fühlen","wird fühlen","werden fühlen","werdet fühlen","werden fühlen"]
+      }
+    },
+    partire: {
+      group: "-ire", meaning: "abreisen",
+      presente:  ["parto","parti","parte","partiamo","partite","partono"],
+      imperfetto:["partivo","partivi","partiva","partivamo","partivate","partivano"],
+      futuro:    ["partirò","partirai","partirà","partiremo","partirete","partiranno"],
+      de: {
+        presente:   ["reise ab","reist ab","reist ab","reisen ab","reist ab","reisen ab"],
+        imperfetto: ["reiste ab","reistest ab","reiste ab","reisten ab","reistet ab","reisten ab"],
+        futuro:     ["werde abreisen","wirst abreisen","wird abreisen","werden abreisen","werdet abreisen","werden abreisen"]
+      }
+    },
+
+    // -ire (mit -isc-)
+    capire: {
+      group: "-ire (isc)", meaning: "verstehen",
+      presente:  ["capisco","capisci","capisce","capiamo","capite","capiscono"],
+      imperfetto:["capivo","capivi","capiva","capivamo","capivate","capivano"],
+      futuro:    ["capirò","capirai","capirà","capiremo","capirete","capiranno"],
+      de: {
+        presente:   ["verstehe","verstehst","versteht","verstehen","versteht","verstehen"],
+        imperfetto: ["verstand","verstandest","verstand","verstanden","verstandet","verstanden"],
+        futuro:     ["werde verstehen","wirst verstehen","wird verstehen","werden verstehen","werdet verstehen","werden verstehen"]
+      }
+    },
+    finire: {
+      group: "-ire (isc)", meaning: "beenden",
+      presente:  ["finisco","finisci","finisce","finiamo","finite","finiscono"],
+      imperfetto:["finivo","finivi","finiva","finivamo","finivate","finivano"],
+      futuro:    ["finirò","finirai","finirà","finiremo","finirete","finiranno"],
+      de: {
+        presente:   ["beende","beendest","beendet","beenden","beendet","beenden"],
+        imperfetto: ["beendete","beendetest","beendete","beendeten","beendetet","beendeten"],
+        futuro:     ["werde beenden","wirst beenden","wird beenden","werden beenden","werdet beenden","werden beenden"]
+      }
+    },
+    preferire: {
+      group: "-ire (isc)", meaning: "bevorzugen",
+      presente:  ["preferisco","preferisci","preferisce","preferiamo","preferite","preferiscono"],
+      imperfetto:["preferivo","preferivi","preferiva","preferivamo","preferivate","preferivano"],
+      futuro:    ["preferirò","preferirai","preferirà","preferiremo","preferirete","preferiranno"],
+      de: {
+        presente:   ["bevorzuge","bevorzugst","bevorzugt","bevorzugen","bevorzugt","bevorzugen"],
+        imperfetto: ["bevorzugte","bevorzugtest","bevorzugte","bevorzugten","bevorzugtet","bevorzugten"],
+        futuro:     ["werde bevorzugen","wirst bevorzugen","wird bevorzugen","werden bevorzugen","werdet bevorzugen","werden bevorzugen"]
+      }
+    },
+    pulire: {
+      group: "-ire (isc)", meaning: "putzen",
+      presente:  ["pulisco","pulisci","pulisce","puliamo","pulite","puliscono"],
+      imperfetto:["pulivo","pulivi","puliva","pulivamo","pulivate","pulivano"],
+      futuro:    ["pulirò","pulirai","pulirà","puliremo","pulirete","puliranno"],
+      de: {
+        presente:   ["putze","putzt","putzt","putzen","putzt","putzen"],
+        imperfetto: ["putzte","putztest","putzte","putzten","putztet","putzten"],
+        futuro:     ["werde putzen","wirst putzen","wird putzen","werden putzen","werdet putzen","werden putzen"]
+      }
+    }
+  };
+
+  const VERB_GROUPS = [
+    { label: "-are mit avere im Passato prossimo", verbs: ["parlare", "guardare", "lavorare", "abitare", "camminare", "viaggiare", "passeggiare", "guidare", "nuotare", "sciare", "ballare"] },
+    { label: "-are mit essere im Passato prossimo", verbs: ["arrivare", "diventare", "durare", "entrare", "mancare", "restare", "sembrare", "tornare", "bastare"] },
+    { label: "-ere", verbs: ["credere", "vendere", "ricevere", "temere"] },
+    { label: "-ire (regelmäßig)", verbs: ["dormire", "seguire", "sentire", "partire"] },
+    { label: "-ire (mit -isc-)", verbs: ["capire", "finire", "preferire", "pulire"] }
+  ];
+
+  // Participio passato (+ Hilfsverb) und deutsches Partizip II (+ Hilfsverb),
+  // daraus werden Passato prossimo / Condizionale presente automatisch abgeleitet.
+  const PARTICIPLES = {
+    parlare:   { part: "parlato",   aux: "avere",  dePart: "gesprochen", deAux: "haben" },
+    guardare:  { part: "guardato",  aux: "avere",  dePart: "geschaut",   deAux: "haben" },
+    lavorare:  { part: "lavorato",  aux: "avere",  dePart: "gearbeitet", deAux: "haben" },
+    abitare:   { part: "abitato",   aux: "avere",  dePart: "gewohnt",    deAux: "haben" },
+    credere:   { part: "creduto",   aux: "avere",  dePart: "geglaubt",   deAux: "haben" },
+    vendere:   { part: "venduto",   aux: "avere",  dePart: "verkauft",   deAux: "haben" },
+    ricevere:  { part: "ricevuto",  aux: "avere",  dePart: "bekommen",   deAux: "haben" },
+    temere:    { part: "temuto",    aux: "avere",  dePart: "gefürchtet", deAux: "haben" },
+    dormire:   { part: "dormito",   aux: "avere",  dePart: "geschlafen", deAux: "haben" },
+    seguire:   { part: "seguito",   aux: "avere",  dePart: "gefolgt",    deAux: "sein"  },
+    sentire:   { part: "sentito",   aux: "avere",  dePart: "gefühlt",    deAux: "haben" },
+    partire:   { part: "partito",   aux: "essere", dePart: "abgereist",  deAux: "sein"  },
+    capire:    { part: "capito",    aux: "avere",  dePart: "verstanden", deAux: "haben" },
+    finire:    { part: "finito",    aux: "avere",  dePart: "beendet",    deAux: "haben" },
+    preferire: { part: "preferito", aux: "avere",  dePart: "bevorzugt",  deAux: "haben" },
+    pulire:    { part: "pulito",    aux: "avere",  dePart: "geputzt",    deAux: "haben" },
+
+    camminare:   { part: "camminato",   aux: "avere",  dePart: "gelaufen",           deAux: "sein"  },
+    viaggiare:   { part: "viaggiato",   aux: "avere",  dePart: "gereist",            deAux: "sein"  },
+    passeggiare: { part: "passeggiato", aux: "avere",  dePart: "spazieren gegangen", deAux: "sein"  },
+    guidare:     { part: "guidato",     aux: "avere",  dePart: "gefahren",           deAux: "haben" },
+    nuotare:     { part: "nuotato",     aux: "avere",  dePart: "geschwommen",        deAux: "haben" },
+    sciare:      { part: "sciato",      aux: "avere",  dePart: "Ski gefahren",       deAux: "sein"  },
+    ballare:     { part: "ballato",     aux: "avere",  dePart: "getanzt",            deAux: "haben" },
+
+    arrivare:    { part: "arrivato",    aux: "essere", dePart: "angekommen",         deAux: "sein"  },
+    diventare:   { part: "diventato",   aux: "essere", dePart: "geworden",           deAux: "sein"  },
+    durare:      { part: "durato",      aux: "essere", dePart: "gedauert",           deAux: "haben" },
+    entrare:     { part: "entrato",     aux: "essere", dePart: "eingetreten",        deAux: "sein"  },
+    mancare:     { part: "mancato",     aux: "essere", dePart: "gefehlt",            deAux: "haben" },
+    restare:     { part: "restato",     aux: "essere", dePart: "geblieben",          deAux: "sein"  },
+    sembrare:    { part: "sembrato",    aux: "essere", dePart: "geschienen",         deAux: "haben" },
+    tornare:     { part: "tornato",     aux: "essere", dePart: "zurückgekehrt",      deAux: "sein"  },
+    bastare:     { part: "bastato",     aux: "essere", dePart: "gereicht",           deAux: "haben" }
+  };
+
+  const AVERE_PRESENTE  = ["ho","hai","ha","abbiamo","avete","hanno"];
+  const ESSERE_PRESENTE = ["sono","sei","è","siamo","siete","sono"];
+  const HABEN_PRAESENS  = ["habe","hast","hat","haben","habt","haben"];
+  const SEIN_PRAESENS   = ["bin","bist","ist","sind","seid","sind"];
+  const CONDIZIONALE_ENDINGS = ["ei","esti","ebbe","emmo","este","ebbero"];
+  const WUERDE_FORMS = ["würde","würdest","würde","würden","würdet","würden"];
+
+  // Deutsche du-Imperativ-Form lässt sich nicht rein mechanisch ableiten
+  // (Vokalwechsel-Ausnahmen etc.), darum von Hand hinterlegt.
+  const DU_IMPERATIV = {
+    parlare: "sprich", guardare: "schau", lavorare: "arbeite", abitare: "wohn",
+    credere: "glaub", vendere: "verkauf", ricevere: "bekomm", temere: "fürchte",
+    dormire: "schlaf", seguire: "folge", sentire: "fühl", partire: "reise ab",
+    capire: "versteh", finire: "beende", preferire: "bevorzuge", pulire: "putz",
+    camminare: "lauf", viaggiare: "reis", passeggiare: "geh spazieren", guidare: "fahr",
+    nuotare: "schwimm", sciare: "fahr Ski", ballare: "tanz",
+    arrivare: "komm an", diventare: "werde", durare: "dauer", entrare: "tritt ein",
+    mancare: "fehl", restare: "bleib", sembrare: "schein", tornare: "kehr zurück", bastare: "reich"
+  };
+
+  function buildPassatoProssimo(part, aux) {
+    const auxForms = aux === "essere" ? ESSERE_PRESENTE : AVERE_PRESENTE;
+    if (aux === "essere") {
+      const plur = part.slice(0, -1) + "i";
+      const parts = [part, part, part, plur, plur, plur];
+      return auxForms.map((a, i) => a + " " + parts[i]);
+    }
+    return auxForms.map(a => a + " " + part);
+  }
+  function buildCondizionale(futuroArr) {
+    const stem = futuroArr[0].slice(0, -1); // strip the final "ò"
+    return CONDIZIONALE_ENDINGS.map(e => stem + e);
+  }
+  function buildDePerfekt(dePart, deAux) {
+    const auxForms = deAux === "sein" ? SEIN_PRAESENS : HABEN_PRAESENS;
+    return auxForms.map(a => a + " " + dePart);
+  }
+  function buildDeWuerde(infinitive) {
+    return WUERDE_FORMS.map(w => w + " " + infinitive);
+  }
+  function buildCongiuntivo(infinitive, groupStr) {
+    const stem = infinitive.slice(0, -3);
+    if (groupStr === "-are") {
+      return [stem+"i", stem+"i", stem+"i", stem+"iamo", stem+"iate", stem+"ino"];
+    }
+    if (groupStr === "-ire (isc)") {
+      return [stem+"isca", stem+"isca", stem+"isca", stem+"iamo", stem+"iate", stem+"iscano"];
+    }
+    return [stem+"a", stem+"a", stem+"a", stem+"iamo", stem+"iate", stem+"ano"];
+  }
+  // io gibt es im Imperativ nicht (Index 0 bleibt null und wird in buildPool übersprungen).
+  // lui/lei und loro stehen hier für die formelle Anrede (Lei/Loro) und entlehnen ihre Form vom Congiuntivo.
+  function buildImperativo(infinitive, groupStr, presenteArr, congiuntivoArr) {
+    // tu-Form: bei -are eine eigene Form (parla!), sonst identisch zur Presente-tu-Form (credi!, dormi!, capisci!)
+    const tuForm = groupStr === "-are" ? infinitive.slice(0, -3) + "a" : presenteArr[1];
+    return [null, tuForm, congiuntivoArr[0], presenteArr[3], presenteArr[4], congiuntivoArr[5]];
+  }
+  function buildDeImperativ(duForm, dePresenteArr, infinitive) {
+    return [null, duForm, infinitive + " sie", infinitive + " wir", dePresenteArr[4], infinitive + " sie"];
+  }
+
+  Object.keys(VERBS).forEach(v => {
+    const p = PARTICIPLES[v];
+    const verb = VERBS[v];
+    verb.passatoprossimo = buildPassatoProssimo(p.part, p.aux);
+    verb.condizionale = buildCondizionale(verb.futuro);
+    verb.congiuntivo = buildCongiuntivo(v, verb.group);
+    verb.imperativo = buildImperativo(v, verb.group, verb.presente, verb.congiuntivo);
+
+    verb.de.passatoprossimo = buildDePerfekt(p.dePart, p.deAux);
+    verb.de.condizionale = buildDeWuerde(verb.meaning);
+    verb.de.congiuntivo = verb.de.presente; // Deutsch nutzt hier meist ganz normal den Indikativ
+    verb.de.imperativo = buildDeImperativ(DU_IMPERATIV[v], verb.de.presente, verb.meaning);
+  });
+
+  // Orthografische Ausnahmen, bei denen die allgemeine Stamm+Endung-Formel
+  // die Schreibweise nicht richtig trifft (weiches -gi- vor e/i, bzw. -c(h)- vor e/i):
+  const CONGIUNTIVO_OVERRIDES = {
+    viaggiare:   ["viaggi", "viaggi", "viaggi", "viaggiamo", "viaggiate", "viaggino"],
+    passeggiare: ["passeggi", "passeggi", "passeggi", "passeggiamo", "passeggiate", "passeggino"],
+    mancare:     ["manchi", "manchi", "manchi", "manchiamo", "manchiate", "manchino"],
+    sciare:      ["scii", "scii", "scii", "sciamo", "sciate", "sciino"]
+  };
+  Object.keys(CONGIUNTIVO_OVERRIDES).forEach(v => {
+    const verb = VERBS[v];
+    verb.congiuntivo = CONGIUNTIVO_OVERRIDES[v];
+    verb.imperativo[2] = verb.congiuntivo[0];
+    verb.imperativo[5] = verb.congiuntivo[5];
+  });
+
+  const TENSE_LABELS = {
+    presente: "Presente indicativo",
+    passatoprossimo: "Passato prossimo",
+    imperfetto: "Imperfetto",
+    futuro: "Futuro semplice",
+    condizionale: "Condizionale presente",
+    congiuntivo: "Congiuntivo presente",
+    imperativo: "Imperativo"
+  };
+
+  const TENSE_INFO = {
+    presente: {
+      translation: "entspricht dem deutschen Präsens: „ich spreche“, „ich glaube“",
+      sections: [
+        { h: "Bildung", list: [
+          ["Grundregel:", "Die Endung des Infinitivs (-are, -ere, -ire) fällt weg, an den Stamm treten personenbezogene Endungen."],
+          ["Sonderfall -isc-:", "Eine Gruppe von -ire-Verben (z. B. capire) schiebt vor den Endungen der Singularformen und der 3. Pl. zusätzlich -isc- ein."],
+          ["Merken:", "Welche -ire-Verben das tun, folgt keiner Regel — das ist reiner Auswendiglern-Stoff."]
+        ]},
+        { h: "Endungen", table: ["-are", "-ere", "-ire", "-ire (isc)"], rows: [
+          ["io", "-o", "-o", "-o", "-isco"],
+          ["tu", "-i", "-i", "-i", "-isci"],
+          ["lui/lei", "-a", "-e", "-e", "-isce"],
+          ["noi", "-iamo", "-iamo", "-iamo", "-iamo"],
+          ["voi", "-ate", "-ete", "-ite", "-ite"],
+          ["loro", "-ano", "-ono", "-ono", "-iscono"]
+        ]},
+        { h: "Verwendung", p: "Wie im Deutschen für aktuelle Handlungen, allgemeine Wahrheiten und Gewohnheiten. Anders als im Deutschen steht es im Italienischen oft auch für nahe Zukunft: „Domani parlo con lui“ = „Morgen spreche ich mit ihm.“" }
+      ]
+    },
+    passatoprossimo: {
+      translation: "entspricht dem deutschen Perfekt: „ich habe gesprochen“, „ich bin abgereist“",
+      sections: [
+        { h: "Bildung", list: [
+          ["Aufbau:", "Hilfsverb im Presente (avere oder essere) + Partizip Perfekt."],
+          ["Partizip:", "Fast immer regelmäßig: -are → -ato, -ere → -uto, -ire → -ito (parlato, creduto, dormito, capito)."],
+          ["Hilfsverb avere:", "Der Normalfall — fast alle Verben hier nutzen avere."],
+          ["Hilfsverb essere:", "Nur Verben der Bewegung/Zustandsänderung wie partire. Dort passt sich das Partizip an das Subjekt an (partito/partita/partiti/partite) — hier vereinfacht immer männlich gezeigt."]
+        ]},
+        { h: "Hilfsverb im Presente", table: ["avere", "essere"], rows: [
+          ["io", "ho", "sono"],
+          ["tu", "hai", "sei"],
+          ["lui/lei", "ha", "è"],
+          ["noi", "abbiamo", "siamo"],
+          ["voi", "avete", "siete"],
+          ["loro", "hanno", "sono"]
+        ]},
+        { h: "Verwendung", list: [
+          ["Grundfrage:", "Beantwortet „Was ist passiert?“ — ein einzelnes, abgeschlossenes Ereignis."],
+          ["Abgeschlossene Handlung:", "„Ho visto Marco in città.“ = „Ich habe Marco in der Stadt gesehen.“"],
+          ["Handlungsketten:", "„Prima sono andata a fare la spesa, poi ho cucinato.“ = „Zuerst bin ich einkaufen gegangen, dann habe ich gekocht.“"],
+          ["Signalwörter:", "tutto il giorno, all'improvviso, appena, da … a"]
+        ]},
+        { h: "Passato prossimo vs. Imperfetto", list: [
+          ["Im selben Satz:", "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im passato prossimo, der Hintergrund dazu im imperfetto."],
+          ["Bedeutung kann kippen:", "„Ho conosciuto“ = ich habe kennengelernt, aber „conoscevo“ = ich kannte; „ho avuto paura“ = ich bekam Angst, aber „avevo paura“ = ich hatte Angst."]
+        ]}
+      ]
+    },
+    imperfetto: {
+      translation: "entspricht dem deutschen Präteritum bei Beschreibungen/Gewohnheiten: „ich sprach“, „ich sprach gerade“",
+      sections: [
+        { h: "Bildung", list: [
+          ["Stamm:", "Die Infinitiv-Endung -re fällt komplett weg (parlare → parla-, credere → crede-, dormire → dormi-), der Themavokal (a/e/i) bleibt also erhalten."],
+          ["Endungen:", "Für alle drei Gruppen identisch — der einzige Unterschied ist der Stammvokal (a / e / i)."],
+          ["Keine Ausnahme bei -isc-:", "capire bildet das Imperfetto ganz normal (capivo, nicht capiscevo)."]
+        ]},
+        { h: "Endungen (alle Gruppen gleich)", table: ["Endung"], rows: [
+          ["io", "-vo"], ["tu", "-vi"], ["lui/lei", "-va"],
+          ["noi", "-vamo"], ["voi", "-vate"], ["loro", "-vano"]
+        ]},
+        { h: "Verwendung", list: [
+          ["Grundfrage:", "Beantwortet „Wie war die Situation?“ / „Wie war es normalerweise?“."],
+          ["Hintergrund:", "„Faceva molto freddo.“ = „Es war sehr kalt.“"],
+          ["Gewohnheit:", "„Da bambino giocavo sempre con il mio cane.“ = „Als Kind habe ich immer mit meinem Hund gespielt.“"],
+          ["Signalwörter:", "sempre, normalmente, mentre"]
+        ]},
+        { h: "Passato prossimo vs. Imperfetto", list: [
+          ["Im selben Satz:", "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im passato prossimo, der Hintergrund dazu im imperfetto."],
+          ["Bedeutung kann kippen:", "„Ho conosciuto“ = ich habe kennengelernt, aber „conoscevo“ = ich kannte; „ho avuto paura“ = ich bekam Angst, aber „avevo paura“ = ich hatte Angst."]
+        ]}
+      ]
+    },
+    futuro: {
+      translation: "entspricht dem deutschen Futur I: „ich werde sprechen“",
+      sections: [
+        { h: "Bildung", list: [
+          ["-are-Verben:", "Das -a- der Endung wird zu -e- (parlare → parler-)."],
+          ["-ere-/-ire-Verben:", "Nur das finale -e des Infinitivs fällt weg (credere → creder-, dormire → dormir-)."],
+          ["Endungen:", "Für alle Gruppen identisch. Auch capire verhält sich regelmäßig (capirò)."]
+        ]},
+        { h: "Endungen (alle Gruppen gleich)", table: ["Endung"], rows: [
+          ["io", "-ò"], ["tu", "-ai"], ["lui/lei", "-à"],
+          ["noi", "-emo"], ["voi", "-ete"], ["loro", "-anno"]
+        ]},
+        { h: "Verwendung", p: "Für zukünftige Handlungen, ähnlich dem deutschen Futur I. Im Alltagsitalienisch wird für die nahe Zukunft aber oft auch einfach das Presente verwendet." }
+      ]
+    },
+    condizionale: {
+      translation: "entspricht dem deutschen Konjunktiv II mit würde: „ich würde sprechen“",
+      sections: [
+        { h: "Bildung", list: [
+          ["Stamm:", "Derselbe wie beim Futuro semplice (z. B. parler-, creder-, dormir-)."],
+          ["Endungen:", "Eigene Endungen, für alle drei Verbgruppen identisch."]
+        ]},
+        { h: "Endungen (alle Gruppen gleich)", table: ["Endung"], rows: [
+          ["io", "-ei"], ["tu", "-esti"], ["lui/lei", "-ebbe"],
+          ["noi", "-emmo"], ["voi", "-este"], ["loro", "-ebbero"]
+        ]},
+        { h: "Verwendung", p: "Für höfliche Bitten, Wünsche und hypothetische Aussagen — wie das deutsche „würde“ + Infinitiv oder Konjunktiv II: „Vorrei un caffè“ = „Ich hätte gern einen Kaffee“, „Parlerei con lui“ = „Ich würde mit ihm sprechen“." }
+      ]
+    },
+    congiuntivo: {
+      translation: "hat keine direkte deutsche Entsprechung — im dass-Satz steht im Deutschen meist ganz normal der Indikativ",
+      sections: [
+        { h: "Bildung", list: [
+          ["Auslöser:", "Steht fast immer nach che in einem Nebensatz, ausgelöst durch Verben/Ausdrücke des Wunsches, Zweifels, der Meinung oder Emotion im Hauptsatz (z. B. „Voglio che…“, „Penso che…“, „È possibile che…“)."],
+          ["Achtung:", "io, tu und lui/lei haben exakt dieselbe Form — deshalb wird das Subjekt-Pronomen im Congiuntivo öfter ausgesprochen als sonst im Italienischen üblich, um Verwechslungen zu vermeiden."]
+        ]},
+        { h: "Endungen", table: ["-are", "-ere", "-ire", "-ire (isc)"], rows: [
+          ["io", "-i", "-a", "-a", "-isca"],
+          ["tu", "-i", "-a", "-a", "-isca"],
+          ["lui/lei", "-i", "-a", "-a", "-isca"],
+          ["noi", "-iamo", "-iamo", "-iamo", "-iamo"],
+          ["voi", "-iate", "-iate", "-iate", "-iate"],
+          ["loro", "-ino", "-ano", "-ano", "-iscano"]
+        ]},
+        { h: "Verwendung", p: "Beispiel: „Penso che lei parli bene italiano“ = „Ich denke, dass sie gut Italienisch spricht“ — im Deutschen bleibt der dass-Satz hier im normalen Indikativ, nur im Italienischen wechselt das Verb in den Congiuntivo." }
+      ]
+    },
+    imperativo: {
+      translation: "die Befehlsform — eine ich-Form gibt es dafür nicht",
+      sections: [
+        { h: "Bildung", list: [
+          ["tu bei -are:", "Eigene Form (parla!), anders als im Presente (parli)."],
+          ["tu bei -ere/-ire:", "Einfach die Presente-Form von tu (credi!, dormi!, capisci!)."],
+          ["Lei (lui/lei) und Loro (formell):", "Leihen sich ihre Form komplett vom Congiuntivo presente."],
+          ["noi und voi:", "Entsprechen genau dem Presente indicativo."]
+        ]},
+        { h: "Verwendung", p: "Für direkte Aufforderungen und Befehle: „Parla!“ = „Sprich!“, „Parli!“ = „Sprechen Sie!“ (höflich). Eine Verneinung wird bei tu nicht mit non + Imperativ gebildet, sondern mit non + Infinitiv: „Non parlare!“ = „Sprich nicht!“ — bei allen anderen Formen reicht einfaches non davor." }
+      ]
+    }
+  };
+
+  const LENGTH_OPTIONS = [5, 10, 20];
+  const DIRECTION_OPTIONS = [
+    { key: "it", label: "Italienisch zeigen" },
+    { key: "de", label: "Deutsch zeigen" },
+    { key: "mixed", label: "Gemischt" }
+  ];
+
+  const settings = {
+    verbs: new Set(Object.keys(VERBS)),
+    tenses: new Set(["presente"]),
+    direction: "it",
+    length: 5
+  };
+
+  function loadSettings() {
+    try {
+      const raw = localStorage.getItem("coniugazione-settings");
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.verbs && d.verbs.length) settings.verbs = new Set(d.verbs.filter(v => VERBS[v]));
+      if (d.tenses && d.tenses.length) settings.tenses = new Set(d.tenses.filter(t => TENSE_LABELS[t]));
+      if (d.direction) settings.direction = d.direction;
+      if (d.length) settings.length = d.length;
+    } catch (e) { /* ignore, use defaults */ }
+  }
+  function saveSettings() {
+    try {
+      localStorage.setItem("coniugazione-settings", JSON.stringify({
+        verbs: [...settings.verbs], tenses: [...settings.tenses],
+        direction: settings.direction, length: settings.length
+      }));
+    } catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+
+  // Meister-Level pro Verb (0-10 volle Segmente), über alle Lektionen hinweg.
+  // Steigt/fällt nur durch Ergebnisse aus der ersten Runde einer Lektion — Korrekturrunden zählen nicht.
+  const MAX_LEVEL = 10;
+  const verbLevels = {};
+
+  function loadVerbLevels() {
+    try {
+      const raw = localStorage.getItem("coniugazione-levels");
+      if (raw) Object.assign(verbLevels, JSON.parse(raw));
+    } catch (e) { /* ignore, start fresh */ }
+  }
+  function saveVerbLevels() {
+    try { localStorage.setItem("coniugazione-levels", JSON.stringify(verbLevels)); }
+    catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+  function getVerbLevel(verbKey) {
+    return verbLevels[verbKey] || 0;
+  }
+  function updateVerbLevel(verbKey, ok) {
+    const current = getVerbLevel(verbKey);
+    verbLevels[verbKey] = ok ? Math.min(MAX_LEVEL, current + 1) : Math.max(0, current - 1);
+    saveVerbLevels();
+  }
+  function weightForTask(t) {
+    const level = getVerbLevel(t.verbKey);
+    // Level 0 -> Gewicht 5, Level 10 -> Gewicht 1 (voll gemeisterte Wörter kommen seltener vor)
+    return 1 + (MAX_LEVEL - level) * 0.4;
+  }
+  function weightedSample(pool, n) {
+    if (n >= pool.length) return pool.slice();
+    const scored = pool.map(item => ({ item, score: Math.pow(Math.random(), 1 / weightForTask(item)) }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, n).map(s => s.item);
+  }
+
+  // Verben, die in Runde 1 der zuletzt GESTARTETEN Lektion falsch waren — für die rote Ring-Markierung.
+  // Wird bei jedem Lektionsstart geleert und live befüllt, während die Lektion läuft.
+  let lastLessonMistakes = new Set();
+
+  function loadLastMistakes() {
+    try {
+      const raw = localStorage.getItem("coniugazione-last-mistakes");
+      if (raw) lastLessonMistakes = new Set(JSON.parse(raw));
+    } catch (e) { /* ignore, start fresh */ }
+  }
+  function saveLastMistakes() {
+    try { localStorage.setItem("coniugazione-last-mistakes", JSON.stringify([...lastLessonMistakes])); }
+    catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+  function resetLastMistakes() {
+    lastLessonMistakes = new Set();
+    saveLastMistakes();
+  }
+  function markLastMistake(verbKey) {
+    lastLessonMistakes.add(verbKey);
+    saveLastMistakes();
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  /* ---------------- settings screen ---------------- */
+
+  function polarPoint(cx, cy, r, angleDeg) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+  }
+  function arcPath(cx, cy, r, startAngle, endAngle) {
+    const start = polarPoint(cx, cy, r, endAngle);
+    const end = polarPoint(cx, cy, r, startAngle);
+    const largeArc = endAngle - startAngle <= 180 ? 0 : 1;
+    return "M " + start.x + " " + start.y + " A " + r + " " + r + " 0 " + largeArc + " 0 " + end.x + " " + end.y;
+  }
+  function buildRing(level, isMistake) {
+    const segments = MAX_LEVEL;
+    const filled = level;
+    const filledColor = isMistake ? "var(--brick)" : "var(--gold)";
+    const size = 26, cx = size / 2, cy = size / 2, r = 10, gapDeg = 8;
+    const segAngle = 360 / segments;
+
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", size);
+    svg.setAttribute("height", size);
+    svg.setAttribute("viewBox", "0 0 " + size + " " + size);
+    svg.classList.add("verb-ring");
+
+    for (let i = 0; i < segments; i++) {
+      const start = i * segAngle + gapDeg / 2;
+      const end = (i + 1) * segAngle - gapDeg / 2;
+      const path = document.createElementNS(svgNS, "path");
+      path.setAttribute("d", arcPath(cx, cy, r, start, end));
+      path.setAttribute("fill", "none");
+      path.style.stroke = i < filled ? filledColor : "var(--line)";
+      path.setAttribute("stroke-width", "2.5");
+      path.setAttribute("stroke-linecap", "round");
+      svg.appendChild(path);
+    }
+
+    const text = document.createElementNS(svgNS, "text");
+    text.setAttribute("x", cx);
+    text.setAttribute("y", cy);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    if (isMistake) text.style.fill = "var(--brick)";
+    text.textContent = String(level);
+    svg.appendChild(text);
+    return svg;
+  }
+  function buildVerbRing(verbKey) {
+    return buildRing(getVerbLevel(verbKey), lastLessonMistakes.has(verbKey));
+  }
+
+  function renderSettingsChips() {
+    const verbBox = document.getElementById("verb-chips");
+    verbBox.innerHTML = "";
+    VERB_GROUPS.forEach(group => {
+      const groupWrap = document.createElement("div");
+      groupWrap.className = "verb-group";
+
+      const groupLabel = document.createElement("div");
+      groupLabel.className = "verb-group-label";
+      groupLabel.textContent = group.label;
+      groupWrap.appendChild(groupLabel);
+
+      const row = document.createElement("div");
+      row.className = "control-row";
+      group.verbs.forEach(v => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip chip-with-ring"
+          + (settings.verbs.has(v) ? " active" : "")
+          + (lastLessonMistakes.has(v) ? " recent-mistake" : "");
+        const ring = buildVerbRing(v);
+        if (ring) chip.appendChild(ring);
+        const label = document.createElement("span");
+        label.textContent = v;
+        chip.appendChild(label);
+        chip.onclick = () => {
+          if (settings.verbs.has(v)) { if (settings.verbs.size > 1) settings.verbs.delete(v); }
+          else settings.verbs.add(v);
+          saveSettings();
+          renderSettingsChips();
+        };
+        row.appendChild(chip);
+      });
+      groupWrap.appendChild(row);
+      verbBox.appendChild(groupWrap);
+    });
+
+    const tenseBox = document.getElementById("tense-chips");
+    tenseBox.innerHTML = "";
+    Object.keys(TENSE_LABELS).forEach(t => {
+      const wrap = document.createElement("span");
+      wrap.className = "tense-chip-wrap" + (settings.tenses.has(t) ? " active" : "");
+
+      const main = document.createElement("button");
+      main.type = "button";
+      main.className = "tense-chip-main";
+      main.textContent = TENSE_LABELS[t];
+      main.onclick = () => {
+        if (settings.tenses.has(t)) { if (settings.tenses.size > 1) settings.tenses.delete(t); }
+        else settings.tenses.add(t);
+        saveSettings();
+        renderSettingsChips();
+      };
+
+      const infoBtn = document.createElement("button");
+      infoBtn.type = "button";
+      infoBtn.className = "tense-chip-info";
+      infoBtn.textContent = "i";
+      infoBtn.setAttribute("aria-label", "Erklärung zu " + TENSE_LABELS[t]);
+      infoBtn.onclick = (e) => {
+        e.stopPropagation();
+        openOverlay(t);
+      };
+
+      wrap.appendChild(main);
+      wrap.appendChild(infoBtn);
+      tenseBox.appendChild(wrap);
+    });
+
+    const dirBox = document.getElementById("direction-chips");
+    dirBox.innerHTML = "";
+    DIRECTION_OPTIONS.forEach(opt => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (settings.direction === opt.key ? " active" : "");
+      chip.textContent = opt.label;
+      chip.onclick = () => {
+        settings.direction = opt.key;
+        saveSettings();
+        renderSettingsChips();
+      };
+      dirBox.appendChild(chip);
+    });
+
+    const lenBox = document.getElementById("length-chips");
+    lenBox.innerHTML = "";
+    LENGTH_OPTIONS.forEach(opt => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (settings.length === opt ? " active" : "");
+      chip.textContent = opt === "all" ? "Alle Kombinationen" : opt + " Aufgaben";
+      chip.onclick = () => {
+        settings.length = opt;
+        saveSettings();
+        renderSettingsChips();
+      };
+      lenBox.appendChild(chip);
+    });
+
+    const pool = buildPool();
+    document.getElementById("settings-hint").textContent =
+      pool.length + " mögliche Kombinationen aus deiner Auswahl.";
+    document.getElementById("start-btn").disabled = pool.length === 0;
+  }
+
+  function buildPool() {
+    const pool = [];
+    settings.verbs.forEach(verbKey => {
+      settings.tenses.forEach(tenseKey => {
+        const startIdx = tenseKey === "imperativo" ? 1 : 0; // kein io-Imperativ
+        for (let personIdx = startIdx; personIdx < 6; personIdx++) {
+          pool.push({ verbKey, tenseKey, personIdx });
+        }
+      });
+    });
+    return pool;
+  }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickDirection() {
+    if (settings.direction === "mixed") return Math.random() < 0.5 ? "it" : "de";
+    return settings.direction;
+  }
+
+  /* ---------------- lesson state ---------------- */
+
+  const lesson = {
+    queue: [],
+    round: 1,
+    roundTotal: 0,
+    roundAnswered: 0,
+    roundCorrect: 0,
+    roundMissed: [],  // Fehler dieser Runde, werden erst danach zur neuen Runde
+    totalPlanned: 0,
+    firstTryCorrect: 0,
+    totalAttempts: 0,
+    missed: {},     // key -> {verbKey, tenseKey, personIdx, answer, misses}  (über die ganze Lektion)
+    current: null
+  };
+
+  function taskKey(t) { return t.verbKey + "|" + t.tenseKey + "|" + t.personIdx; }
+
+  function startLesson() {
+    resetLastMistakes();
+    const rawPool = buildPool();
+    const n = settings.length === "all" ? rawPool.length : Math.min(settings.length, rawPool.length);
+    const selected = shuffle(weightedSample(rawPool, n));
+    const chosen = selected.map(t => ({
+      verbKey: t.verbKey, tenseKey: t.tenseKey, personIdx: t.personIdx,
+      direction: pickDirection(), firstAttempt: true
+    }));
+
+    lesson.queue = chosen;
+    lesson.round = 1;
+    lesson.roundTotal = chosen.length;
+    lesson.roundAnswered = 0;
+    lesson.roundCorrect = 0;
+    lesson.roundMissed = [];
+    lesson.totalPlanned = chosen.length;
+    lesson.firstTryCorrect = 0;
+    lesson.totalAttempts = 0;
+    lesson.missed = {};
+
+    showScreen("screen-lesson");
+    nextCard();
+  }
+
+  function normalize(s) { return s.trim().toLowerCase().replace(/\s+/g, " "); }
+
+  function updateProgress() {
+    const pct = lesson.roundTotal === 0 ? 0 : Math.min(100, (lesson.roundAnswered / lesson.roundTotal) * 100);
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-count").textContent = lesson.roundAnswered + "/" + lesson.roundTotal;
+  }
+
+  function renderCard() {
+    processing = false;
+    const t = lesson.current;
+    const verb = VERBS[t.verbKey];
+    const answer = verb[t.tenseKey][t.personIdx];
+    t.answer = answer;
+
+    document.getElementById("tense-tag").textContent = TENSE_LABELS[t.tenseKey];
+
+    const roundTagEl = document.getElementById("round-tag");
+    if (lesson.round > 1) {
+      roundTagEl.textContent = "Wiederholungsrunde " + lesson.round;
+      roundTagEl.classList.remove("hidden");
+    } else {
+      roundTagEl.classList.add("hidden");
+      roundTagEl.textContent = "";
+    }
+
+    const pronounLabel = document.getElementById("prompt-pronoun");
+    const answerInput = document.getElementById("answer-input");
+    const dePronounEl = document.getElementById("prompt-de-pronoun");
+    const promptVerbEl = document.getElementById("prompt-verb");
+    const verbTagEl = document.getElementById("verb-tag");
+
+    if (t.direction === "de") {
+      // Show the German pronoun + conjugated German verb; the Italian infinitive stays hidden.
+      dePronounEl.textContent = PRONOUNS_DE[t.personIdx];
+      dePronounEl.classList.remove("hidden");
+      promptVerbEl.textContent = verb.de[t.tenseKey][t.personIdx];
+      promptVerbEl.classList.remove("verb-link");
+      promptVerbEl.onclick = null;
+      verbTagEl.textContent = "";
+    } else {
+      dePronounEl.classList.add("hidden");
+      dePronounEl.textContent = "";
+      promptVerbEl.textContent = t.verbKey;
+      promptVerbEl.classList.add("verb-link");
+      promptVerbEl.onclick = () => openVerbOverlay(t.verbKey);
+      verbTagEl.textContent = verb.group + " · " + verb.meaning;
+    }
+
+    pronounLabel.textContent = PRONOUNS_IT[t.personIdx];
+    answerInput.value = "";
+    document.getElementById("answer-shell").className = "answer-shell";
+    exitReviewMode();
+    answerInput.focus();
+    document.getElementById("feedback").textContent = "";
+    document.getElementById("feedback").className = "feedback";
+
+    updateProgress();
+  }
+
+  function nextCard() {
+    if (lesson.queue.length === 0) {
+      if (lesson.roundMissed.length > 0) {
+        showRoundComplete();
+        return;
+      }
+      finishLesson();
+      return;
+    }
+    lesson.current = lesson.queue.shift();
+    renderCard();
+  }
+
+  function showRoundComplete() {
+    document.getElementById("round-complete-title").textContent = "Runde " + lesson.round + " geschafft!";
+    document.getElementById("round-complete-lede").textContent =
+      lesson.roundCorrect + " von " + lesson.roundTotal + " richtig. Jetzt wiederholen wir deine Fehler.";
+    const n = lesson.roundMissed.length;
+    document.getElementById("continue-round-btn").textContent =
+      "Fehler wiederholen (" + n + (n === 1 ? " Aufgabe" : " Aufgaben") + ")";
+    showScreen("screen-round-complete");
+  }
+
+  function startNextRound() {
+    lesson.round++;
+    lesson.queue = shuffle(lesson.roundMissed);
+    lesson.roundTotal = lesson.queue.length;
+    lesson.roundAnswered = 0;
+    lesson.roundCorrect = 0;
+    lesson.roundMissed = [];
+    showScreen("screen-lesson");
+    nextCard();
+  }
+
+  function scheduleForNextRound(t) {
+    // Nicht sofort wieder einreihen — erst wenn diese Runde komplett durch ist.
+    lesson.roundMissed.push({ verbKey: t.verbKey, tenseKey: t.tenseKey, personIdx: t.personIdx, direction: t.direction, firstAttempt: false });
+  }
+
+  function recordMiss(t) {
+    const key = taskKey(t);
+    if (!lesson.missed[key]) {
+      lesson.missed[key] = { verbKey: t.verbKey, tenseKey: t.tenseKey, personIdx: t.personIdx, answer: t.answer, misses: 0 };
+    }
+    lesson.missed[key].misses++;
+  }
+
+  let processing = false;
+  let reviewMode = false;
+
+  function enterReviewMode() {
+    reviewMode = true;
+    document.getElementById("check-btn").textContent = "Verstanden";
+    document.getElementById("answer-input").readOnly = true;
+    document.getElementById("reveal-btn").classList.add("hidden");
+  }
+  function exitReviewMode() {
+    reviewMode = false;
+    document.getElementById("check-btn").textContent = "Prüfen";
+    document.getElementById("answer-input").readOnly = false;
+    document.getElementById("reveal-btn").classList.remove("hidden");
+  }
+
+  function checkAnswer(e) {
+    e.preventDefault();
+    if (processing) return;
+
+    if (reviewMode) {
+      // Der Button steht gerade auf "Verstanden" -> einfach zur nächsten Karte.
+      processing = true;
+      nextCard();
+      return;
+    }
+
+    processing = true;
+
+    const t = lesson.current;
+    const feedback = document.getElementById("feedback");
+    const answerShell = document.getElementById("answer-shell");
+    const answerInput = document.getElementById("answer-input");
+
+    const verbGuess = normalize(answerInput.value);
+    const verbCorrect = normalize(t.answer);
+    const ok = verbGuess.length > 0 && verbGuess === verbCorrect;
+
+    lesson.totalAttempts++;
+    lesson.roundAnswered++;
+    if (t.firstAttempt) {
+      updateVerbLevel(t.verbKey, ok);
+      if (!ok) markLastMistake(t.verbKey);
+    }
+
+    if (ok) {
+      if (t.firstAttempt) lesson.firstTryCorrect++;
+      lesson.roundCorrect++;
+      answerShell.className = "answer-shell correct";
+      feedback.textContent = "Giusto! " + t.answer;
+      feedback.className = "feedback correct";
+      updateProgress();
+      setTimeout(nextCard, 600);
+      answerInput.focus();
+    } else {
+      recordMiss(t);
+      scheduleForNextRound(t);
+      answerShell.className = "answer-shell wrong";
+      feedback.textContent = "Fast — richtig wäre: " + t.answer;
+      feedback.className = "feedback wrong";
+      updateProgress();
+      enterReviewMode();
+      processing = false;
+    }
+  }
+
+  document.getElementById("reveal-btn").addEventListener("click", () => {
+    if (processing || reviewMode) return;
+    const t = lesson.current;
+    recordMiss(t);
+    scheduleForNextRound(t);
+    lesson.totalAttempts++;
+    lesson.roundAnswered++;
+    if (t.firstAttempt) {
+      updateVerbLevel(t.verbKey, false);
+      markLastMistake(t.verbKey);
+    }
+    document.getElementById("feedback").textContent = t.answer;
+    document.getElementById("feedback").className = "feedback";
+    updateProgress();
+    enterReviewMode();
+  });
+
+  function finishLesson() {
+    const missedKeys = Object.keys(lesson.missed);
+    // Derived from the same source as the list below, so the numbers always add up:
+    // every task that never appears in "missed" was solved on the first try.
+    const firstTry = lesson.totalPlanned - missedKeys.length;
+    const accuracy = lesson.totalPlanned === 0 ? 0 : Math.round((firstTry / lesson.totalPlanned) * 100);
+
+    document.getElementById("sum-total").textContent = lesson.totalPlanned;
+    document.getElementById("sum-first").textContent = firstTry;
+    document.getElementById("sum-accuracy").textContent = accuracy + "%";
+
+    document.getElementById("summary-lede").textContent = missedKeys.length === 0
+      ? "Alles auf Anhieb richtig. Ottimo lavoro!"
+      : "Ein paar Formen brauchten mehr als einen Versuch — die stehen unten noch mal.";
+
+    const list = document.getElementById("missed-list");
+    list.innerHTML = "";
+    missedKeys
+      .sort((a, b) => lesson.missed[b].misses - lesson.missed[a].misses)
+      .forEach(k => {
+        const m = lesson.missed[k];
+        const li = document.createElement("li");
+        const who = document.createElement("span");
+        who.className = "who";
+        who.textContent = PRONOUNS_IT[m.personIdx] + " · " + m.verbKey + " · " + TENSE_LABELS[m.tenseKey];
+        const form = document.createElement("span");
+        form.className = "form";
+        form.textContent = m.answer;
+        li.appendChild(who);
+        li.appendChild(form);
+        list.appendChild(li);
+      });
+    document.getElementById("missed-wrap").style.display = missedKeys.length === 0 ? "none" : "block";
+
+    showScreen("screen-summary");
+  }
+
+  /* ---------------- overlay ---------------- */
+
+  function openVerbOverlay(verbKey) {
+    const verb = VERBS[verbKey];
+    document.getElementById("overlay-title").textContent = verbKey;
+    document.getElementById("overlay-translation").textContent = "bedeutet auf Deutsch: „" + verb.meaning + "“";
+    document.getElementById("overlay-body").innerHTML = "";
+    document.getElementById("overlay").classList.add("open");
+  }
+
+  function openOverlay(tenseKey) {
+    const info = TENSE_INFO[tenseKey];
+    document.getElementById("overlay-title").textContent = TENSE_LABELS[tenseKey];
+    document.getElementById("overlay-translation").textContent = info.translation;
+
+    const body = document.getElementById("overlay-body");
+    body.innerHTML = "";
+    info.sections.forEach(sec => {
+      const wrap = document.createElement("div");
+      wrap.className = "overlay-section";
+      const h3 = document.createElement("h3");
+      h3.textContent = sec.h;
+      wrap.appendChild(h3);
+      if (sec.p) {
+        const p = document.createElement("p");
+        p.textContent = sec.p;
+        wrap.appendChild(p);
+      }
+      if (sec.list) {
+        const ul = document.createElement("ul");
+        sec.list.forEach(item => {
+          const li = document.createElement("li");
+          if (Array.isArray(item)) {
+            const b = document.createElement("b");
+            b.textContent = item[0] + " ";
+            li.appendChild(b);
+            li.appendChild(document.createTextNode(item[1]));
+          } else {
+            li.textContent = item;
+          }
+          ul.appendChild(li);
+        });
+        wrap.appendChild(ul);
+      }
+      if (sec.table) {
+        const table = document.createElement("table");
+        table.className = "endings-table";
+        const thead = document.createElement("tr");
+        thead.appendChild(document.createElement("th"));
+        sec.table.forEach(col => {
+          const th = document.createElement("th");
+          th.textContent = col;
+          thead.appendChild(th);
+        });
+        table.appendChild(thead);
+        sec.rows.forEach(row => {
+          const tr = document.createElement("tr");
+          row.forEach(cell => {
+            const td = document.createElement("td");
+            td.textContent = cell;
+            tr.appendChild(td);
+          });
+          table.appendChild(tr);
+        });
+        wrap.appendChild(table);
+      }
+      body.appendChild(wrap);
+    });
+
+    document.getElementById("overlay").classList.add("open");
+  }
+  function closeOverlay() { document.getElementById("overlay").classList.remove("open"); }
+
+  document.getElementById("tense-tag").addEventListener("click", () => {
+    if (lesson.current) openOverlay(lesson.current.tenseKey);
+  });
+  document.getElementById("overlay-close").addEventListener("click", closeOverlay);
+  document.getElementById("overlay").addEventListener("click", (e) => {
+    if (e.target.id === "overlay") closeOverlay();
+  });
+
+  /* ---------------- essere/avere quiz ---------------- */
+
+  const AUX_LENGTH_OPTIONS = [10, 20, "all"];
+  // Für Verben, deren Hilfsverb im Passato prossimo je nach Bedeutung wechselt (z. B. früher girare),
+  // reicht ein Ausschluss aus diesem Quiz nicht — sie werden komplett aus der App entfernt (VERBS),
+  // da sonst auch die Konjugations-Übung beim Passato prossimo nur eine von zwei richtigen Antworten akzeptiert.
+  // Dieses Set bleibt als Sicherheitsnetz für den Fall, dass mal ein Verb nur hier problematisch ist.
+  const AUX_EXCLUDED_VERBS = new Set();
+
+  const auxSettings = {
+    verbs: new Set(Object.keys(VERBS).filter(v => !AUX_EXCLUDED_VERBS.has(v))),
+    length: 10
+  };
+
+  function loadAuxSettings() {
+    try {
+      const raw = localStorage.getItem("coniugazione-aux-settings");
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.verbs && d.verbs.length) auxSettings.verbs = new Set(d.verbs.filter(v => VERBS[v] && !AUX_EXCLUDED_VERBS.has(v)));
+      if (d.length) auxSettings.length = d.length;
+    } catch (e) { /* ignore, use defaults */ }
+  }
+  function saveAuxSettings() {
+    try {
+      localStorage.setItem("coniugazione-aux-settings", JSON.stringify({
+        verbs: [...auxSettings.verbs], length: auxSettings.length
+      }));
+    } catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+
+  // Eigenes Meister-Level pro Verb für diese Übung (getrennt von der Konjugation,
+  // da es eine andere Fähigkeit misst: welches Hilfsverb, nicht die Konjugation selbst).
+  const auxVerbLevels = {};
+  function loadAuxVerbLevels() {
+    try {
+      const raw = localStorage.getItem("coniugazione-aux-levels");
+      if (raw) Object.assign(auxVerbLevels, JSON.parse(raw));
+    } catch (e) { /* ignore, start fresh */ }
+  }
+  function saveAuxVerbLevels() {
+    try { localStorage.setItem("coniugazione-aux-levels", JSON.stringify(auxVerbLevels)); }
+    catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+  function getAuxVerbLevel(verbKey) {
+    return auxVerbLevels[verbKey] || 0;
+  }
+  function updateAuxVerbLevel(verbKey, ok) {
+    const current = getAuxVerbLevel(verbKey);
+    auxVerbLevels[verbKey] = ok ? Math.min(MAX_LEVEL, current + 1) : Math.max(0, current - 1);
+    saveAuxVerbLevels();
+  }
+  function buildAuxVerbRing(verbKey) {
+    return buildRing(getAuxVerbLevel(verbKey), false);
+  }
+
+  function buildAuxPool() {
+    const pool = [];
+    auxSettings.verbs.forEach(verbKey => {
+      if (AUX_EXCLUDED_VERBS.has(verbKey)) return;
+      for (let personIdx = 0; personIdx < 6; personIdx++) {
+        pool.push({ verbKey, personIdx });
+      }
+    });
+    return pool;
+  }
+
+  function renderAuxVerbChips() {
+    const verbBox = document.getElementById("aux-verb-chips");
+    verbBox.innerHTML = "";
+    VERB_GROUPS.forEach(group => {
+      const groupWrap = document.createElement("div");
+      groupWrap.className = "verb-group";
+
+      const groupLabel = document.createElement("div");
+      groupLabel.className = "verb-group-label";
+      groupLabel.textContent = group.label;
+      groupWrap.appendChild(groupLabel);
+
+      const groupVerbs = group.verbs.filter(v => !AUX_EXCLUDED_VERBS.has(v));
+      if (groupVerbs.length === 0) return;
+
+      const row = document.createElement("div");
+      row.className = "control-row";
+      groupVerbs.forEach(v => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip chip-with-ring" + (auxSettings.verbs.has(v) ? " active" : "");
+        const ring = buildAuxVerbRing(v);
+        if (ring) chip.appendChild(ring);
+        const label = document.createElement("span");
+        label.textContent = v;
+        chip.appendChild(label);
+        chip.onclick = () => {
+          if (auxSettings.verbs.has(v)) { if (auxSettings.verbs.size > 1) auxSettings.verbs.delete(v); }
+          else auxSettings.verbs.add(v);
+          saveAuxSettings();
+          renderAuxVerbChips();
+        };
+        row.appendChild(chip);
+      });
+      groupWrap.appendChild(row);
+      verbBox.appendChild(groupWrap);
+    });
+
+    const pool = buildAuxPool();
+    document.getElementById("aux-settings-hint").textContent =
+      pool.length + " mögliche Fragen aus deiner Auswahl.";
+    document.getElementById("aux-start-btn").disabled = pool.length === 0;
+  }
+
+  function renderAuxLengthChips() {
+    const box = document.getElementById("aux-length-chips");
+    box.innerHTML = "";
+    AUX_LENGTH_OPTIONS.forEach(opt => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip" + (auxSettings.length === opt ? " active" : "");
+      chip.textContent = opt === "all" ? "Alle Kombinationen" : opt + " Fragen";
+      chip.onclick = () => { auxSettings.length = opt; saveAuxSettings(); renderAuxLengthChips(); };
+      box.appendChild(chip);
+    });
+  }
+
+  const auxQuiz = {
+    queue: [],
+    round: 1,
+    roundTotal: 0,
+    roundAnswered: 0,
+    roundCorrect: 0,
+    roundMissed: [],
+    totalPlanned: 0,
+    missed: {},   // key -> {verbKey, personIdx, correctForm, misses}
+    current: null,
+    locked: false
+  };
+
+  function auxTaskKey(t) { return t.verbKey + "|" + t.personIdx; }
+
+  function startAuxQuiz() {
+    const pool = shuffle(buildAuxPool());
+    const n = auxSettings.length === "all" ? pool.length : Math.min(auxSettings.length, pool.length);
+    auxQuiz.queue = pool.slice(0, n).map(t => ({ verbKey: t.verbKey, personIdx: t.personIdx, firstAttempt: true }));
+    auxQuiz.round = 1;
+    auxQuiz.roundTotal = auxQuiz.queue.length;
+    auxQuiz.roundAnswered = 0;
+    auxQuiz.roundCorrect = 0;
+    auxQuiz.roundMissed = [];
+    auxQuiz.totalPlanned = auxQuiz.queue.length;
+    auxQuiz.missed = {};
+    showScreen("screen-aux-quiz");
+    nextAuxQuestion();
+  }
+
+  function updateAuxProgress() {
+    const pct = auxQuiz.roundTotal === 0 ? 0 : Math.min(100, (auxQuiz.roundAnswered / auxQuiz.roundTotal) * 100);
+    document.getElementById("aux-progress-fill").style.width = pct + "%";
+    document.getElementById("aux-progress-count").textContent = auxQuiz.roundAnswered + "/" + auxQuiz.roundTotal;
+  }
+
+  function nextAuxQuestion() {
+    if (auxQuiz.queue.length === 0) {
+      if (auxQuiz.roundMissed.length > 0) { showAuxRoundComplete(); return; }
+      finishAuxQuiz();
+      return;
+    }
+    auxQuiz.current = auxQuiz.queue.shift();
+    renderAuxQuestion();
+  }
+
+  function showAuxRoundComplete() {
+    document.getElementById("aux-round-complete-title").textContent = "Runde " + auxQuiz.round + " geschafft!";
+    document.getElementById("aux-round-complete-lede").textContent =
+      auxQuiz.roundCorrect + " von " + auxQuiz.roundTotal + " richtig. Jetzt wiederholen wir deine Fehler.";
+    const n = auxQuiz.roundMissed.length;
+    document.getElementById("aux-continue-round-btn").textContent =
+      "Fehler wiederholen (" + n + (n === 1 ? " Frage" : " Fragen") + ")";
+    showScreen("screen-aux-round-complete");
+  }
+
+  function startAuxNextRound() {
+    auxQuiz.round++;
+    auxQuiz.queue = shuffle(auxQuiz.roundMissed);
+    auxQuiz.roundTotal = auxQuiz.queue.length;
+    auxQuiz.roundAnswered = 0;
+    auxQuiz.roundCorrect = 0;
+    auxQuiz.roundMissed = [];
+    showScreen("screen-aux-quiz");
+    nextAuxQuestion();
+  }
+
+  function recordAuxMiss(t, correctForm) {
+    const key = auxTaskKey(t);
+    if (!auxQuiz.missed[key]) {
+      auxQuiz.missed[key] = { verbKey: t.verbKey, personIdx: t.personIdx, correctForm: correctForm, misses: 0 };
+    }
+    auxQuiz.missed[key].misses++;
+  }
+  function scheduleAuxForNextRound(t) {
+    auxQuiz.roundMissed.push({ verbKey: t.verbKey, personIdx: t.personIdx, firstAttempt: false });
+  }
+
+  function renderAuxQuestion() {
+    auxQuiz.locked = false;
+    const t = auxQuiz.current;
+
+    const auxInfinitiveEl = document.getElementById("aux-infinitive");
+    auxInfinitiveEl.textContent = t.verbKey;
+    auxInfinitiveEl.classList.add("verb-link");
+    auxInfinitiveEl.onclick = () => openVerbOverlay(t.verbKey);
+    document.getElementById("aux-pronoun").textContent = PRONOUNS_IT[t.personIdx];
+    document.getElementById("aux-participle").textContent = PARTICIPLES[t.verbKey].part;
+
+    const roundTagEl = document.getElementById("aux-round-tag");
+    if (auxQuiz.round > 1) {
+      roundTagEl.textContent = "Wiederholungsrunde " + auxQuiz.round;
+      roundTagEl.classList.remove("hidden");
+    } else {
+      roundTagEl.classList.add("hidden");
+      roundTagEl.textContent = "";
+    }
+
+    const correctAux = PARTICIPLES[t.verbKey].aux;
+    const essereForm = ESSERE_PRESENTE[t.personIdx];
+    const avereForm = AVERE_PRESENTE[t.personIdx];
+    const correctForm = correctAux === "essere" ? essereForm : avereForm;
+    const options = [essereForm, avereForm]; // essere immer oben, avere immer unten
+
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+
+    [0, 1].forEach(i => {
+      const btn = document.getElementById("aux-option-" + i);
+      btn.textContent = options[i];
+      btn.className = "aux-option";
+      btn.disabled = false;
+      btn.onclick = () => checkAuxAnswer(options[i], correctForm);
+    });
+
+    document.getElementById("aux-feedback").textContent = "";
+    document.getElementById("aux-feedback").className = "feedback";
+    document.getElementById("aux-continue-row").style.display = "none";
+    updateAuxProgress();
+  }
+
+  function checkAuxAnswer(chosen, correctForm) {
+    if (auxQuiz.locked) return;
+    auxQuiz.locked = true;
+    const t = auxQuiz.current;
+    auxQuiz.roundAnswered++;
+    const ok = chosen === correctForm;
+    if (ok) auxQuiz.roundCorrect++;
+    updateAuxVerbLevel(t.verbKey, ok);
+
+    [0, 1].forEach(i => {
+      const btn = document.getElementById("aux-option-" + i);
+      btn.disabled = true;
+      if (btn.textContent === correctForm) btn.classList.add("correct");
+      else if (btn.textContent === chosen) btn.classList.add("wrong");
+    });
+
+    updateAuxProgress();
+
+    if (ok) {
+      document.getElementById("aux-feedback").textContent = "Giusto!";
+      document.getElementById("aux-feedback").className = "feedback correct";
+      setTimeout(nextAuxQuestion, 600);
+    } else {
+      recordAuxMiss(t, correctForm);
+      scheduleAuxForNextRound(t);
+      document.getElementById("aux-continue-row").style.display = "flex";
+    }
+  }
+
+  function finishAuxQuiz() {
+    const missedKeys = Object.keys(auxQuiz.missed);
+    const firstTry = auxQuiz.totalPlanned - missedKeys.length;
+    const accuracy = auxQuiz.totalPlanned === 0 ? 0 : Math.round((firstTry / auxQuiz.totalPlanned) * 100);
+
+    document.getElementById("aux-sum-total").textContent = auxQuiz.totalPlanned;
+    document.getElementById("aux-sum-correct").textContent = firstTry;
+    document.getElementById("aux-sum-accuracy").textContent = accuracy + "%";
+    document.getElementById("aux-summary-lede").textContent = missedKeys.length === 0
+      ? "Alles auf Anhieb richtig. Perfetto!"
+      : "Ein paar Verben brauchten mehr als einen Versuch — die stehen unten noch mal.";
+
+    const list = document.getElementById("aux-missed-list");
+    list.innerHTML = "";
+    missedKeys
+      .sort((a, b) => auxQuiz.missed[b].misses - auxQuiz.missed[a].misses)
+      .forEach(k => {
+        const m = auxQuiz.missed[k];
+        const li = document.createElement("li");
+        const who = document.createElement("span");
+        who.className = "who";
+        who.textContent = PRONOUNS_IT[m.personIdx] + " · " + m.verbKey;
+        const form = document.createElement("span");
+        form.className = "form";
+        form.textContent = m.correctForm + " " + PARTICIPLES[m.verbKey].part;
+        li.appendChild(who);
+        li.appendChild(form);
+        list.appendChild(li);
+      });
+    document.getElementById("aux-missed-wrap").style.display = missedKeys.length === 0 ? "none" : "block";
+
+    showScreen("screen-aux-summary");
+  }
+
+  /* ---------------- wiring ---------------- */
+
+  // Weitere Funktionen kommen hier als zusätzliche Einträge dazu.
+  const FEATURES = [
+    {
+      title: "Coniugazione",
+      description: "Italienische Verben in verschiedenen Zeiten üben — mit Lektionen, Wiederholungsrunden für Fehler und einem Fortschritts-Level pro Verb.",
+      screen: "screen-settings"
+    },
+    {
+      title: "Essere o avere?",
+      description: "Multiple-Choice-Training: Welches Hilfsverb braucht dieses Verb im Passato prossimo — und in welcher Form (ho, sono, ha, è, …)?",
+      screen: "screen-aux-settings"
+    }
+  ];
+
+  function renderFeatureList() {
+    const box = document.getElementById("feature-list");
+    box.innerHTML = "";
+    FEATURES.forEach(f => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "feature-card";
+      const h3 = document.createElement("h3");
+      h3.textContent = f.title;
+      const p = document.createElement("p");
+      p.textContent = f.description;
+      card.appendChild(h3);
+      card.appendChild(p);
+      card.onclick = () => {
+        if (f.screen === "screen-settings") renderSettingsChips();
+        if (f.screen === "screen-aux-settings") renderAuxVerbChips();
+        showScreen(f.screen);
+      };
+      box.appendChild(card);
+    });
+  }
+
+  function backToSettings() {
+    renderSettingsChips();
+    showScreen("screen-settings");
+  }
+
+  document.getElementById("answer-form").addEventListener("submit", checkAnswer);
+  document.getElementById("start-btn").addEventListener("click", startLesson);
+  document.getElementById("quit-btn").addEventListener("click", backToSettings);
+  document.getElementById("settings-btn").addEventListener("click", backToSettings);
+  document.getElementById("repeat-btn").addEventListener("click", startLesson);
+  document.getElementById("continue-round-btn").addEventListener("click", startNextRound);
+  document.getElementById("round-quit-btn").addEventListener("click", backToSettings);
+  document.getElementById("home-link").addEventListener("click", () => showScreen("screen-home"));
+
+  function backToAuxSettings() {
+    renderAuxVerbChips();
+    showScreen("screen-aux-settings");
+  }
+
+  document.getElementById("aux-home-link").addEventListener("click", () => showScreen("screen-home"));
+  document.getElementById("aux-start-btn").addEventListener("click", startAuxQuiz);
+  document.getElementById("aux-quit-btn").addEventListener("click", backToAuxSettings);
+  document.getElementById("aux-continue-btn").addEventListener("click", nextAuxQuestion);
+  document.getElementById("aux-continue-round-btn").addEventListener("click", startAuxNextRound);
+  document.getElementById("aux-round-quit-btn").addEventListener("click", backToAuxSettings);
+  document.getElementById("aux-home-btn").addEventListener("click", backToAuxSettings);
+  document.getElementById("aux-repeat-btn").addEventListener("click", startAuxQuiz);
+
+  loadSettings();
+  loadVerbLevels();
+  loadLastMistakes();
+  loadAuxSettings();
+  loadAuxVerbLevels();
+  renderFeatureList();
+  renderSettingsChips();
+  renderAuxVerbChips();
+  renderAuxLengthChips();
+})();
+</script>
+</body>
+</html>
