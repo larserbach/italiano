@@ -111,7 +111,7 @@ final class ConjugationLesson {
         busy = true
         let ok = !normalize(guess).isEmpty && normalize(guess) == normalize(item.answer)
         roundAnswered += 1
-        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, correct: ok) }
+        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: ok) }
 
         if ok {
             roundCorrect += 1
@@ -127,7 +127,7 @@ final class ConjugationLesson {
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
         roundAnswered += 1
-        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, correct: false) }
+        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: false) }
         recordMiss(item)
         feedback = .revealed(item.answer)
     }
@@ -173,11 +173,11 @@ final class ConjugationLesson {
         }
     }
 
-    /// Weighted sampling without replacement: level 0 verbs are five times as likely as mastered ones.
+    /// Weighted sampling without replacement: a level 0 verb×tense is five times as likely as a mastered one.
     private func weightedSample(_ pool: [ConjugationItem], count: Int) -> [ConjugationItem] {
         guard count < pool.count else { return pool }
         let scored = pool.map { item -> (ConjugationItem, Double) in
-            let weight = 1 + Double(ProgressStore.maxLevel - store.level(of: item.verb)) * 0.4
+            let weight = 1 + Double(ProgressStore.maxLevel - store.level(of: item.verb, tense: item.tense)) * 0.4
             return (item, pow(Double.random(in: 0..<1), 1 / weight))
         }
         return scored.sorted { $0.1 > $1.1 }.prefix(count).map(\.0)

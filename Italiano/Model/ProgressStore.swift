@@ -55,9 +55,10 @@ final class ProgressStore {
 
     var conjugation: ConjugationSettings { didSet { save(conjugation, key: Keys.settings) } }
     var aux: AuxSettings { didSet { save(aux, key: Keys.auxSettings) } }
-    /// Mastery 0…10 per verb for the conjugation exercise. Only first-round answers count.
-    private(set) var levels: [String: Int] { didSet { save(levels, key: Keys.levels) } }
-    /// Verbs answered wrong in round 1 of the most recently started lesson (shown in red).
+    /// Mastery 0…10 per verb and tense for the conjugation exercise, keyed by verb, then
+    /// `Tense.rawValue`. Only first-round answers count.
+    private(set) var tenseLevels: [String: [String: Int]] { didSet { save(tenseLevels, key: Keys.tenseLevels) } }
+    /// "verb|tense" pairs answered wrong in round 1 of the most recently started lesson (shown in red).
     private(set) var lastMistakes: Set<String> { didSet { save(lastMistakes, key: Keys.lastMistakes) } }
     /// Separate mastery for essere/avere — it measures a different skill.
     private(set) var auxLevels: [String: Int] { didSet { save(auxLevels, key: Keys.auxLevels) } }
@@ -66,8 +67,11 @@ final class ProgressStore {
 
     private enum Keys {
         static let settings = "coniugazione-settings"
-        static let levels = "coniugazione-levels"
-        static let lastMistakes = "coniugazione-last-mistakes"
+        static let tenseLevels = "coniugazione-tense-levels"
+        static let lastMistakes = "coniugazione-tense-mistakes"
+        // Per-verb data from before mastery was tracked per tense.
+        static let legacyLevels = "coniugazione-levels"
+        static let legacyLastMistakes = "coniugazione-last-mistakes"
         static let auxSettings = "coniugazione-aux-settings"
         static let auxLevels = "coniugazione-aux-levels"
     }
@@ -85,18 +89,35 @@ final class ProgressStore {
         if aux.verbs.isEmpty { aux.verbs = Set(VerbLibrary.orderedKeys) }
         self.aux = aux
 
-        levels = Self.load([String: Int].self, key: Keys.levels, from: defaults) ?? [:]
+        let stored = Self.load([String: [String: Int]].self, key: Keys.tenseLevels, from: defaults)
+        // Old per-verb levels were earned mostly in the default tense, so they become Presente levels.
+        let legacy = Self.load([String: Int].self, key: Keys.legacyLevels, from: defaults) ?? [:]
+        tenseLevels = stored ?? legacy.mapValues { [Tense.presente.rawValue: $0] }
         lastMistakes = Self.load(Set<String>.self, key: Keys.lastMistakes, from: defaults) ?? []
         auxLevels = Self.load([String: Int].self, key: Keys.auxLevels, from: defaults) ?? [:]
+
+        if stored == nil, !legacy.isEmpty { save(tenseLevels, key: Keys.tenseLevels) }
+        defaults.removeObject(forKey: Keys.legacyLevels)
+        defaults.removeObject(forKey: Keys.legacyLastMistakes)
     }
 
     // MARK: Conjugation
 
-    func level(of verb: String) -> Int { levels[verb] ?? 0 }
+    func level(of verb: String, tense: Tense) -> Int { tenseLevels[verb]?[tense.rawValue] ?? 0 }
 
-    func recordFirstAttempt(verb: String, correct: Bool) {
-        levels[verb] = Self.step(level(of: verb), correct: correct)
-        if !correct { lastMistakes.insert(verb) }
+    /// What a verb chip's ring shows: the average over the given tenses, rounded down.
+    func level(of verb: String, tenses: Set<Tense>) -> Int {
+        guard !tenses.isEmpty else { return 0 }
+        return tenses.map { level(of: verb, tense: $0) }.reduce(0, +) / tenses.count
+    }
+
+    func isRecentMistake(verb: String, tenses: Set<Tense>) -> Bool {
+        tenses.contains { lastMistakes.contains(Self.mistakeKey(verb, $0)) }
+    }
+
+    func recordFirstAttempt(verb: String, tense: Tense, correct: Bool) {
+        tenseLevels[verb, default: [:]][tense.rawValue] = Self.step(level(of: verb, tense: tense), correct: correct)
+        if !correct { lastMistakes.insert(Self.mistakeKey(verb, tense)) }
     }
 
     func resetLastMistakes() { lastMistakes = [] }
@@ -110,6 +131,8 @@ final class ProgressStore {
     }
 
     // MARK: Helpers
+
+    private static func mistakeKey(_ verb: String, _ tense: Tense) -> String { "\(verb)|\(tense.rawValue)" }
 
     private static func step(_ level: Int, correct: Bool) -> Int {
         correct ? min(maxLevel, level + 1) : max(0, level - 1)

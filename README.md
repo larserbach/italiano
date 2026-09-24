@@ -8,7 +8,8 @@ It has two exercises:
 - **Coniugazione**: type the conjugated form of a verb in one of 7 tenses (Presente,
   Passato prossimo, Imperfetto, Futuro, Condizionale, Congiuntivo, Imperativo). Prompts
   show the Italian infinitive, the German form, or a mix. Wrong answers come back in
-  repeat rounds, and each verb has a mastery ring (0–10). Weaker verbs come up more often.
+  repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
+  selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo.
 
 Tap a tense name to see how that tense is formed and used. Tap a verb to see what it means.

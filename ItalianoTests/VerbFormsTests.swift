@@ -54,8 +54,9 @@ final class LessonTests: XCTestCase {
 
         XCTAssertEqual(lesson.phase, .roundComplete)
         XCTAssertEqual(lesson.roundMissedCount, 5)
-        XCTAssertEqual(store.level(of: firstVerb), 0)
-        XCTAssertTrue(store.lastMistakes.contains("parlare"))
+        XCTAssertEqual(store.level(of: firstVerb, tense: .presente), 0)
+        XCTAssertTrue(store.isRecentMistake(verb: "parlare", tenses: [.presente]))
+        XCTAssertFalse(store.isRecentMistake(verb: "parlare", tenses: [.imperfetto]))
 
         lesson.startNextRound()
         XCTAssertEqual(lesson.round, 2)
@@ -72,7 +73,28 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(item.shown, .german)
         lesson.submit(item.answer.uppercased())
         XCTAssertEqual(lesson.feedback, .correct(item.answer))
-        XCTAssertEqual(store.level(of: "capire"), 1)
+        XCTAssertEqual(store.level(of: "capire", tense: .futuro), 1)
+        XCTAssertEqual(store.level(of: "capire", tense: .presente), 0)
+    }
+
+    func testChipLevelIsAverageRoundedDown() {
+        let store = ProgressStore(defaults: defaults)
+        for _ in 0..<5 { store.recordFirstAttempt(verb: "parlare", tense: .presente, correct: true) }
+        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente]), 5)
+        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), 2)
+
+        for _ in 0..<6 { store.recordFirstAttempt(verb: "parlare", tense: .imperfetto, correct: true) }
+        for _ in 0..<2 { store.recordFirstAttempt(verb: "parlare", tense: .presente, correct: false) }
+        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), 4) // 3 and 6
+    }
+
+    func testLegacyVerbLevelsMoveToPresente() throws {
+        defaults.set(try JSONEncoder().encode(["parlare": 7]), forKey: "coniugazione-levels")
+        let store = ProgressStore(defaults: defaults)
+        XCTAssertEqual(store.level(of: "parlare", tense: .presente), 7)
+        XCTAssertEqual(store.level(of: "parlare", tense: .imperfetto), 0)
+        XCTAssertNil(defaults.data(forKey: "coniugazione-levels"))
+        XCTAssertEqual(ProgressStore(defaults: defaults).level(of: "parlare", tense: .presente), 7)
     }
 
     func testSettingsPersist() {

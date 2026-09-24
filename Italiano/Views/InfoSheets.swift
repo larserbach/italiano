@@ -25,6 +25,7 @@ extension View {
 
 struct VerbInfoView: View {
     let verb: Verb
+    @Environment(ProgressStore.self) private var store
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -37,10 +38,35 @@ struct VerbInfoView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.inkSoft)
                 .padding(.top, 8)
+            ControlLabel("Level je Zeit")
+                .padding(.top, 18)
+                .padding(.bottom, 4)
+            TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.map {
+                ($0, store.level(of: verb.infinitive, tense: $0))
+            }))
         }
         .padding(24)
         .screenBackground()
-        .presentationDetents([.height(190)])
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+/// One mastery ring per tense; tenses not practised yet are dimmed.
+struct TenseBreakdown: View {
+    let levels: [Tense: Int]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(Tense.allCases) { tense in
+                let level = levels[tense] ?? 0
+                HStack(spacing: 10) {
+                    VerbRing(level: level)
+                    Text(tense.label).font(.system(size: 14))
+                }
+                .opacity(level == 0 ? 0.5 : 1)
+            }
+        }
     }
 }
 
