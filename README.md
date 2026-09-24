@@ -16,10 +16,10 @@ Settings and progress are saved on the device.
 
 ## Run it on your iPhone
 
-You need a Mac with Xcode 16 or newer. A free Apple ID is enough.
+You need a Mac with Xcode 26 or newer and an iPhone on iOS 26 or newer. A free Apple ID is enough.
 
 1. Open `Italiano.xcodeproj` in Xcode.
-2. Select the **Italiano** target, go to **Signing & Capabilities**, and choose your Apple ID
+2. The development team is already set to your account. On another account, select the **Italiano** target, go to **Signing & Capabilities**, and choose your Apple ID
    under *Team* (*Add an Account…* if it isn't listed). If Xcode complains about the bundle
    identifier, change `com.larserbach.italiano` to something unique.
 3. Connect your iPhone by cable, choose it as the run destination at the top, and press ⌘R.
