@@ -79,6 +79,24 @@ struct Verb: Identifiable {
     var id: String { infinitive }
 
     func italian(_ tense: Tense, _ person: Int) -> String { italian[tense]?[person] ?? "" }
+
+    /// The spelling trap of this verb, if it has one, illustrated with its own forms.
+    var spellingNote: String? {
+        let tu = italian(.presente, 1), noi = italian(.presente, 3), futuro = italian(.futuro, 0)
+        if Conjugator.stressedIVerbs.contains(infinitive) {
+            return "Das i ist betont (io \(italian(.presente, 0))) und bleibt deshalb erhalten: tu \(tu), \(futuro), che loro \(italian(.congiuntivo, 5)). Nur bei noi verschmelzen die beiden i: \(noi)."
+        }
+        if infinitive.hasSuffix("ciare") || infinitive.hasSuffix("giare") {
+            return "Das i macht nur das \(infinitive.hasSuffix("ciare") ? "c" : "g") weich. Vor i und e fällt es weg: tu \(tu), noi \(noi), \(futuro), che loro \(italian(.congiuntivo, 5))."
+        }
+        if infinitive.hasSuffix("iare") {
+            return "Kein doppeltes i: tu \(tu), noi \(noi). Im Futuro bleibt das i: \(futuro)."
+        }
+        if infinitive.hasSuffix("care") || infinitive.hasSuffix("gare") {
+            return "Vor e und i steht ein h, damit der Laut hart bleibt: tu \(tu), \(futuro), che loro \(italian(.congiuntivo, 5))."
+        }
+        return nil
+    }
     func german(_ tense: Tense, _ person: Int) -> String { german[tense]?[person] ?? "" }
 
     init(seed: VerbSeed) {
@@ -121,6 +139,8 @@ enum Conjugator {
     static let seinPraesens = ["bin", "bist", "ist", "sind", "seid", "sind"]
     static let condizionaleEndings = ["ei", "esti", "ebbe", "emmo", "este", "ebbero"]
     static let wuerdeForms = ["würde", "würdest", "würde", "würden", "würdet", "würden"]
+    /// -iare verbs whose i is stressed (io scìo) and therefore kept before i and e.
+    static let stressedIVerbs: Set<String> = ["sciare", "inviare", "spiare", "avviare"]
 
     /// Spellings the stem + ending rule gets wrong (soft -gi-, -c(h)- before e/i).
     static let congiuntivoOverrides: [String: [String]] = [

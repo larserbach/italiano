@@ -7,9 +7,8 @@ extension TenseInfo {
             translation: "entspricht dem deutschen Präsens: „ich spreche“, „ich glaube“",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "Grundregel:", text: "Die Endung des Infinitivs (-are, -ere, -ire) fällt weg, an den Stamm treten personenbezogene Endungen."),
-                    .init(label: "Sonderfall -isc-:", text: "Eine Gruppe von -ire-Verben (z. B. capire) schiebt vor den Endungen der Singularformen und der 3. Pl. zusätzlich -isc- ein."),
-                    .init(label: "Merken:", text: "Welche -ire-Verben das tun, folgt keiner Regel — das ist reiner Auswendiglern-Stoff."),
+                    .init(label: "Grundregel:", text: "Die Infinitiv-Endung (-are, -ere, -ire) fällt weg, an den Stamm tritt die Personalendung: parl-o, cred-o, dorm-o."),
+                    .init(label: "Sonderfall -isc-:", text: "Einige -ire-Verben (capire, finire, preferire, pulire) schieben bei io, tu, lui/lei und loro ein -isc- ein: capisco, capiscono — aber capiamo, capite. Welche Verben das tun, folgt keiner Regel, das muss man lernen."),
                 ])),
                 .init(heading: "Endungen", content: .table(columns: ["-are", "-ere", "-ire", "-ire (isc)"], rows: [
                     ["io", "-o", "-o", "-o", "-isco"],
@@ -19,17 +18,20 @@ extension TenseInfo {
                     ["voi", "-ate", "-ete", "-ite", "-ite"],
                     ["loro", "-ano", "-ono", "-ono", "-iscono"],
                 ])),
-                .init(heading: "Verwendung", content: .paragraph("Wie im Deutschen für aktuelle Handlungen, allgemeine Wahrheiten und Gewohnheiten. Anders als im Deutschen steht es im Italienischen oft auch für nahe Zukunft: „Domani parlo con lui“ = „Morgen spreche ich mit ihm.“")),
+                .init(heading: "Schreibung beachten", content: .list([
+                    .init(label: "-iare (viaggiare, passeggiare):", text: "Das i des Stamms ist nur ein Lesezeichen für das weiche g. Beginnt die Endung selbst mit i, gibt es kein doppeltes i: tu viaggi (nicht viaggii), noi viaggiamo, tu passeggi."),
+                    .init(label: "sciare:", text: "Hier ist das i betont (io scìo) und bleibt deshalb erhalten: tu scii. Nur bei noi verschmelzen die beiden i: sciamo."),
+                    .init(label: "-care (mancare):", text: "Vor i wird ein h eingefügt, damit das c hart bleibt: tu manchi, noi manchiamo."),
+                ])),
+                .init(heading: "Verwendung", content: .paragraph("Wie im Deutschen für aktuelle Handlungen, allgemeine Wahrheiten und Gewohnheiten. Oft auch für die nahe Zukunft: „Domani parlo con lui“ = „Morgen spreche ich mit ihm.“")),
             ]
         ),
         .passatoprossimo: TenseInfo(
             translation: "entspricht dem deutschen Perfekt: „ich habe gesprochen“, „ich bin abgereist“",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "Aufbau:", text: "Hilfsverb im Presente (avere oder essere) + Partizip Perfekt."),
-                    .init(label: "Partizip:", text: "Fast immer regelmäßig: -are → -ato, -ere → -uto, -ire → -ito (parlato, creduto, dormito, capito)."),
-                    .init(label: "Hilfsverb avere:", text: "Der Normalfall — fast alle Verben hier nutzen avere."),
-                    .init(label: "Hilfsverb essere:", text: "Nur Verben der Bewegung/Zustandsänderung wie partire. Dort passt sich das Partizip an das Subjekt an (partito/partita/partiti/partite) — hier vereinfacht immer männlich gezeigt."),
+                    .init(label: "Aufbau:", text: "Hilfsverb avere oder essere im Presente + Partizip Perfekt."),
+                    .init(label: "Partizip:", text: "Bei allen Verben hier regelmäßig: -are → -ato, -ere → -uto, -ire → -ito (parlato, creduto, dormito, capito). Auch viaggiare → viaggiato, sciare → sciato, mancare → mancato."),
                 ])),
                 .init(heading: "Hilfsverb im Presente", content: .table(columns: ["avere", "essere"], rows: [
                     ["io", "ho", "sono"],
@@ -39,25 +41,31 @@ extension TenseInfo {
                     ["voi", "avete", "siete"],
                     ["loro", "hanno", "sono"],
                 ])),
+                .init(heading: "avere oder essere?", content: .list([
+                    .init(label: "avere:", text: "Der Normalfall, vor allem wenn ein direktes Objekt folgen kann („Ho visto Marco“). Auch Bewegungsverben, die nur die Art der Bewegung beschreiben: camminare, viaggiare, passeggiare, nuotare, sciare, ballare."),
+                    .init(label: "essere:", text: "Bewegung zu einem Ziel oder weg davon (arrivare, entrare, partire, tornare), Bleiben und Werden (restare, diventare) sowie sembrare, durare, mancare, bastare."),
+                    .init(label: "Deutsch als Falle:", text: "Die Hilfsverben stimmen oft nicht überein: „ich bin gereist“ = ho viaggiato, „ich bin geschwommen“ = ho nuotato, aber „es hat gedauert“ = è durato, „es hat gefehlt“ = è mancato."),
+                    .init(label: "Angleichung bei essere:", text: "Das Partizip richtet sich nach dem Subjekt: Marco è arrivato, Anna è arrivata, siamo arrivati, loro sono arrivate. In der App wird immer die männliche Form abgefragt."),
+                ])),
                 .init(heading: "Verwendung", content: .list([
-                    .init(label: "Grundfrage:", text: "Beantwortet „Was ist passiert?“ — ein einzelnes, abgeschlossenes Ereignis."),
+                    .init(label: "Grundfrage:", text: "„Was ist passiert?“ — ein einzelnes, abgeschlossenes Ereignis."),
                     .init(label: "Abgeschlossene Handlung:", text: "„Ho visto Marco in città.“ = „Ich habe Marco in der Stadt gesehen.“"),
                     .init(label: "Handlungsketten:", text: "„Prima sono andata a fare la spesa, poi ho cucinato.“ = „Zuerst bin ich einkaufen gegangen, dann habe ich gekocht.“"),
-                    .init(label: "Signalwörter:", text: "tutto il giorno, all'improvviso, appena, da … a"),
+                    .init(label: "Signalwörter:", text: "ieri, la settimana scorsa, all'improvviso, appena, tutto il giorno, da … a"),
                 ])),
                 .init(heading: "Passato prossimo vs. Imperfetto", content: .list([
-                    .init(label: "Im selben Satz:", text: "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im passato prossimo, der Hintergrund dazu im imperfetto."),
+                    .init(label: "Im selben Satz:", text: "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im Passato prossimo, der Hintergrund im Imperfetto."),
                     .init(label: "Bedeutung kann kippen:", text: "„Ho conosciuto“ = ich habe kennengelernt, aber „conoscevo“ = ich kannte; „ho avuto paura“ = ich bekam Angst, aber „avevo paura“ = ich hatte Angst."),
                 ])),
             ]
         ),
         .imperfetto: TenseInfo(
-            translation: "entspricht dem deutschen Präteritum bei Beschreibungen/Gewohnheiten: „ich sprach“, „ich sprach gerade“",
+            translation: "entspricht dem deutschen Präteritum bei Beschreibungen und Gewohnheiten: „ich sprach“, „ich sprach gerade“",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "Stamm:", text: "Die Infinitiv-Endung -re fällt komplett weg (parlare → parla-, credere → crede-, dormire → dormi-), der Themavokal (a/e/i) bleibt also erhalten."),
-                    .init(label: "Endungen:", text: "Für alle drei Gruppen identisch — der einzige Unterschied ist der Stammvokal (a / e / i)."),
-                    .init(label: "Keine Ausnahme bei -isc-:", text: "capire bildet das Imperfetto ganz normal (capivo, nicht capiscevo)."),
+                    .init(label: "Stamm:", text: "Nur -re fällt weg, der Themavokal bleibt: parla-, crede-, dormi-."),
+                    .init(label: "Endungen:", text: "Für alle Gruppen gleich — nur der Themavokal (a / e / i) unterscheidet sie."),
+                    .init(label: "Kaum Ausnahmen:", text: "capire bildet ganz normal capivo (kein -isc-). Da der Themavokal erhalten bleibt, gibt es auch keine Schreibfallen: mancavo, viaggiavo, passeggiavo, sciavo — kein h, und das i bleibt überall stehen."),
                 ])),
                 .init(heading: "Endungen (alle Gruppen gleich)", content: .table(columns: ["Endung"], rows: [
                     ["io", "-vo"],
@@ -68,13 +76,13 @@ extension TenseInfo {
                     ["loro", "-vano"],
                 ])),
                 .init(heading: "Verwendung", content: .list([
-                    .init(label: "Grundfrage:", text: "Beantwortet „Wie war die Situation?“ / „Wie war es normalerweise?“."),
+                    .init(label: "Grundfrage:", text: "„Wie war die Situation?“ oder „Wie war es normalerweise?“"),
                     .init(label: "Hintergrund:", text: "„Faceva molto freddo.“ = „Es war sehr kalt.“"),
                     .init(label: "Gewohnheit:", text: "„Da bambino giocavo sempre con il mio cane.“ = „Als Kind habe ich immer mit meinem Hund gespielt.“"),
-                    .init(label: "Signalwörter:", text: "sempre, normalmente, mentre"),
+                    .init(label: "Signalwörter:", text: "sempre, di solito, ogni giorno, mentre, da bambino"),
                 ])),
                 .init(heading: "Passato prossimo vs. Imperfetto", content: .list([
-                    .init(label: "Im selben Satz:", text: "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im passato prossimo, der Hintergrund dazu im imperfetto."),
+                    .init(label: "Im selben Satz:", text: "„Quando ho visto Maria, splendeva il sole.“ = „Als ich Maria sah, schien die Sonne.“ — die abgeschlossene Handlung steht im Passato prossimo, der Hintergrund im Imperfetto."),
                     .init(label: "Bedeutung kann kippen:", text: "„Ho conosciuto“ = ich habe kennengelernt, aber „conoscevo“ = ich kannte; „ho avuto paura“ = ich bekam Angst, aber „avevo paura“ = ich hatte Angst."),
                 ])),
             ]
@@ -83,9 +91,9 @@ extension TenseInfo {
             translation: "entspricht dem deutschen Futur I: „ich werde sprechen“",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "-are-Verben:", text: "Das -a- der Endung wird zu -e- (parlare → parler-)."),
-                    .init(label: "-ere-/-ire-Verben:", text: "Nur das finale -e des Infinitivs fällt weg (credere → creder-, dormire → dormir-)."),
-                    .init(label: "Endungen:", text: "Für alle Gruppen identisch. Auch capire verhält sich regelmäßig (capirò)."),
+                    .init(label: "-are:", text: "Das a der Endung wird zu e: parlare → parler-ò."),
+                    .init(label: "-ere / -ire:", text: "Nur das letzte e fällt weg: credere → creder-ò, dormire → dormir-ò. Auch capire ist regelmäßig: capirò."),
+                    .init(label: "Endungen:", text: "Für alle Gruppen gleich, mit Betonung auf der Endung (parlerò, parlerà)."),
                 ])),
                 .init(heading: "Endungen (alle Gruppen gleich)", content: .table(columns: ["Endung"], rows: [
                     ["io", "-ò"],
@@ -95,15 +103,20 @@ extension TenseInfo {
                     ["voi", "-ete"],
                     ["loro", "-anno"],
                 ])),
-                .init(heading: "Verwendung", content: .paragraph("Für zukünftige Handlungen, ähnlich dem deutschen Futur I. Im Alltagsitalienisch wird für die nahe Zukunft aber oft auch einfach das Presente verwendet.")),
+                .init(heading: "Schreibung beachten", content: .list([
+                    .init(label: "-ciare / -giare:", text: "Das i fällt weg, weil das e das g schon weich macht: viaggiare → viaggerò, passeggiare → passeggerò (nicht viaggierò)."),
+                    .init(label: "sciare:", text: "Das betonte i bleibt: scierò, scierai."),
+                    .init(label: "-care:", text: "Vor e kommt ein h, damit das c hart bleibt: mancare → mancherò."),
+                ])),
+                .init(heading: "Verwendung", content: .paragraph("Für zukünftige Handlungen wie das deutsche Futur I, außerdem für Vermutungen: „Sarà vero“ = „Das wird wohl stimmen.“ Für die nahe Zukunft reicht im Alltag oft das Presente.")),
             ]
         ),
         .condizionale: TenseInfo(
             translation: "entspricht dem deutschen Konjunktiv II mit würde: „ich würde sprechen“",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "Stamm:", text: "Derselbe wie beim Futuro semplice (z. B. parler-, creder-, dormir-)."),
-                    .init(label: "Endungen:", text: "Eigene Endungen, für alle drei Verbgruppen identisch."),
+                    .init(label: "Stamm:", text: "Genau derselbe wie im Futuro semplice (parler-, creder-, dormir-) — mit allen Schreibbesonderheiten von dort: viaggerei, passeggerei, scierei, mancherei."),
+                    .init(label: "Endungen:", text: "Eigene Endungen, für alle Gruppen gleich."),
                 ])),
                 .init(heading: "Endungen (alle Gruppen gleich)", content: .table(columns: ["Endung"], rows: [
                     ["io", "-ei"],
@@ -113,15 +126,16 @@ extension TenseInfo {
                     ["voi", "-este"],
                     ["loro", "-ebbero"],
                 ])),
-                .init(heading: "Verwendung", content: .paragraph("Für höfliche Bitten, Wünsche und hypothetische Aussagen — wie das deutsche „würde“ + Infinitiv oder Konjunktiv II: „Vorrei un caffè“ = „Ich hätte gern einen Kaffee“, „Parlerei con lui“ = „Ich würde mit ihm sprechen“.")),
+                .init(heading: "Verwendung", content: .paragraph("Für höfliche Bitten, Wünsche und hypothetische Aussagen, wie das deutsche „würde“ + Infinitiv oder der Konjunktiv II: „Vorrei un caffè“ = „Ich hätte gern einen Kaffee“, „Parlerei con lui“ = „Ich würde mit ihm sprechen“.")),
             ]
         ),
         .congiuntivo: TenseInfo(
-            translation: "hat keine direkte deutsche Entsprechung — im dass-Satz steht im Deutschen meist ganz normal der Indikativ",
+            translation: "hat keine direkte deutsche Entsprechung — im dass-Satz steht im Deutschen meist der normale Indikativ",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "Auslöser:", text: "Steht fast immer nach che in einem Nebensatz, ausgelöst durch Verben/Ausdrücke des Wunsches, Zweifels, der Meinung oder Emotion im Hauptsatz (z. B. „Voglio che…“, „Penso che…“, „È possibile che…“)."),
-                    .init(label: "Achtung:", text: "io, tu und lui/lei haben exakt dieselbe Form — deshalb wird das Subjekt-Pronomen im Congiuntivo öfter ausgesprochen als sonst im Italienischen üblich, um Verwechslungen zu vermeiden."),
+                    .init(label: "Auslöser:", text: "Steht fast immer nach che im Nebensatz, wenn der Hauptsatz Wunsch, Zweifel, Meinung oder Gefühl ausdrückt: „Voglio che…“, „Penso che…“, „È possibile che…“."),
+                    .init(label: "Vertauschte Vokale:", text: "-are-Verben bekommen i-Endungen (parli), -ere/-ire-Verben a-Endungen (creda, dorma) — also umgekehrt wie im Presente."),
+                    .init(label: "Achtung:", text: "io, tu und lui/lei haben dieselbe Form. Deshalb wird das Subjekt-Pronomen hier öfter ausgesprochen: „Penso che tu parli bene.“"),
                 ])),
                 .init(heading: "Endungen", content: .table(columns: ["-are", "-ere", "-ire", "-ire (isc)"], rows: [
                     ["io", "-i", "-a", "-a", "-isca"],
@@ -131,19 +145,24 @@ extension TenseInfo {
                     ["voi", "-iate", "-iate", "-iate", "-iate"],
                     ["loro", "-ino", "-ano", "-ano", "-iscano"],
                 ])),
-                .init(heading: "Verwendung", content: .paragraph("Beispiel: „Penso che lei parli bene italiano“ = „Ich denke, dass sie gut Italienisch spricht“ — im Deutschen bleibt der dass-Satz hier im normalen Indikativ, nur im Italienischen wechselt das Verb in den Congiuntivo.")),
+                .init(heading: "Schreibung beachten", content: .list([
+                    .init(label: "-iare (viaggiare, passeggiare):", text: "Kein doppeltes i: che io viaggi (nicht viaggii), che loro viaggino, che noi passeggiamo."),
+                    .init(label: "sciare:", text: "Das betonte i bleibt: che io scii, che loro sciino — aber noi sciamo, voi sciate."),
+                    .init(label: "-care:", text: "h vor i: che io manchi, che loro manchino."),
+                ])),
+                .init(heading: "Verwendung", content: .paragraph("„Penso che lei parli bene italiano“ = „Ich denke, dass sie gut Italienisch spricht.“ Im Deutschen bleibt der dass-Satz im normalen Indikativ, im Italienischen wechselt das Verb in den Congiuntivo.")),
             ]
         ),
         .imperativo: TenseInfo(
-            translation: "die Befehlsform — eine ich-Form gibt es dafür nicht",
+            translation: "die Befehlsform — eine ich-Form gibt es nicht",
             sections: [
                 .init(heading: "Bildung", content: .list([
-                    .init(label: "tu bei -are:", text: "Eigene Form (parla!), anders als im Presente (parli)."),
-                    .init(label: "tu bei -ere/-ire:", text: "Einfach die Presente-Form von tu (credi!, dormi!, capisci!)."),
-                    .init(label: "Lei (lui/lei) und Loro (formell):", text: "Leihen sich ihre Form komplett vom Congiuntivo presente."),
-                    .init(label: "noi und voi:", text: "Entsprechen genau dem Presente indicativo."),
+                    .init(label: "tu bei -are:", text: "Endung -a, also anders als im Presente: parla!, viaggia!, scia!, manca!"),
+                    .init(label: "tu bei -ere / -ire:", text: "Gleich der Presente-Form von tu: credi!, dormi!, capisci!"),
+                    .init(label: "Lei und Loro (höflich):", text: "In der App unter lui/lei und loro. Die Form kommt aus dem Congiuntivo — mit dessen Schreibregeln: parli!, viaggi!, scii!, manchi! bzw. parlino!, viaggino!"),
+                    .init(label: "noi und voi:", text: "Genau wie im Presente: parliamo!, parlate!"),
                 ])),
-                .init(heading: "Verwendung", content: .paragraph("Für direkte Aufforderungen und Befehle: „Parla!“ = „Sprich!“, „Parli!“ = „Sprechen Sie!“ (höflich). Eine Verneinung wird bei tu nicht mit non + Imperativ gebildet, sondern mit non + Infinitiv: „Non parlare!“ = „Sprich nicht!“ — bei allen anderen Formen reicht einfaches non davor.")),
+                .init(heading: "Verwendung", content: .paragraph("Für direkte Aufforderungen: „Parla!“ = „Sprich!“, „Parli!“ = „Sprechen Sie!“. Verneinung bei tu mit non + Infinitiv: „Non parlare!“ = „Sprich nicht!“. Bei allen anderen Formen reicht non davor: „Non parli!“")),
             ]
         ),
     ]

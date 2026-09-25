@@ -12,7 +12,7 @@ It has two exercises:
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo.
 
-Tap a tense name to see how that tense is formed and used. Tap a verb to see what it means.
+Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means and its own spelling notes.
 Settings and progress are saved on the device.
 
 ## Run it on your iPhone

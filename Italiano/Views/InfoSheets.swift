@@ -29,23 +29,32 @@ struct VerbInfoView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            SheetTitle(title: verb.infinitive) { dismiss() }
-            Text("bedeutet auf Deutsch: „\(verb.meaning)“")
-                .font(.system(size: 15))
-                .foregroundStyle(Theme.inkSoft)
-            Text("\(verb.group.rawValue) · Passato prossimo mit \(verb.auxiliary.rawValue): \(verb.italian(.passatoprossimo, 0))")
-                .font(.system(size: 14))
-                .foregroundStyle(Theme.inkSoft)
-                .padding(.top, 8)
-            ControlLabel("Level je Zeit")
-                .padding(.top, 18)
-                .padding(.bottom, 4)
-            TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.map {
-                ($0, store.level(of: verb.infinitive, tense: $0))
-            }))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 6) {
+                SheetTitle(title: verb.infinitive) { dismiss() }
+                Text("bedeutet auf Deutsch: „\(verb.meaning)“")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.inkSoft)
+                Text("\(verb.group.rawValue) · Passato prossimo mit \(verb.auxiliary.rawValue): \(verb.italian(.passatoprossimo, 0))")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.inkSoft)
+                    .padding(.top, 8)
+                if let note = verb.spellingNote {
+                    ControlLabel("Schreibung beachten")
+                        .padding(.top, 14)
+                    Text(note)
+                        .font(.system(size: 14))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                ControlLabel("Level je Zeit")
+                    .padding(.top, 18)
+                    .padding(.bottom, 4)
+                TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.map {
+                    ($0, store.level(of: verb.infinitive, tense: $0))
+                }))
+            }
+            .padding(24)
         }
-        .padding(24)
         .screenBackground()
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)

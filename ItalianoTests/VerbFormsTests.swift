@@ -25,6 +25,16 @@ final class VerbFormsTests: XCTestCase {
         XCTAssertFalse(pool.contains { $0.tense == .imperativo && $0.person == 0 })
     }
 
+    func testSpellingNotesCoverSpecialVerbs() {
+        XCTAssertEqual(VerbLibrary.verb("viaggiare").spellingNote,
+                       "Das i macht nur das g weich. Vor i und e fällt es weg: tu viaggi, noi viaggiamo, viaggerò, che loro viaggino.")
+        XCTAssertTrue(VerbLibrary.verb("sciare").spellingNote?.contains("tu scii, scierò, che loro sciino") == true)
+        XCTAssertTrue(VerbLibrary.verb("mancare").spellingNote?.contains("tu manchi, mancherò") == true)
+        XCTAssertNil(VerbLibrary.verb("parlare").spellingNote)
+        let withNotes = VerbLibrary.orderedKeys.filter { VerbLibrary.verb($0).spellingNote != nil }
+        XCTAssertEqual(Set(withNotes), ["viaggiare", "passeggiare", "sciare", "mancare"])
+    }
+
     func testNormalizeIgnoresCaseAndSpacing() {
         XCTAssertEqual(normalize("  Ho   PARLATO "), "ho parlato")
     }
