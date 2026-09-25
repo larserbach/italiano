@@ -45,7 +45,9 @@ extension TenseInfo {
                     .init(label: "avere:", text: "Der Normalfall, vor allem wenn ein direktes Objekt folgen kann („Ho visto Marco“). Auch Bewegungsverben, die nur die Art der Bewegung beschreiben: camminare, viaggiare, passeggiare, nuotare, sciare, ballare."),
                     .init(label: "essere:", text: "Bewegung zu einem Ziel oder weg davon (arrivare, entrare, partire, tornare), Bleiben und Werden (restare, diventare) sowie sembrare, durare, mancare, bastare."),
                     .init(label: "Deutsch als Falle:", text: "Die Hilfsverben stimmen oft nicht überein: „ich bin gereist“ = ho viaggiato, „ich bin geschwommen“ = ho nuotato, aber „es hat gedauert“ = è durato, „es hat gefehlt“ = è mancato."),
-                    .init(label: "Angleichung bei essere:", text: "Das Partizip richtet sich nach dem Subjekt: Marco è arrivato, Anna è arrivata, siamo arrivati, loro sono arrivate. In der App wird immer die männliche Form abgefragt."),
+                    .init(label: "Angleichung bei essere:", text: "Das Partizip richtet sich wie ein Adjektiv nach dem Subjekt: -o / -a im Singular, -i / -e im Plural. Marco è arrivato, Anna è arrivata, siamo arrivati (Männer oder gemischt), siamo arrivate (nur Frauen)."),
+                    .init(label: "In der App:", text: "Wo es darauf ankommt, steht neben dem Pronomen ein kursives m oder f (bei noi, voi, loro heißt m: Männer oder gemischte Gruppe). Statt lui/lei steht dann direkt lui oder lei."),
+                    .init(label: "Bei avere:", text: "Keine Angleichung an das Subjekt: Anna ha parlato, le ragazze hanno ballato."),
                 ])),
                 .init(heading: "Verwendung", content: .list([
                     .init(label: "Grundfrage:", text: "„Was ist passiert?“ — ein einzelnes, abgeschlossenes Ereignis."),

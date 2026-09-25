@@ -36,9 +36,35 @@ enum GermanAuxiliary: String {
     case haben, sein
 }
 
+/// The subject's gender, for the few forms that agree with it. Masculine also stands
+/// for mixed groups in the plural.
+enum Gender: String, CaseIterable, Codable {
+    case masculine, feminine
+
+    var marker: String { self == .masculine ? "m" : "f" }
+    var spokenName: String { self == .masculine ? "männlich" : "weiblich" }
+}
+
 enum Pronoun {
     static let italian = ["io", "tu", "lui/lei", "noi", "voi", "loro"]
     static let german = ["ich", "du", "er/sie", "wir", "ihr", "sie"]
+
+    /// With a known gender, the 3rd person singular becomes lui or lei.
+    static func italian(_ person: Int, gender: Gender?) -> String {
+        guard person == 2, let gender else { return italian[person] }
+        return gender == .masculine ? "lui" : "lei"
+    }
+
+    static func german(_ person: Int, gender: Gender?) -> String {
+        guard person == 2, let gender else { return german[person] }
+        return gender == .masculine ? "er" : "sie"
+    }
+
+    /// The m/f hint shown next to a pronoun. lui and lei already say it themselves.
+    static func marker(_ person: Int, gender: Gender?) -> String? {
+        guard let gender, person != 2 else { return nil }
+        return gender.marker
+    }
 }
 
 /// The hand-maintained part of a verb; everything else is derived in `Verb.init`.
@@ -79,6 +105,14 @@ struct Verb: Identifiable {
     var id: String { infinitive }
 
     func italian(_ tense: Tense, _ person: Int) -> String { italian[tense]?[person] ?? "" }
+
+    /// Only the Passato prossimo with essere agrees with the subject: sono arrivato / arrivata.
+    func isGendered(_ tense: Tense) -> Bool { tense == .passatoprossimo && auxiliary == .essere }
+
+    func italian(_ tense: Tense, _ person: Int, gender: Gender?) -> String {
+        guard let gender, isGendered(tense) else { return italian(tense, person) }
+        return Conjugator.passatoProssimo(participle: participle, auxiliary: auxiliary, gender: gender)[person]
+    }
 
     /// The spelling trap of this verb, if it has one, illustrated with its own forms.
     var spellingNote: String? {
@@ -154,12 +188,14 @@ enum Conjugator {
         (auxiliary == .essere ? esserePresente : averePresente)[person]
     }
 
-    static func passatoProssimo(participle: String, auxiliary: Auxiliary) -> [String] {
+    static func passatoProssimo(participle: String, auxiliary: Auxiliary, gender: Gender = .masculine) -> [String] {
         let forms = auxiliary == .essere ? esserePresente : averePresente
         guard auxiliary == .essere else { return forms.map { "\($0) \(participle)" } }
-        // With essere the participle agrees with the subject (shown masculine here).
-        let plural = String(participle.dropLast()) + "i"
-        let participles = [participle, participle, participle, plural, plural, plural]
+        // With essere the participle agrees with the subject: arrivato/arrivata, arrivati/arrivate.
+        let stem = String(participle.dropLast())
+        let singular = stem + (gender == .masculine ? "o" : "a")
+        let plural = stem + (gender == .masculine ? "i" : "e")
+        let participles = [singular, singular, singular, plural, plural, plural]
         return zip(forms, participles).map { "\($0) \($1)" }
     }
 

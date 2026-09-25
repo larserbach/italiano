@@ -11,6 +11,9 @@ struct AuxItem: Hashable {
     var correctForm: String { Conjugator.auxiliaryForm(correctAuxiliary, person: person) }
     /// essere always on top, avere always below.
     var options: [String] { [Conjugator.esserePresente[person], Conjugator.averePresente[person]] }
+    /// The complete form, e.g. "siamo arrivati". The prompt only shows the dictionary form of the
+    /// participle, since an agreeing ending (arrivati, arrivata) would give essere away.
+    var fullForm: String { VerbLibrary.verb(verb).italian(.passatoprossimo, person) }
 }
 
 @Observable
@@ -76,7 +79,7 @@ final class AuxQuiz {
             var retry = item
             retry.firstAttempt = false
             roundMissed.append(retry)
-            let answer = "\(item.correctForm) \(VerbLibrary.verb(item.verb).participle)"
+            let answer = item.fullForm
             let label = "\(Pronoun.italian[item.person]) · \(item.verb)"
             missed[item.key, default: MissedForm(id: item.key, label: label, answer: answer, misses: 0)].misses += 1
         }

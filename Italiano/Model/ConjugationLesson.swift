@@ -8,10 +8,20 @@ struct ConjugationItem: Hashable {
     let tense: Tense
     let person: Int
     var shown: Side = .italian
+    /// Set only when the answer depends on the subject's gender.
+    var gender: Gender?
     var firstAttempt = true
 
-    var key: String { "\(verb)|\(tense.rawValue)|\(person)" }
-    var answer: String { VerbLibrary.verb(verb).italian(tense, person) }
+    var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
+    var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
+    var pronoun: String { Pronoun.italian(person, gender: gender) }
+    var marker: String? { Pronoun.marker(person, gender: gender) }
+
+    /// The same form for the other gender, to recognise answers that only miss the agreement.
+    var otherGenderAnswer: String? {
+        guard let gender else { return nil }
+        return VerbLibrary.verb(verb).italian(tense, person, gender: gender == .masculine ? .feminine : .masculine)
+    }
 }
 
 struct MissedForm: Identifiable {
@@ -31,6 +41,8 @@ final class ConjugationLesson {
         case none
         case correct(String)
         case wrong(String)
+        /// Right verb form, but for the other gender.
+        case wrongGender(String)
         case revealed(String)
     }
 
@@ -54,7 +66,7 @@ final class ConjugationLesson {
     /// After a wrong answer or a reveal the card stays until the learner confirms.
     var isReviewing: Bool {
         switch feedback {
-        case .wrong, .revealed: true
+        case .wrong, .wrongGender, .revealed: true
         default: false
         }
     }
@@ -89,6 +101,7 @@ final class ConjugationLesson {
         let chosen = weightedSample(pool, count: count).shuffled().map { item -> ConjugationItem in
             var item = item
             item.shown = pickSide(settings.direction)
+            if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
             return item
         }
         queue = chosen
@@ -119,7 +132,8 @@ final class ConjugationLesson {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.nextCard() }
         } else {
             recordMiss(item)
-            feedback = .wrong(item.answer)
+            let genderSlip = item.otherGenderAnswer.map { normalize($0) == normalize(guess) } ?? false
+            feedback = genderSlip ? .wrongGender(item.answer) : .wrong(item.answer)
             busy = false
         }
     }
@@ -161,7 +175,8 @@ final class ConjugationLesson {
         var retry = item
         retry.firstAttempt = false
         roundMissed.append(retry)
-        let label = "\(Pronoun.italian[item.person]) · \(item.verb) · \(item.tense.label)"
+        let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
+        let label = "\(pronoun) · \(item.verb) · \(item.tense.label)"
         missed[item.key, default: MissedForm(id: item.key, label: label, answer: item.answer, misses: 0)].misses += 1
     }
 

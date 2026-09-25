@@ -35,6 +35,29 @@ final class VerbFormsTests: XCTestCase {
         XCTAssertEqual(Set(withNotes), ["viaggiare", "passeggiare", "sciare", "mancare"])
     }
 
+    func testEssereParticipleAgreesWithGender() {
+        let arrivare = VerbLibrary.verb("arrivare")
+        XCTAssertEqual((0..<6).map { arrivare.italian(.passatoprossimo, $0, gender: .feminine) },
+                       ["sono arrivata", "sei arrivata", "è arrivata", "siamo arrivate", "siete arrivate", "sono arrivate"])
+        XCTAssertEqual(arrivare.italian(.passatoprossimo, 3, gender: .masculine), "siamo arrivati")
+        XCTAssertEqual(VerbLibrary.verb("parlare").italian(.passatoprossimo, 2, gender: .feminine), "ha parlato")
+        XCTAssertEqual(arrivare.italian(.presente, 0, gender: .feminine), "arrivo")
+
+        let gendered = VerbLibrary.orderedKeys.filter { VerbLibrary.verb($0).isGendered(.passatoprossimo) }
+        XCTAssertEqual(Set(gendered), ["arrivare", "diventare", "durare", "entrare", "mancare", "restare",
+                                       "sembrare", "tornare", "bastare", "partire"])
+        XCTAssertFalse(Tense.allCases.filter { $0 != .passatoprossimo }.contains { arrivare.isGendered($0) })
+    }
+
+    func testPronounShowsGender() {
+        XCTAssertEqual(Pronoun.italian(2, gender: .feminine), "lei")
+        XCTAssertEqual(Pronoun.german(2, gender: .masculine), "er")
+        XCTAssertNil(Pronoun.marker(2, gender: .feminine))
+        XCTAssertEqual(Pronoun.marker(0, gender: .feminine), "f")
+        XCTAssertNil(Pronoun.marker(0, gender: nil))
+        XCTAssertEqual(Pronoun.italian(2, gender: nil), "lui/lei")
+    }
+
     func testNormalizeIgnoresCaseAndSpacing() {
         XCTAssertEqual(normalize("  Ho   PARLATO "), "ho parlato")
     }
@@ -105,6 +128,51 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(store.level(of: "parlare", tense: .imperfetto), 0)
         XCTAssertNil(defaults.data(forKey: "coniugazione-levels"))
         XCTAssertEqual(ProgressStore(defaults: defaults).level(of: "parlare", tense: .presente), 7)
+    }
+
+    func testGenderIsSetOnlyWhereItMatters() {
+        let store = ProgressStore(defaults: defaults)
+        store.conjugation.verbs = ["arrivare", "parlare"]
+        store.conjugation.tenses = [.passatoprossimo, .presente]
+        store.conjugation.length = .count(20)
+        let lesson = ConjugationLesson(store: store)
+        var seen: [ConjugationItem] = []
+        while let item = lesson.current, lesson.phase == .question {
+            seen.append(item)
+            lesson.reveal(); lesson.submit("")
+        }
+        XCTAssertEqual(seen.count, 20)
+        for item in seen {
+            let expectsGender = item.verb == "arrivare" && item.tense == .passatoprossimo
+            XCTAssertEqual(item.gender != nil, expectsGender, "\(item.key)")
+        }
+    }
+
+    func testOtherGenderAnswerGetsSpecificFeedback() throws {
+        let store = ProgressStore(defaults: defaults)
+        store.conjugation.verbs = ["tornare"]
+        store.conjugation.tenses = [.passatoprossimo]
+        let lesson = ConjugationLesson(store: store)
+        let item = try XCTUnwrap(lesson.current)
+        let other = try XCTUnwrap(item.otherGenderAnswer)
+        XCTAssertNotEqual(other, item.answer)
+        lesson.submit(other)
+        XCTAssertEqual(lesson.feedback, .wrongGender(item.answer))
+        XCTAssertTrue(lesson.isReviewing)
+    }
+
+    func testAuxQuizRecordsAgreedForm() {
+        let store = ProgressStore(defaults: defaults)
+        store.aux.verbs = ["arrivare"]
+        store.aux.length = .all
+        let quiz = AuxQuiz(store: store)
+        while let item = quiz.current, quiz.phase == .question {
+            quiz.choose(Conjugator.averePresente[item.person])
+            quiz.next()
+        }
+        let answers = Set(quiz.missedForms.map(\.answer))
+        XCTAssertTrue(answers.contains("siamo arrivati"))
+        XCTAssertFalse(answers.contains("siamo arrivato"))
     }
 
     func testSettingsPersist() {

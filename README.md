@@ -10,6 +10,8 @@ It has two exercises:
   show the Italian infinitive, the German form, or a mix. Wrong answers come back in
   repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
+  Where the answer depends on the subject's gender (Passato prossimo with essere: sono arrivato /
+  arrivata), an italic *m* or *f* next to the pronoun says which form is wanted.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo.
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means and its own spelling notes.

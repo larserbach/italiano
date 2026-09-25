@@ -151,3 +151,26 @@ struct SummaryView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.line))
     }
 }
+
+/// The pronoun in front of the answer field. When the answer depends on the subject's
+/// gender, an italic m or f follows it (lui and lei show it through the pronoun itself).
+struct PronounLabel: View {
+    let pronoun: String
+    let gender: Gender?
+    let marker: String?
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(pronoun)
+                .font(Theme.display(17, weight: .regular))
+                .foregroundStyle(Theme.inkSoft)
+            if let marker {
+                Text(marker)
+                    .font(Theme.display(14, weight: .medium).italic())
+                    .foregroundStyle(Theme.gold)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(gender.map { "\(pronoun), \($0.spokenName)" } ?? pronoun)
+    }
+}
