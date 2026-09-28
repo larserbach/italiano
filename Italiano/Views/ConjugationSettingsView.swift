@@ -18,9 +18,17 @@ struct ConjugationSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Verben")
+                    Text("Ring = Level in den gewählten Zeiten · lange drücken für Details")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.inkSoft)
+                        .padding(.bottom, 4)
                     VerbPicker(selection: $store.conjugation.verbs,
-                               level: store.level(of:),
-                               isMistake: { store.lastMistakes.contains($0) })
+                               level: { store.level(of: $0, tenses: store.conjugation.tenses) },
+                               isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
+                               tenseLevels: { verb in
+                                   Dictionary(uniqueKeysWithValues: Tense.allCases.map { ($0, store.level(of: verb, tense: $0)) })
+                               },
+                               onDetails: { sheet = .verb($0) })
                 }
 
                 VStack(alignment: .leading, spacing: 7) {
@@ -77,6 +85,9 @@ struct VerbPicker: View {
     @Binding var selection: Set<String>
     let level: (String) -> Int
     var isMistake: (String) -> Bool = { _ in false }
+    /// When set, long-pressing a chip previews the verb's level in every tense.
+    var tenseLevels: ((String) -> [Tense: Int])? = nil
+    var onDetails: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -100,10 +111,39 @@ struct VerbPicker: View {
                             }
                             .buttonStyle(ChipStyle(active: selection.contains(verb),
                                                    accent: mistake ? Theme.brick : nil))
+                            .modifier(TenseLevelsMenu(verb: verb, levels: tenseLevels?(verb), onDetails: onDetails))
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+/// Long-press on a verb chip: previews the level per tense, with a link to the verb sheet.
+private struct TenseLevelsMenu: ViewModifier {
+    let verb: String
+    let levels: [Tense: Int]?
+    let onDetails: ((String) -> Void)?
+
+    func body(content: Content) -> some View {
+        if let levels {
+            content.contextMenu {
+                if let onDetails {
+                    Button("Verb-Details", systemImage: "info.circle") { onDetails(verb) }
+                }
+            } preview: {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(verb).font(Theme.display(20))
+                    TenseBreakdown(levels: levels)
+                }
+                .padding(18)
+                .frame(width: 300, alignment: .leading)
+                .background(Theme.paper)
+                .foregroundStyle(Theme.ink)
+            }
+        } else {
+            content
         }
     }
 }

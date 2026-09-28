@@ -56,9 +56,7 @@ struct ConjugationLessonView: View {
 
                     VStack(spacing: 8) {
                         HStack(spacing: 0) {
-                            Text(Pronoun.italian[item.person])
-                                .font(Theme.display(17, weight: .regular))
-                                .foregroundStyle(Theme.inkSoft)
+                            PronounLabel(pronoun: item.pronoun, gender: item.gender, marker: item.marker)
                                 .padding(.horizontal, 14)
                                 .frame(maxHeight: .infinity)
                                 .background(Theme.paperRaised)
@@ -101,7 +99,7 @@ struct ConjugationLessonView: View {
     private func prompt(item: ConjugationItem, verb: Verb) -> some View {
         switch item.shown {
         case .german:
-            (Text(Pronoun.german[item.person] + "  ").fontWeight(.regular).foregroundColor(Theme.inkSoft)
+            (Text(Pronoun.german(item.person, gender: item.gender) + "  ").fontWeight(.regular).foregroundColor(Theme.inkSoft)
              + Text(verb.german(item.tense, item.person)))
                 .font(Theme.display(30, weight: .semibold))
                 .multilineTextAlignment(.center)
@@ -128,6 +126,8 @@ struct ConjugationLessonView: View {
         case .none: Text(" ")
         case .correct(let answer): Text("Giusto! \(answer)").foregroundStyle(Theme.olive)
         case .wrong(let answer): Text("Fast — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
+        case .wrongGender(let answer):
+            Text("Fast — das Partizip passt sich an (\(genderHint)): \(answer)").foregroundStyle(Theme.brick)
         case .revealed(let answer): Text(answer)
         }
     }
@@ -135,7 +135,7 @@ struct ConjugationLessonView: View {
     private var fieldBackground: Color {
         switch lesson.feedback {
         case .correct: Theme.oliveBackground
-        case .wrong: Theme.brickBackground
+        case .wrong, .wrongGender: Theme.brickBackground
         default: Theme.paper
         }
     }
@@ -143,9 +143,14 @@ struct ConjugationLessonView: View {
     private var fieldBorder: Color {
         switch lesson.feedback {
         case .correct: Theme.olive
-        case .wrong: Theme.brick
+        case .wrong, .wrongGender: Theme.brick
         default: Theme.gold
         }
+    }
+
+    private var genderHint: String {
+        guard let item = lesson.current, let gender = item.gender else { return "" }
+        return item.marker == nil ? item.pronoun : gender.spokenName
     }
 
     private func submit() {

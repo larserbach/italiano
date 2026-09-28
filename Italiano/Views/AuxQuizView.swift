@@ -80,7 +80,9 @@ struct AuxQuizView: View {
 
                     Group {
                         if quiz.isAnswered && !quiz.answeredWrong {
-                            Text("Giusto!").foregroundStyle(Theme.olive)
+                            Text("Giusto! \(item.fullForm)").foregroundStyle(Theme.olive)
+                        } else if quiz.answeredWrong {
+                            Text("Richtig: \(item.fullForm)").foregroundStyle(Theme.brick)
                         } else {
                             Text(" ")
                         }
