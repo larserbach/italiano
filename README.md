@@ -12,6 +12,9 @@ It has two exercises:
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
   Where the answer depends on the subject's gender (Passato prossimo with essere: sono arrivato /
   arrivata), an italic *m* or *f* next to the pronoun says which form is wanted.
+- **Statistik** (chart button on the Coniugazione page): correct answers vs. mistakes per tense
+  over 3 or 14 days, 3, 6 or 12 months, or everything, broken down by verb type, with each tense's
+  most frequent mistakes. Only first attempts count.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo.
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means and its own spelling notes.

@@ -99,9 +99,9 @@ struct SummaryView: View {
             VStack(alignment: .leading, spacing: 26) {
                 ScreenHeader(title: title, lede: lede)
                 HStack(spacing: 10) {
-                    stat("\(total)", totalLabel)
-                    stat("\(firstTry)", "Auf Anhieb")
-                    stat("\(accuracy)%", "Trefferquote")
+                    StatTile(value: "\(total)", label: totalLabel)
+                    StatTile(value: "\(firstTry)", label: "Auf Anhieb")
+                    StatTile(value: "\(accuracy)%", label: "Trefferquote")
                 }
                 if !missed.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
@@ -140,7 +140,13 @@ struct SummaryView: View {
         }
     }
 
-    private func stat(_ value: String, _ label: String) -> some View {
+}
+
+struct StatTile: View {
+    let value: String
+    let label: String
+
+    var body: some View {
         VStack(spacing: 2) {
             Text(value).font(Theme.display(26))
             Text(label).font(.system(size: 12)).foregroundStyle(Theme.inkSoft)

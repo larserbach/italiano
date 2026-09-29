@@ -72,7 +72,7 @@ final class LessonTests: XCTestCase {
     }
 
     func testWrongAnswerIsRepeatedInNextRound() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.verbs = ["parlare"]
         store.conjugation.tenses = [.presente]
         store.conjugation.length = .count(5)
@@ -97,7 +97,7 @@ final class LessonTests: XCTestCase {
     }
 
     func testCorrectAnswerRaisesLevel() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.verbs = ["capire"]
         store.conjugation.tenses = [.futuro]
         store.conjugation.direction = .german
@@ -111,7 +111,7 @@ final class LessonTests: XCTestCase {
     }
 
     func testChipLevelIsAverageRoundedDown() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         for _ in 0..<5 { store.recordFirstAttempt(verb: "parlare", tense: .presente, correct: true) }
         XCTAssertEqual(store.level(of: "parlare", tenses: [.presente]), 5)
         XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), 2)
@@ -123,15 +123,15 @@ final class LessonTests: XCTestCase {
 
     func testLegacyVerbLevelsMoveToPresente() throws {
         defaults.set(try JSONEncoder().encode(["parlare": 7]), forKey: "coniugazione-levels")
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         XCTAssertEqual(store.level(of: "parlare", tense: .presente), 7)
         XCTAssertEqual(store.level(of: "parlare", tense: .imperfetto), 0)
         XCTAssertNil(defaults.data(forKey: "coniugazione-levels"))
-        XCTAssertEqual(ProgressStore(defaults: defaults).level(of: "parlare", tense: .presente), 7)
+        XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).level(of: "parlare", tense: .presente), 7)
     }
 
     func testGenderIsSetOnlyWhereItMatters() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.verbs = ["arrivare", "parlare"]
         store.conjugation.tenses = [.passatoprossimo, .presente]
         store.conjugation.length = .count(20)
@@ -149,7 +149,7 @@ final class LessonTests: XCTestCase {
     }
 
     func testOtherGenderAnswerGetsSpecificFeedback() throws {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.verbs = ["tornare"]
         store.conjugation.tenses = [.passatoprossimo]
         let lesson = ConjugationLesson(store: store)
@@ -162,7 +162,7 @@ final class LessonTests: XCTestCase {
     }
 
     func testAuxQuizRecordsAgreedForm() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.aux.verbs = ["arrivare"]
         store.aux.length = .all
         let quiz = AuxQuiz(store: store)
@@ -176,16 +176,16 @@ final class LessonTests: XCTestCase {
     }
 
     func testSettingsPersist() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.tenses = [.imperfetto, .congiuntivo]
         store.aux.length = .all
-        let reloaded = ProgressStore(defaults: defaults)
+        let reloaded = ProgressStore(defaults: defaults, historyURL: nil)
         XCTAssertEqual(reloaded.conjugation.tenses, [.imperfetto, .congiuntivo])
         XCTAssertEqual(reloaded.aux.length, .all)
     }
 
     func testAuxQuizMarksWrongChoice() {
-        let store = ProgressStore(defaults: defaults)
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.aux.verbs = ["arrivare"]
         let quiz = AuxQuiz(store: store)
         let item = quiz.current!

@@ -74,6 +74,16 @@ struct ConjugationSettingsView: View {
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    ConjugationStatsView(history: store.history)
+                } label: {
+                    Image(systemName: "chart.bar")
+                }
+                .accessibilityLabel("Statistik")
+            }
+        }
         .infoSheet($sheet)
         .fullScreenCover(isPresented: $lessonRunning) {
             ConjugationLessonView(store: store)
