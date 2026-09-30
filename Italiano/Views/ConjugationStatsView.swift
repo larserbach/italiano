@@ -30,8 +30,10 @@ struct ConjugationStatsView: View {
                         StatTile(value: totals.accuracy.map { "\($0)%" } ?? "–", label: "Trefferquote")
                     }
 
+                    StatsCard(history: history, window: window, tense: nil)
+
                     ForEach(Tense.allCases) { tense in
-                        TenseStatsCard(history: history, window: window, tense: tense)
+                        StatsCard(history: history, window: window, tense: tense)
                     }
                 }
             }
@@ -49,17 +51,20 @@ struct ConjugationStatsView: View {
     }
 }
 
-private struct TenseStatsCard: View {
+/// Correct answers vs. mistakes over time for one tense, or for all tenses when `tense` is nil.
+private struct StatsCard: View {
     let history: AnswerHistory
     let window: StatsWindow
-    let tense: Tense
+    let tense: Tense?
     @State private var selectedDate: Date?
+
+    private var title: String { tense?.label ?? "Gesamt" }
 
     var body: some View {
         let totals = history.totals(in: window, tense: tense)
         if totals.total == 0 {
             HStack {
-                Text(tense.label).font(Theme.display(17))
+                Text(title).font(Theme.display(17))
                 Spacer()
                 Text("noch keine Antworten")
                     .font(.system(size: 13))
@@ -68,12 +73,19 @@ private struct TenseStatsCard: View {
             .card()
         } else {
             let buckets = history.buckets(in: window, tense: tense)
-            let groups = history.byGroup(in: window, tense: tense)
-            let top = history.topMistakes(in: window, tense: tense)
+            let groups = breakdown
+            let top = tense.map { history.topMistakes(in: window, tense: $0) } ?? []
 
             VStack(alignment: .leading, spacing: 14) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(tense.label).font(Theme.display(19))
+                    HStack(alignment: .firstTextBaseline, spacing: 6) {
+                        Text(title).font(Theme.display(19))
+                        if tense == nil {
+                            Text("alle Zeiten")
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                    }
                     Text(summary(for: selectedBucket(in: buckets), totals: totals))
                         .font(.system(size: 13))
                         .foregroundStyle(Theme.inkSoft)
@@ -84,7 +96,7 @@ private struct TenseStatsCard: View {
 
                 if groups.count >= 2 {
                     VStack(alignment: .leading, spacing: 8) {
-                        ControlLabel("Nach Verbtyp")
+                        ControlLabel(tense == nil ? "Nach Zeit" : "Nach Verbtyp")
                         ForEach(groups) { group in
                             GroupRow(group: group, maxTotal: groups.map(\.counts.total).max() ?? 1)
                         }
@@ -109,6 +121,15 @@ private struct TenseStatsCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .card()
+        }
+    }
+
+    /// Per verb type for one tense; for the overview, one row per tense.
+    private var breakdown: [GroupStats] {
+        if let tense { return history.byGroup(in: window, tense: tense) }
+        return Tense.allCases.compactMap { tense in
+            let counts = history.totals(in: window, tense: tense)
+            return counts.total == 0 ? nil : GroupStats(label: tense.label, counts: counts)
         }
     }
 

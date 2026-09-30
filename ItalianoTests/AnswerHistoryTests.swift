@@ -49,6 +49,18 @@ final class AnswerHistoryTests: XCTestCase {
         XCTAssertEqual(history.window(for: .days3, now: now).bucketStarts.count, 3)
     }
 
+    func testOverviewBucketsSumAllTenses() {
+        let history = AnswerHistory(fileURL: url, calendar: calendar)
+        history.record(verb: "parlare", tense: .presente, correct: true, on: now)
+        history.record(verb: "parlare", tense: .futuro, correct: false, on: now)
+        history.record(verb: "capire", tense: .imperfetto, correct: true, on: daysAgo(1))
+
+        let buckets = history.buckets(in: history.window(for: .days3, now: now), tense: nil)
+        XCTAssertEqual(buckets.map(\.counts), [AnswerCounts(),
+                                               AnswerCounts(correct: 1, mistakes: 0),
+                                               AnswerCounts(correct: 1, mistakes: 1)])
+    }
+
     func testLongerRangesUseWeeksAndMonths() {
         let history = AnswerHistory(fileURL: url, calendar: calendar)
         let sixMonths = history.window(for: .months6, now: now)
