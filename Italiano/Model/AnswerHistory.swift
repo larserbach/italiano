@@ -144,14 +144,17 @@ final class AnswerHistory {
         let perVerb = countsPerVerb(in: window, tense: tense)
         let groups: [(String, [String])]
         if tense == .passatoprossimo {
-            groups = VerbCatalog.groups.map {
+            groups = VerbLibrary.groups.map {
                 ($0.label.replacingOccurrences(of: " im Passato prossimo", with: ""), $0.verbs)
             }
         } else {
             let order: [(VerbGroup, String)] = [(.are, "-are"), (.ere, "-ere"), (.ire, "-ire"), (.ireIsc, "-ire (mit -isc-)")]
             groups = order.map { group, label in
-                (label, VerbLibrary.orderedKeys.filter { VerbLibrary.verb($0).group == group })
-            }
+                (label, VerbLibrary.orderedKeys.filter {
+                    let verb = VerbLibrary.verb($0)
+                    return verb.group == group && !verb.isIrregular
+                })
+            } + [("Unregelmäßig", VerbLibrary.irregularKeys)]
         }
         return groups.compactMap { label, verbs in
             let counts = verbs.compactMap { perVerb[$0] }.reduce(AnswerCounts(), +)

@@ -14,6 +14,8 @@ struct ConjugationItem: Hashable {
 
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
+    /// The main form plus accepted variants (fa' and fai).
+    var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
     var pronoun: String { Pronoun.italian(person, gender: gender) }
     var marker: String? { Pronoun.marker(person, gender: gender) }
 
@@ -85,7 +87,7 @@ final class ConjugationLesson {
         var pool: [ConjugationItem] = []
         for verb in VerbLibrary.orderedKeys where verbs.contains(verb) {
             for tense in Tense.allCases where tenses.contains(tense) {
-                for person in tense.persons {
+                for person in tense.persons where VerbLibrary.verb(verb).hasForm(tense, person) {
                     pool.append(ConjugationItem(verb: verb, tense: tense, person: person))
                 }
             }
@@ -122,7 +124,7 @@ final class ConjugationLesson {
             return
         }
         busy = true
-        let ok = !normalize(guess).isEmpty && normalize(guess) == normalize(item.answer)
+        let ok = !normalize(guess).isEmpty && item.accepted.contains { normalize($0) == normalize(guess) }
         roundAnswered += 1
         if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: ok) }
 
@@ -202,6 +204,8 @@ final class ConjugationLesson {
 func normalize(_ text: String) -> String {
     text.trimmingCharacters(in: .whitespacesAndNewlines)
         .lowercased()
+        .replacingOccurrences(of: "’", with: "'")
+        .replacingOccurrences(of: "‘", with: "'")
         .split(whereSeparator: \.isWhitespace)
         .joined(separator: " ")
 }

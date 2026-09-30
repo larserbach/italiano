@@ -86,6 +86,33 @@ struct VerbSeed {
     let deImperative: String
 }
 
+/// An irregular verb: everything that cannot be derived is spelled out.
+struct IrregularVerbSeed {
+    let infinitive: String
+    /// The infinitive's ending group (fare → -are, bere → -ere, dire → -ire), for reference only.
+    let ending: VerbGroup
+    let meaning: String
+    /// One German verb for prompts and derived German forms, e.g. "machen" for "machen, tun".
+    let germanInfinitive: String
+    let presente: [String]
+    let imperfetto: [String]
+    let futuro: [String]
+    let congiuntivo: [String]
+    /// `nil` for verbs without an imperative (potere, dovere, volere, piacere).
+    let imperativo: [String?]?
+    /// Further accepted tu-imperatives by person, e.g. fai next to fa'.
+    var imperativoAlternatives: [Int: [String]] = [:]
+    let participle: String
+    let auxiliary: Auxiliary
+    let dePresente: [String]
+    let dePraeteritum: [String]
+    let deParticiple: String
+    let deAuxiliary: GermanAuxiliary
+    var deImperative: String = ""
+    /// Complete German imperative where the default pattern does not fit (seien sie, gehen sie aus).
+    var deImperativo: [String?]? = nil
+}
+
 struct VerbGroupSection: Identifiable {
     let label: String
     let verbs: [String]
@@ -96,6 +123,11 @@ struct Verb: Identifiable {
     let infinitive: String
     let group: VerbGroup
     let meaning: String
+    /// The German verb used in prompts; `meaning` may list several ("machen, tun").
+    let germanInfinitive: String
+    let isIrregular: Bool
+    /// Further accepted answers besides the main form, by tense and person.
+    let alternatives: [Tense: [Int: [String]]]
     let participle: String
     let auxiliary: Auxiliary
     /// Indexed by person (0 = io … 5 = loro); `nil` where a form does not exist.
@@ -105,6 +137,17 @@ struct Verb: Identifiable {
     var id: String { infinitive }
 
     func italian(_ tense: Tense, _ person: Int) -> String { italian[tense]?[person] ?? "" }
+
+    func hasForm(_ tense: Tense, _ person: Int) -> Bool { (italian[tense]?[person] ?? nil) != nil }
+    func hasTense(_ tense: Tense) -> Bool { tense.persons.contains { hasForm(tense, $0) } }
+
+    /// "-are", "-ere", … or "unregelmäßig".
+    var groupLabel: String { isIrregular ? "unregelmäßig" : group.rawValue }
+
+    /// Every answer that counts as correct, main form first.
+    func acceptedAnswers(_ tense: Tense, _ person: Int, gender: Gender?) -> [String] {
+        [italian(tense, person, gender: gender)] + (alternatives[tense]?[person] ?? [])
+    }
 
     /// Only the Passato prossimo with essere agrees with the subject: sono arrivato / arrivata.
     func isGendered(_ tense: Tense) -> Bool { tense == .passatoprossimo && auxiliary == .essere }
@@ -116,6 +159,7 @@ struct Verb: Identifiable {
 
     /// The spelling trap of this verb, if it has one, illustrated with its own forms.
     var spellingNote: String? {
+        guard !isIrregular else { return nil }
         let tu = italian(.presente, 1), noi = italian(.presente, 3), futuro = italian(.futuro, 0)
         if Conjugator.stressedIVerbs.contains(infinitive) {
             return "Das i ist betont (io \(italian(.presente, 0))) und bleibt deshalb erhalten: tu \(tu), \(futuro), che loro \(italian(.congiuntivo, 5)). Nur bei noi verschmelzen die beiden i: \(noi)."
@@ -137,6 +181,9 @@ struct Verb: Identifiable {
         infinitive = seed.infinitive
         group = seed.group
         meaning = seed.meaning
+        germanInfinitive = seed.meaning
+        isIrregular = false
+        alternatives = [:]
         participle = seed.participle
         auxiliary = seed.auxiliary
 
@@ -162,6 +209,40 @@ struct Verb: Identifiable {
             .congiuntivo: seed.dePresente,
             .imperativo: Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente,
                                                 infinitive: seed.meaning),
+        ]
+    }
+
+    init(irregular seed: IrregularVerbSeed) {
+        infinitive = seed.infinitive
+        group = seed.ending
+        meaning = seed.meaning
+        germanInfinitive = seed.germanInfinitive
+        isIrregular = true
+        alternatives = seed.imperativoAlternatives.isEmpty ? [:] : [.imperativo: seed.imperativoAlternatives]
+        participle = seed.participle
+        auxiliary = seed.auxiliary
+
+        italian = [
+            .presente: seed.presente,
+            .passatoprossimo: Conjugator.passatoProssimo(participle: seed.participle, auxiliary: seed.auxiliary),
+            .imperfetto: seed.imperfetto,
+            .futuro: seed.futuro,
+            .condizionale: Conjugator.condizionale(futuro: seed.futuro),
+            .congiuntivo: seed.congiuntivo,
+            .imperativo: seed.imperativo ?? Array(repeating: nil, count: 6),
+        ]
+        let deInfinitive = seed.germanInfinitive
+        german = [
+            .presente: seed.dePresente,
+            .passatoprossimo: Conjugator.perfekt(participle: seed.deParticiple, auxiliary: seed.deAuxiliary,
+                                                 reflexiveInfinitive: deInfinitive),
+            .imperfetto: seed.dePraeteritum,
+            .futuro: Conjugator.werde(infinitive: deInfinitive),
+            .condizionale: Conjugator.wuerde(infinitive: deInfinitive),
+            .congiuntivo: seed.dePresente,
+            .imperativo: seed.imperativo == nil ? Array(repeating: nil, count: 6)
+                : seed.deImperativo ?? Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente,
+                                                              infinitive: deInfinitive),
         ]
     }
 }
@@ -222,12 +303,26 @@ enum Conjugator {
         return [nil, tu, congiuntivo[0], presente[3], presente[4], congiuntivo[5]]
     }
 
-    static func perfekt(participle: String, auxiliary: GermanAuxiliary) -> [String] {
-        (auxiliary == .sein ? seinPraesens : habenPraesens).map { "\($0) \(participle)" }
+    static let werdeForms = ["werde", "wirst", "wird", "werden", "werdet", "werden"]
+    static let reflexivePronouns = ["mich", "dich", "sich", "uns", "euch", "sich"]
+
+    /// With a reflexive infinitive ("sich befinden") the pronoun follows the auxiliary:
+    /// "habe mich befunden".
+    static func perfekt(participle: String, auxiliary: GermanAuxiliary, reflexiveInfinitive: String = "") -> [String] {
+        let reflexive = reflexiveInfinitive.hasPrefix("sich ")
+        return (auxiliary == .sein ? seinPraesens : habenPraesens).enumerated().map { person, aux in
+            reflexive ? "\(aux) \(reflexivePronouns[person]) \(participle)" : "\(aux) \(participle)"
+        }
     }
 
-    static func wuerde(infinitive: String) -> [String] {
-        wuerdeForms.map { "\($0) \(infinitive)" }
+    static func wuerde(infinitive: String) -> [String] { compound(wuerdeForms, infinitive) }
+    static func werde(infinitive: String) -> [String] { compound(werdeForms, infinitive) }
+
+    /// Auxiliary + infinitive, moving a reflexive "sich" to the right person: "werde mich befinden".
+    private static func compound(_ auxiliaries: [String], _ infinitive: String) -> [String] {
+        guard infinitive.hasPrefix("sich ") else { return auxiliaries.map { "\($0) \(infinitive)" } }
+        let verb = infinitive.dropFirst("sich ".count)
+        return auxiliaries.enumerated().map { "\($1) \(reflexivePronouns[$0]) \(verb)" }
     }
 
     static func deImperativ(duForm: String, presente: [String], infinitive: String) -> [String?] {
@@ -236,10 +331,26 @@ enum Conjugator {
 }
 
 enum VerbLibrary {
-    static let all: [String: Verb] = Dictionary(
-        uniqueKeysWithValues: VerbCatalog.seeds.map { ($0.infinitive, Verb(seed: $0)) }
-    )
-    static let orderedKeys: [String] = VerbCatalog.seeds.map(\.infinitive)
+    static let all: [String: Verb] = {
+        let regular: [Verb] = VerbCatalog.seeds.map { Verb(seed: $0) }
+        let irregular: [Verb] = IrregularVerbCatalog.seeds.map { Verb(irregular: $0) }
+        return Dictionary(uniqueKeysWithValues: (regular + irregular).map { ($0.infinitive, $0) })
+    }()
+    static let irregularKeys: [String] = IrregularVerbCatalog.seeds.map(\.infinitive).sorted()
+    static let orderedKeys: [String] = VerbCatalog.seeds.map(\.infinitive) + irregularKeys
+
+    /// The verb picker's sections: the regular groups, then all irregular verbs alphabetically.
+    static let groups: [VerbGroupSection] =
+        VerbCatalog.groups + [VerbGroupSection(label: "Unregelmäßig", verbs: irregularKeys)]
 
     static func verb(_ key: String) -> Verb { all[key]! }
+
+    /// German infinitives shared by more than one verb (rimanere and restare are both "bleiben").
+    /// A German prompt for such a verb names the Italian infinitive, so the answer is unambiguous.
+    static let ambiguousGerman: Set<String> = {
+        let counts = Dictionary(grouping: all.values, by: \.germanInfinitive).mapValues(\.count)
+        return Set(counts.filter { $0.value > 1 }.keys)
+    }()
+
+    static func needsGermanHint(_ verb: Verb) -> Bool { ambiguousGerman.contains(verb.germanInfinitive) }
 }

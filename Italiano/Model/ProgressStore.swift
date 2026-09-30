@@ -110,9 +110,11 @@ final class ProgressStore {
     func level(of verb: String, tense: Tense) -> Int { tenseLevels[verb]?[tense.rawValue] ?? 0 }
 
     /// What a verb chip's ring shows: the average over the given tenses, rounded down.
+    /// Tenses the verb has no forms in (potere has no imperative) are left out.
     func level(of verb: String, tenses: Set<Tense>) -> Int {
-        guard !tenses.isEmpty else { return 0 }
-        return tenses.map { level(of: verb, tense: $0) }.reduce(0, +) / tenses.count
+        let relevant = tenses.filter { VerbLibrary.verb(verb).hasTense($0) }
+        guard !relevant.isEmpty else { return 0 }
+        return relevant.map { level(of: verb, tense: $0) }.reduce(0, +) / relevant.count
     }
 
     func isRecentMistake(verb: String, tenses: Set<Tense>) -> Bool {

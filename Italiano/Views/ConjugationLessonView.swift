@@ -99,11 +99,19 @@ struct ConjugationLessonView: View {
     private func prompt(item: ConjugationItem, verb: Verb) -> some View {
         switch item.shown {
         case .german:
-            (Text(Pronoun.german(item.person, gender: item.gender) + "  ").fontWeight(.regular).foregroundColor(Theme.inkSoft)
-             + Text(verb.german(item.tense, item.person)))
-                .font(Theme.display(30, weight: .semibold))
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 16)
+            VStack(spacing: 3) {
+                (Text(Pronoun.german(item.person, gender: item.gender) + "  ").fontWeight(.regular).foregroundColor(Theme.inkSoft)
+                 + Text(verb.german(item.tense, item.person)))
+                    .font(Theme.display(30, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                // Two verbs share this German verb (rimanere/restare = bleiben): say which one is meant.
+                if VerbLibrary.needsGermanHint(verb) {
+                    Text("mit \(verb.infinitive)")
+                        .font(.system(size: 12.5))
+                        .foregroundStyle(Theme.inkSoft)
+                }
+            }
+            .padding(.bottom, 16)
         case .italian:
             VStack(spacing: 3) {
                 Button { sheet = .verb(verb.infinitive) } label: {
@@ -112,7 +120,7 @@ struct ConjugationLessonView: View {
                         .underline(color: Theme.goldSoft)
                 }
                 .buttonStyle(.plain)
-                Text("\(verb.group.rawValue) · \(verb.meaning)")
+                Text("\(verb.groupLabel) · \(verb.meaning)")
                     .font(.system(size: 12.5))
                     .foregroundStyle(Theme.inkSoft)
             }
