@@ -112,7 +112,11 @@ final class IrregularVerbTests: XCTestCase {
 
     func testGermanHintOnlyForSharedGermanVerbs() {
         let hinted = VerbLibrary.orderedKeys.filter { VerbLibrary.needsGermanHint(VerbLibrary.verb($0)) }
-        XCTAssertEqual(Set(hinted), ["rimanere", "restare"])
+        XCTAssertEqual(Set(hinted), ["rimanere", "restare", "andare", "camminare", "guidare", "potere", "sapere",
+                                     "essere", "stare", "vedere", "guardare"])
+        for verb in VerbLibrary.germanOverlaps.flatMap({ $0 }) {
+            XCTAssertNotNil(VerbLibrary.all[verb], verb)
+        }
     }
 
     func testIrregularVerbsHaveTheirOwnGroup() {

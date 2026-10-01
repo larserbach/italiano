@@ -368,5 +368,17 @@ enum VerbLibrary {
         return Set(counts.filter { $0.value > 1 }.keys)
     }()
 
-    static func needsGermanHint(_ verb: Verb) -> Bool { ambiguousGerman.contains(verb.germanInfinitive) }
+    /// Verbs whose German prompts could also be answered with another verb of the group, although
+    /// the German words differ: "ich gehe" fits andare and camminare, "ich kann" potere and sapere.
+    static let germanOverlaps: [Set<String>] = [
+        ["andare", "camminare", "guidare"],
+        ["potere", "sapere"],
+        ["essere", "stare", "restare", "rimanere"],
+        ["vedere", "guardare"],
+    ]
+
+    static func needsGermanHint(_ verb: Verb) -> Bool {
+        ambiguousGerman.contains(verb.germanInfinitive)
+            || germanOverlaps.contains { $0.contains(verb.infinitive) }
+    }
 }
