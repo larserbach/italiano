@@ -99,6 +99,17 @@ final class IrregularVerbTests: XCTestCase {
         XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]), 2)
     }
 
+    func testTableFormsShowGendersAndVariants() {
+        XCTAssertEqual(VerbLibrary.verb("andare").tableForm(.passatoprossimo, 0), "sono andato/a")
+        XCTAssertEqual(VerbLibrary.verb("andare").tableForm(.passatoprossimo, 3), "siamo andati/e")
+        XCTAssertEqual(VerbLibrary.verb("andare").tableForm(.imperativo, 1), "va' / vai")
+        XCTAssertEqual(VerbLibrary.verb("fare").tableForm(.passatoprossimo, 0), "ho fatto")
+        XCTAssertEqual(VerbLibrary.verb("dire").tableForm(.imperativo, 1), "di'")
+        XCTAssertNil(VerbLibrary.verb("dire").tableForm(.imperativo, 0))
+        XCTAssertNil(VerbLibrary.verb("potere").tableForm(.imperativo, 1))
+        XCTAssertEqual(VerbLibrary.verb("parlare").tableForm(.presente, 0), "parlo")
+    }
+
     func testGermanHintOnlyForSharedGermanVerbs() {
         let hinted = VerbLibrary.orderedKeys.filter { VerbLibrary.needsGermanHint(VerbLibrary.verb($0)) }
         XCTAssertEqual(Set(hinted), ["rimanere", "restare"])

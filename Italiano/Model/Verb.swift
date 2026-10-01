@@ -144,6 +144,22 @@ struct Verb: Identifiable {
     /// "-are", "-ere", … or "unregelmäßig".
     var groupLabel: String { isIrregular ? "unregelmäßig" : group.rawValue }
 
+    /// A form as shown in the conjugation table: both genders where the participle agrees
+    /// ("sono andato/a", "siamo andati/e"), and accepted variants ("fa' / fai").
+    func tableForm(_ tense: Tense, _ person: Int) -> String? {
+        guard hasForm(tense, person) else { return nil }
+        let main = italian(tense, person)
+        var form = main
+        if isGendered(tense) {
+            form += "/" + String(italian(tense, person, gender: .feminine).suffix(1))
+        }
+        // "fa" is only fa' typed without the apostrophe, so it is accepted but not shown.
+        for alternative in alternatives[tense]?[person] ?? [] where alternative + "'" != main {
+            form += " / \(alternative)"
+        }
+        return form
+    }
+
     /// Every answer that counts as correct, main form first.
     func acceptedAnswers(_ tense: Tense, _ person: Int, gender: Gender?) -> [String] {
         [italian(tense, person, gender: gender)] + (alternatives[tense]?[person] ?? [])

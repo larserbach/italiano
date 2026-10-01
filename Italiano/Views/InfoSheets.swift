@@ -46,6 +46,10 @@ struct VerbInfoView: View {
                         .font(.system(size: 14))
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                ControlLabel("Konjugation")
+                    .padding(.top, 18)
+                    .padding(.bottom, 4)
+                ConjugationTable(verb: verb)
                 ControlLabel("Level je Zeit")
                     .padding(.top, 18)
                     .padding(.bottom, 4)
@@ -58,6 +62,49 @@ struct VerbInfoView: View {
         .screenBackground()
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+}
+
+/// All six forms of one tense, Italian next to German. Tense chips switch between tenses.
+struct ConjugationTable: View {
+    let verb: Verb
+    @State private var tense: Tense = .presente
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(Tense.allCases.filter(verb.hasTense)) { option in
+                        Button(option.label) { tense = option }
+                            .buttonStyle(ChipStyle(active: option == tense))
+                    }
+                }
+                .padding(.vertical, 1)
+            }
+
+            Grid(alignment: .leadingFirstTextBaseline, horizontalSpacing: 14, verticalSpacing: 7) {
+                ForEach(Array(tense.persons), id: \.self) { person in
+                    if let form = verb.tableForm(tense, person) {
+                        GridRow {
+                            Text(Pronoun.italian[person])
+                                .foregroundStyle(Theme.inkSoft)
+                            Text(form)
+                                .fontWeight(.semibold)
+                            Text(verb.german(tense, person))
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                        .font(.system(size: 15))
+                    }
+                }
+            }
+            if verb.isGendered(tense) {
+                Text("Mit essere passt sich das Partizip an: -o/-a im Singular, -i/-e im Plural.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.inkSoft)
+            }
+        }
+        .onAppear { if !verb.hasTense(tense) { tense = .presente } }
     }
 }
 
