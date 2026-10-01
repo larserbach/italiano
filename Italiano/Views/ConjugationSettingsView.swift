@@ -26,7 +26,9 @@ struct ConjugationSettingsView: View {
                                level: { store.level(of: $0, tenses: store.conjugation.tenses) },
                                isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
                                tenseLevels: { verb in
-                                   Dictionary(uniqueKeysWithValues: Tense.allCases.map { ($0, store.level(of: verb, tense: $0)) })
+                                   Dictionary(uniqueKeysWithValues: Tense.allCases
+                                       .filter { VerbLibrary.verb(verb).hasTense($0) }
+                                       .map { ($0, store.level(of: verb, tense: $0)) })
                                },
                                onDetails: { sheet = .verb($0) })
                 }
@@ -74,6 +76,16 @@ struct ConjugationSettingsView: View {
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    ConjugationStatsView(history: store.history)
+                } label: {
+                    Image(systemName: "chart.bar")
+                }
+                .accessibilityLabel("Statistik")
+            }
+        }
         .infoSheet($sheet)
         .fullScreenCover(isPresented: $lessonRunning) {
             ConjugationLessonView(store: store)
@@ -91,7 +103,7 @@ struct VerbPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            ForEach(VerbCatalog.groups) { group in
+            ForEach(VerbLibrary.groups) { group in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(group.label)
                         .font(Theme.display(13, weight: .regular))

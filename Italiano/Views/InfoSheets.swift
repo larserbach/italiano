@@ -35,7 +35,7 @@ struct VerbInfoView: View {
                 Text("bedeutet auf Deutsch: „\(verb.meaning)“")
                     .font(.system(size: 15))
                     .foregroundStyle(Theme.inkSoft)
-                Text("\(verb.group.rawValue) · Passato prossimo mit \(verb.auxiliary.rawValue): \(verb.italian(.passatoprossimo, 0))")
+                Text("\(verb.groupLabel) · Passato prossimo mit \(verb.auxiliary.rawValue): \(verb.italian(.passatoprossimo, 0))")
                     .font(.system(size: 14))
                     .foregroundStyle(Theme.inkSoft)
                     .padding(.top, 8)
@@ -49,7 +49,7 @@ struct VerbInfoView: View {
                 ControlLabel("Level je Zeit")
                     .padding(.top, 18)
                     .padding(.bottom, 4)
-                TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.map {
+                TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.filter(verb.hasTense).map {
                     ($0, store.level(of: verb.infinitive, tense: $0))
                 }))
             }
@@ -67,7 +67,7 @@ struct TenseBreakdown: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Tense.allCases) { tense in
+            ForEach(Tense.allCases.filter { levels[$0] != nil }) { tense in
                 let level = levels[tense] ?? 0
                 HStack(spacing: 10) {
                     VerbRing(level: level)
