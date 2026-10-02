@@ -36,7 +36,6 @@ struct AuxSettingsView: View {
         }
         .safeAreaInset(edge: .bottom) {
             StartBar(title: "Start",
-                     hint: "\(poolSize) mögliche Fragen aus deiner Auswahl.",
                      disabled: poolSize == 0) { quizRunning = true }
         }
         .screenBackground()
