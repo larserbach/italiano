@@ -18,10 +18,6 @@ struct ConjugationSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Verben")
-                    Text("Ring = Level in den gewählten Zeiten · lange drücken für Details")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Theme.inkSoft)
-                        .padding(.bottom, 4)
                     VerbPicker(selection: $store.conjugation.verbs,
                                level: { store.level(of: $0, tenses: store.conjugation.tenses) },
                                isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
@@ -100,8 +96,17 @@ struct VerbPicker: View {
     var tenseLevels: ((String) -> [Tense: Int])? = nil
     var onDetails: ((String) -> Void)? = nil
 
+    @AppStorage(Tutorial.verbRing.defaultsKey) private var coachSeen = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            if !coachSeen {
+                CoachMark(text: tenseLevels == nil
+                              ? "Der Ring zeigt das Level des Verbs."
+                              : "Der Ring zeigt das Level des Verbs in den gewählten Zeiten. Lange drücken für Details.",
+                          dismiss: { withAnimation { coachSeen = true } })
+                    .transition(.opacity)
+            }
             ForEach(VerbLibrary.groups) { group in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(group.label)
@@ -122,12 +127,35 @@ struct VerbPicker: View {
                             }
                             .buttonStyle(ChipStyle(active: selection.contains(verb),
                                                    accent: mistake ? Theme.brick : nil))
-                            .modifier(TenseLevelsMenu(verb: verb, levels: tenseLevels?(verb), onDetails: onDetails))
+                            .modifier(TenseLevelsMenu(verb: verb, levels: tenseLevels?(verb), onDetails: { verb in
+                                coachSeen = true
+                                onDetails?(verb)
+                            }))
                         }
                     }
                 }
             }
         }
+    }
+}
+
+private struct CoachMark: View {
+    let text: String
+    let dismiss: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(text)
+                .font(.system(size: 13.5))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Button("Verstanden", action: dismiss)
+                .font(.system(size: 13.5, weight: .medium))
+                .foregroundStyle(Theme.gold)
+        }
+        .padding(12)
+        .background(Theme.goldSoft.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.gold))
     }
 }
 

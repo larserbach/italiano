@@ -49,6 +49,18 @@ struct HomeView: View {
                 .frame(maxWidth: 560)
                 .frame(maxWidth: .infinity)
             }
+            .overlay(alignment: .topTrailing) {
+                NavigationLink {
+                    SettingsView()
+                } label: {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Theme.inkSoft)
+                        .frame(width: 44, height: 44)
+                }
+                .accessibilityLabel("Einstellungen")
+                .padding(.trailing, 8)
+            }
             .screenBackground()
             .navigationTitle("Übungen")
             .toolbar(.hidden, for: .navigationBar)
