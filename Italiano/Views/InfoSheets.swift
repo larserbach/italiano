@@ -59,9 +59,7 @@ struct VerbInfoView: View {
                     ControlLabel("Level je Zeit")
                         .padding(.top, 18)
                         .padding(.bottom, 4)
-                    TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.filter(verb.hasTense).map {
-                        ($0, store.level(of: verb.infinitive, tense: $0))
-                    }))
+                    TenseBreakdown(levels: store.levels(of: verb.infinitive))
                 } else {
                     ControlLabel("Level")
                         .padding(.top, 18)
@@ -123,7 +121,7 @@ struct ConjugationTable: View {
     }
 }
 
-/// One mastery ring per tense; tenses not practised yet are dimmed.
+/// One mastery ring per tense; tenses at level 0 are dimmed.
 struct TenseBreakdown: View {
     let levels: [Tense: Int]
 

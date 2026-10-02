@@ -21,11 +21,7 @@ struct ConjugationSettingsView: View {
                     VerbPicker(selection: $store.conjugation.verbs,
                                level: { store.level(of: $0, tenses: store.conjugation.tenses) },
                                isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
-                               tenseLevels: { verb in
-                                   Dictionary(uniqueKeysWithValues: Tense.allCases
-                                       .filter { VerbLibrary.verb(verb).hasTense($0) }
-                                       .map { ($0, store.level(of: verb, tense: $0)) })
-                               },
+                               preview: .tenseLevels(store.levels(of:)),
                                onDetails: { sheet = .verb($0) })
                 }
 
@@ -88,14 +84,25 @@ struct ConjugationSettingsView: View {
     }
 }
 
+/// What long-pressing a verb chip previews.
+enum VerbPreview {
+    /// The verb's level in every tense.
+    case tenseLevels((String) -> [Tense: Int])
+    /// Basic facts about the verb (meaning, group, Passato prossimo) and its level.
+    case basic
+
+    var isBasic: Bool { if case .basic = self { true } else { false } }
+
+    func tenseLevels(of verb: String) -> [Tense: Int]? {
+        if case .tenseLevels(let levels) = self { levels(verb) } else { nil }
+    }
+}
+
 struct VerbPicker: View {
     @Binding var selection: Set<String>
     let level: (String) -> Int
     var isMistake: (String) -> Bool = { _ in false }
-    /// When set, long-pressing a chip previews the verb's level in every tense.
-    var tenseLevels: ((String) -> [Tense: Int])? = nil
-    /// Otherwise, long-pressing previews basic facts about the verb (meaning, group, Passato prossimo).
-    var basicPreview = false
+    let preview: VerbPreview
     var onDetails: ((String) -> Void)? = nil
 
     @AppStorage(Tutorial.verbRing.defaultsKey) private var coachSeen = false
@@ -104,7 +111,7 @@ struct VerbPicker: View {
         VStack(alignment: .leading, spacing: 12) {
             if !coachSeen {
                 CoachMark(text: "Der Ring zeigt das Level des Verbs"
-                              + (tenseLevels == nil ? "." : " in den gewählten Zeiten.")
+                              + (preview.isBasic ? "." : " in den gewählten Zeiten.")
                               + (onDetails == nil ? "" : " Lange drücken für Details."),
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)
@@ -130,11 +137,13 @@ struct VerbPicker: View {
                             .buttonStyle(ChipStyle(active: selection.contains(verb),
                                                    accent: mistake ? Theme.brick : nil))
                             .modifier(VerbPreviewMenu(verb: verb,
-                                                      levels: tenseLevels?(verb),
-                                                      basicLevel: basicPreview ? level(verb) : nil,
-                                                      onDetails: { verb in
-                                coachSeen = true
-                                onDetails?(verb)
+                                                      tenseLevels: preview.tenseLevels(of: verb),
+                                                      level: level(verb),
+                                                      onDetails: onDetails.map { onDetails in
+                                { verb in
+                                    coachSeen = true
+                                    onDetails(verb)
+                                }
                             }))
                         }
                     }
@@ -167,32 +176,29 @@ private struct CoachMark: View {
 /// Long-press on a verb chip: previews the verb (level per tense, or basic facts), with a link to the verb sheet.
 private struct VerbPreviewMenu: ViewModifier {
     let verb: String
-    let levels: [Tense: Int]?
-    let basicLevel: Int?
+    /// The level per tense, or nil for the basic preview.
+    let tenseLevels: [Tense: Int]?
+    let level: Int
     let onDetails: ((String) -> Void)?
 
     func body(content: Content) -> some View {
-        if levels != nil || basicLevel != nil {
-            content.contextMenu {
-                if let onDetails {
-                    Button("Verb-Details", systemImage: "info.circle") { onDetails(verb) }
-                }
-            } preview: {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let levels {
-                        Text(verb).font(Theme.display(20))
-                        TenseBreakdown(levels: levels)
-                    } else if let basicLevel {
-                        BasicVerbInfo(verb: VerbLibrary.verb(verb), level: basicLevel)
-                    }
-                }
-                .padding(18)
-                .frame(width: 300, alignment: .leading)
-                .background(Theme.paper)
-                .foregroundStyle(Theme.ink)
+        content.contextMenu {
+            if let onDetails {
+                Button("Verb-Details", systemImage: "info.circle") { onDetails(verb) }
             }
-        } else {
-            content
+        } preview: {
+            VStack(alignment: .leading, spacing: 12) {
+                if let tenseLevels {
+                    Text(verb).font(Theme.display(20))
+                    TenseBreakdown(levels: tenseLevels)
+                } else {
+                    BasicVerbInfo(verb: VerbLibrary.verb(verb), level: level)
+                }
+            }
+            .padding(18)
+            .frame(width: 300, alignment: .leading)
+            .background(Theme.paper)
+            .foregroundStyle(Theme.ink)
         }
     }
 }
@@ -254,25 +260,17 @@ private struct TenseChip: View {
 
 struct StartBar: View {
     let title: String
-    var hint: String? = nil
     let disabled: Bool
     let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Button(title, action: action)
-                .buttonStyle(PrimaryButtonStyle())
-                .disabled(disabled)
-            if let hint {
-                Text(hint)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.inkSoft)
-            }
-        }
-        .padding(.horizontal, 18)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
-        .background(Theme.paper.opacity(0.96).ignoresSafeArea(edges: .bottom))
-        .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 1) }
+        Button(title, action: action)
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(disabled)
+            .padding(.horizontal, 18)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .background(Theme.paper.opacity(0.96).ignoresSafeArea(edges: .bottom))
+            .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 1) }
     }
 }

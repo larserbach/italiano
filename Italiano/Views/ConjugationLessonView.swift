@@ -17,18 +17,18 @@ struct ConjugationLessonView: View {
             case .question:
                 question
             case .roundComplete:
-                RoundCompleteView(round: lesson.round, correct: lesson.roundCorrect, total: lesson.roundTotal,
-                                  missedCount: lesson.roundMissedCount, noun: ("Aufgabe", "Aufgaben"),
+                RoundCompleteView(round: lesson.rounds.round, correct: lesson.rounds.roundCorrect, total: lesson.rounds.roundTotal,
+                                  missedCount: lesson.rounds.roundMissedCount, noun: ("Aufgabe", "Aufgaben"),
                                   proceed: lesson.startNextRound, quit: { dismiss() })
             case .summary:
                 SummaryView(
                     title: "Lektion fertig!",
-                    lede: lesson.missedForms.isEmpty
+                    lede: lesson.rounds.missedForms.isEmpty
                         ? "Alles auf Anhieb richtig. Ottimo lavoro!"
                         : "Ein paar Formen brauchten mehr als einen Versuch — die stehen unten noch mal.",
-                    totalLabel: "Aufgaben", total: lesson.totalPlanned,
-                    firstTry: lesson.firstTryCorrect, accuracy: lesson.accuracy,
-                    missedTitle: "Diese Formen waren kniffelig", missed: lesson.missedForms,
+                    totalLabel: "Aufgaben", total: lesson.rounds.totalPlanned,
+                    firstTry: lesson.rounds.firstTryCorrect, accuracy: lesson.rounds.accuracy,
+                    missedTitle: "Diese Formen waren kniffelig", missed: lesson.rounds.missedForms,
                     back: { dismiss() },
                     repeatTitle: "Lektion wiederholen", repeatAction: lesson.start)
             }
@@ -46,10 +46,10 @@ struct ConjugationLessonView: View {
         if let item = lesson.current {
             let verb = VerbLibrary.verb(item.verb)
             VStack(spacing: 22) {
-                LessonTopBar(answered: lesson.roundAnswered, total: lesson.roundTotal) { dismiss() }
+                LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    CardMeta(tag: item.tense.label, round: lesson.round) { sheet = .tense(item.tense) }
+                    CardMeta(tag: item.tense.label, round: lesson.rounds.round) { sheet = .tense(item.tense) }
                         .padding(.bottom, 10)
 
                     prompt(item: item, verb: verb)
@@ -100,11 +100,13 @@ struct ConjugationLessonView: View {
         switch item.shown {
         case .german:
             VStack(spacing: 3) {
-                (Text(Pronoun.german(item.person, gender: item.gender) + "  ").fontWeight(.regular).foregroundColor(Theme.inkSoft)
-                 + Text(verb.german(item.tense, item.person)))
+                let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
+                    .fontWeight(.regular)
+                    .foregroundStyle(Theme.inkSoft)
+                Text("\(pronoun)\(verb.german(item.tense, item.person))")
                     .font(Theme.display(30, weight: .semibold))
                     .multilineTextAlignment(.center)
-                // Two verbs share this German verb (rimanere/restare = bleiben): say which one is meant.
+                // The German prompt also fits another verb (rimanere/restare = bleiben): say which one is meant.
                 if VerbLibrary.needsGermanHint(verb) {
                     Text("mit \(verb.infinitive)")
                         .font(.system(size: 12.5))

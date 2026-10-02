@@ -15,18 +15,18 @@ struct AuxQuizView: View {
             case .question:
                 question
             case .roundComplete:
-                RoundCompleteView(round: quiz.round, correct: quiz.roundCorrect, total: quiz.roundTotal,
-                                  missedCount: quiz.roundMissedCount, noun: ("Frage", "Fragen"),
+                RoundCompleteView(round: quiz.rounds.round, correct: quiz.rounds.roundCorrect, total: quiz.rounds.roundTotal,
+                                  missedCount: quiz.rounds.roundMissedCount, noun: ("Frage", "Fragen"),
                                   proceed: quiz.startNextRound, quit: { dismiss() })
             case .summary:
                 SummaryView(
                     title: "Fertig!",
-                    lede: quiz.missedForms.isEmpty
+                    lede: quiz.rounds.missedForms.isEmpty
                         ? "Alles auf Anhieb richtig. Perfetto!"
                         : "Ein paar Verben brauchten mehr als einen Versuch — die stehen unten noch mal.",
-                    totalLabel: "Fragen", total: quiz.totalPlanned,
-                    firstTry: quiz.firstTryCorrect, accuracy: quiz.accuracy,
-                    missedTitle: "Diese Verben waren kniffelig", missed: quiz.missedForms,
+                    totalLabel: "Fragen", total: quiz.rounds.totalPlanned,
+                    firstTry: quiz.rounds.firstTryCorrect, accuracy: quiz.rounds.accuracy,
+                    missedTitle: "Diese Verben waren kniffelig", missed: quiz.rounds.missedForms,
                     back: { dismiss() },
                     repeatTitle: "Nochmal", repeatAction: quiz.start)
             }
@@ -39,10 +39,10 @@ struct AuxQuizView: View {
     private var question: some View {
         if let item = quiz.current {
             VStack(spacing: 22) {
-                LessonTopBar(answered: quiz.roundAnswered, total: quiz.roundTotal) { dismiss() }
+                LessonTopBar(answered: quiz.rounds.roundAnswered, total: quiz.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    CardMeta(tag: "Passato prossimo", round: quiz.round)
+                    CardMeta(tag: "Passato prossimo", round: quiz.rounds.round)
                         .padding(.bottom, 10)
 
                     Button { sheet = .auxVerb(item.verb) } label: {

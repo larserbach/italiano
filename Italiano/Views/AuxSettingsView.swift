@@ -20,7 +20,7 @@ struct AuxSettingsView: View {
                     ControlLabel("Verben")
                     VerbPicker(selection: $store.aux.verbs,
                                level: store.auxLevel(of:),
-                               basicPreview: true,
+                               preview: .basic,
                                onDetails: { sheet = .auxVerb($0) })
                 }
 

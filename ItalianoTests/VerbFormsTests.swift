@@ -79,7 +79,7 @@ final class LessonTests: XCTestCase {
         store.conjugation.tenses = [.presente]
         store.conjugation.length = .count(5)
         let lesson = ConjugationLesson(store: store)
-        XCTAssertEqual(lesson.roundTotal, 5)
+        XCTAssertEqual(lesson.rounds.roundTotal, 5)
 
         let firstVerb = lesson.current!.verb
         lesson.submit("sbagliato")
@@ -88,13 +88,13 @@ final class LessonTests: XCTestCase {
         for _ in 0..<4 { lesson.reveal(); lesson.submit("") }
 
         XCTAssertEqual(lesson.phase, .roundComplete)
-        XCTAssertEqual(lesson.roundMissedCount, 5)
+        XCTAssertEqual(lesson.rounds.roundMissedCount, 5)
         XCTAssertEqual(store.level(of: firstVerb, tense: .presente), 0)
         XCTAssertTrue(store.isRecentMistake(verb: "parlare", tenses: [.presente]))
         XCTAssertFalse(store.isRecentMistake(verb: "parlare", tenses: [.imperfetto]))
 
         lesson.startNextRound()
-        XCTAssertEqual(lesson.round, 2)
+        XCTAssertEqual(lesson.rounds.round, 2)
         XCTAssertFalse(lesson.current!.firstAttempt)
     }
 
@@ -172,7 +172,7 @@ final class LessonTests: XCTestCase {
             quiz.choose(Conjugator.averePresente[item.person])
             quiz.next()
         }
-        let answers = Set(quiz.missedForms.map(\.answer))
+        let answers = Set(quiz.rounds.missedForms.map(\.answer))
         XCTAssertTrue(answers.contains("siamo arrivati"))
         XCTAssertFalse(answers.contains("siamo arrivato"))
     }
@@ -194,6 +194,19 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(item.correctForm, Conjugator.esserePresente[item.person])
         quiz.choose(Conjugator.averePresente[item.person])
         XCTAssertTrue(quiz.answeredWrong)
-        XCTAssertEqual(quiz.roundMissedCount, 1)
+        XCTAssertEqual(quiz.rounds.roundMissedCount, 1)
+    }
+
+    func testAuxQuizCountsFirstAttemptsOnly() {
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
+        store.aux.verbs = ["arrivare"]
+        store.aux.length = .count(1)
+        let quiz = AuxQuiz(store: store)
+        quiz.choose(Conjugator.averePresente[quiz.current!.person])
+        quiz.next()
+        XCTAssertEqual(quiz.phase, .roundComplete)
+        quiz.startNextRound()
+        quiz.choose(quiz.current!.correctForm) // correct in the repeat round
+        XCTAssertEqual(store.auxLevel(of: "arrivare"), 0)
     }
 }
