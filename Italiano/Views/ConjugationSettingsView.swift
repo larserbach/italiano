@@ -71,7 +71,6 @@ struct ConjugationSettingsView: View {
         }
         .safeAreaInset(edge: .bottom) {
             StartBar(title: "Lektion starten",
-                     hint: "\(poolSize) mögliche Kombinationen aus deiner Auswahl.",
                      disabled: poolSize == 0) { lessonRunning = true }
         }
         .screenBackground()
@@ -193,7 +192,7 @@ private struct TenseChip: View {
 
 struct StartBar: View {
     let title: String
-    let hint: String
+    var hint: String? = nil
     let disabled: Bool
     let action: () -> Void
 
@@ -202,9 +201,11 @@ struct StartBar: View {
             Button(title, action: action)
                 .buttonStyle(PrimaryButtonStyle())
                 .disabled(disabled)
-            Text(hint)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.inkSoft)
+            if let hint {
+                Text(hint)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.inkSoft)
+            }
         }
         .padding(.horizontal, 18)
         .padding(.top, 12)
