@@ -45,7 +45,7 @@ struct AuxQuizView: View {
                     CardMeta(tag: "Passato prossimo", round: quiz.round)
                         .padding(.bottom, 10)
 
-                    Button { sheet = .verb(item.verb) } label: {
+                    Button { sheet = .auxVerb(item.verb) } label: {
                         Text(item.verb)
                             .font(.system(size: 13))
                             .foregroundStyle(Theme.inkSoft)

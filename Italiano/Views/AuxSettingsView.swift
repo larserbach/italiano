@@ -3,6 +3,7 @@ import SwiftUI
 struct AuxSettingsView: View {
     @Environment(ProgressStore.self) private var store
     @State private var quizRunning = false
+    @State private var sheet: InfoSheet?
 
     private let lengths: [LessonLength] = [.count(10), .count(20), .all]
 
@@ -17,7 +18,10 @@ struct AuxSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Verben")
-                    VerbPicker(selection: $store.aux.verbs, level: store.auxLevel(of:))
+                    VerbPicker(selection: $store.aux.verbs,
+                               level: store.auxLevel(of:),
+                               basicPreview: true,
+                               onDetails: { sheet = .auxVerb($0) })
                 }
 
                 VStack(alignment: .leading, spacing: 7) {
@@ -40,6 +44,7 @@ struct AuxSettingsView: View {
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .infoSheet($sheet)
         .fullScreenCover(isPresented: $quizRunning) {
             AuxQuizView(store: store)
         }

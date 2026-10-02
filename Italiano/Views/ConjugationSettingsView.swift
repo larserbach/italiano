@@ -94,6 +94,8 @@ struct VerbPicker: View {
     var isMistake: (String) -> Bool = { _ in false }
     /// When set, long-pressing a chip previews the verb's level in every tense.
     var tenseLevels: ((String) -> [Tense: Int])? = nil
+    /// Otherwise, long-pressing previews basic facts about the verb (meaning, group, Passato prossimo).
+    var basicPreview = false
     var onDetails: ((String) -> Void)? = nil
 
     @AppStorage(Tutorial.verbRing.defaultsKey) private var coachSeen = false
@@ -101,9 +103,9 @@ struct VerbPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !coachSeen {
-                CoachMark(text: tenseLevels == nil
-                              ? "Der Ring zeigt das Level des Verbs."
-                              : "Der Ring zeigt das Level des Verbs in den gewählten Zeiten. Lange drücken für Details.",
+                CoachMark(text: "Der Ring zeigt das Level des Verbs"
+                              + (tenseLevels == nil ? "." : " in den gewählten Zeiten.")
+                              + (onDetails == nil ? "" : " Lange drücken für Details."),
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)
             }
@@ -127,7 +129,10 @@ struct VerbPicker: View {
                             }
                             .buttonStyle(ChipStyle(active: selection.contains(verb),
                                                    accent: mistake ? Theme.brick : nil))
-                            .modifier(TenseLevelsMenu(verb: verb, levels: tenseLevels?(verb), onDetails: { verb in
+                            .modifier(VerbPreviewMenu(verb: verb,
+                                                      levels: tenseLevels?(verb),
+                                                      basicLevel: basicPreview ? level(verb) : nil,
+                                                      onDetails: { verb in
                                 coachSeen = true
                                 onDetails?(verb)
                             }))
@@ -159,22 +164,27 @@ private struct CoachMark: View {
     }
 }
 
-/// Long-press on a verb chip: previews the level per tense, with a link to the verb sheet.
-private struct TenseLevelsMenu: ViewModifier {
+/// Long-press on a verb chip: previews the verb (level per tense, or basic facts), with a link to the verb sheet.
+private struct VerbPreviewMenu: ViewModifier {
     let verb: String
     let levels: [Tense: Int]?
+    let basicLevel: Int?
     let onDetails: ((String) -> Void)?
 
     func body(content: Content) -> some View {
-        if let levels {
+        if levels != nil || basicLevel != nil {
             content.contextMenu {
                 if let onDetails {
                     Button("Verb-Details", systemImage: "info.circle") { onDetails(verb) }
                 }
             } preview: {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(verb).font(Theme.display(20))
-                    TenseBreakdown(levels: levels)
+                    if let levels {
+                        Text(verb).font(Theme.display(20))
+                        TenseBreakdown(levels: levels)
+                    } else if let basicLevel {
+                        BasicVerbInfo(verb: VerbLibrary.verb(verb), level: basicLevel)
+                    }
                 }
                 .padding(18)
                 .frame(width: 300, alignment: .leading)
@@ -183,6 +193,30 @@ private struct TenseLevelsMenu: ViewModifier {
             }
         } else {
             content
+        }
+    }
+}
+
+private struct BasicVerbInfo: View {
+    let verb: Verb
+    let level: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(verb.infinitive).font(Theme.display(20))
+                Spacer()
+                VerbRing(level: level)
+            }
+            Text("bedeutet auf Deutsch: „\(verb.meaning)“")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.inkSoft)
+            Text(verb.groupLabel)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.inkSoft)
+            Text("Passato prossimo: \(verb.italian(.passatoprossimo, 0))")
+                .font(.system(size: 14))
+                .padding(.top, 4)
         }
     }
 }
