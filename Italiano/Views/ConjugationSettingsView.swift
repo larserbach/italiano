@@ -14,7 +14,7 @@ struct ConjugationSettingsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 ScreenHeader(title: "Coniugazione",
-                             lede: "Wenige Verben, viele Formen. Stell deine Lektion zusammen, dann geht's los.")
+                             lede: "Such dir Verben und Zeiten aus — dann kann die Lektion starten.")
 
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Verben")
@@ -118,9 +118,29 @@ struct VerbPicker: View {
             }
             ForEach(VerbLibrary.groups) { group in
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(group.label)
-                        .font(Theme.display(13, weight: .regular))
+                    let allSelected = group.verbs.allSatisfy(selection.contains)
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text(group.label)
+                            .font(Theme.display(13, weight: .regular))
+                            .foregroundStyle(Theme.gold)
+                        Spacer(minLength: 0)
+                        Button(allSelected ? "Alle abwählen" : "Alle auswählen") {
+                            if allSelected {
+                                let rest = selection.subtracting(group.verbs)
+                                // At least one verb always stays selected.
+                                selection = rest.isEmpty ? Set(group.verbs.prefix(1)) : rest
+                            } else {
+                                selection.formUnion(group.verbs)
+                            }
+                        }
+                        .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Theme.gold)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .overlay(Capsule().stroke(Theme.gold.opacity(0.6), lineWidth: 1))
+                        .contentShape(Capsule())
+                        .fixedSize()
+                    }
                     FlowLayout {
                         ForEach(group.verbs, id: \.self) { verb in
                             let mistake = isMistake(verb)
