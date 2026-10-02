@@ -144,6 +144,22 @@ struct Verb: Identifiable {
     /// "-are", "-ere", … or "unregelmäßig".
     var groupLabel: String { isIrregular ? "unregelmäßig" : group.rawValue }
 
+    /// A form as shown in the conjugation table: both genders where the participle agrees
+    /// ("sono andato/a", "siamo andati/e"), and accepted variants ("fa' / fai").
+    func tableForm(_ tense: Tense, _ person: Int) -> String? {
+        guard hasForm(tense, person) else { return nil }
+        let main = italian(tense, person)
+        var form = main
+        if isGendered(tense) {
+            form += "/" + String(italian(tense, person, gender: .feminine).suffix(1))
+        }
+        // "fa" is only fa' typed without the apostrophe, so it is accepted but not shown.
+        for alternative in alternatives[tense]?[person] ?? [] where alternative + "'" != main {
+            form += " / \(alternative)"
+        }
+        return form
+    }
+
     /// Every answer that counts as correct, main form first.
     func acceptedAnswers(_ tense: Tense, _ person: Int, gender: Gender?) -> [String] {
         [italian(tense, person, gender: gender)] + (alternatives[tense]?[person] ?? [])
@@ -352,5 +368,17 @@ enum VerbLibrary {
         return Set(counts.filter { $0.value > 1 }.keys)
     }()
 
-    static func needsGermanHint(_ verb: Verb) -> Bool { ambiguousGerman.contains(verb.germanInfinitive) }
+    /// Verbs whose German prompts could also be answered with another verb of the group, although
+    /// the German words differ: "ich gehe" fits andare and camminare, "ich kann" potere and sapere.
+    static let germanOverlaps: [Set<String>] = [
+        ["andare", "camminare", "guidare"],
+        ["potere", "sapere"],
+        ["essere", "stare", "restare", "rimanere"],
+        ["vedere", "guardare"],
+    ]
+
+    static func needsGermanHint(_ verb: Verb) -> Bool {
+        ambiguousGerman.contains(verb.germanInfinitive)
+            || germanOverlaps.contains { $0.contains(verb.infinitive) }
+    }
 }

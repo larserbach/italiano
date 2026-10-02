@@ -22,7 +22,7 @@ It has two exercises:
   most frequent mistakes. Only first attempts count.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo.
 
-Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means and its own spelling notes.
+Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 Settings and progress are saved on the device.
 
 ## Run it on your iPhone
