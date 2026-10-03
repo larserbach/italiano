@@ -10,6 +10,7 @@ struct ConjugationItem: Hashable {
     var firstAttempt = true
 
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
+    var cell: Cell { Cell(verb: verb, tense: tense) }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
@@ -41,6 +42,13 @@ final class ConjugationLesson {
     /// Increases with every card shown, so views can reset per card even if an item repeats.
     private(set) var cardNumber = 0
     private(set) var feedback: Feedback = .none
+    /// Level changes and the unlock from round 1; set once round 1 is through.
+    private(set) var outcome: LessonOutcome?
+    /// Cells answered for the first time in this lesson, for the "Neu" badge.
+    private(set) var newCells: Set<Cell> = []
+    private var firstAnswers: [Cell: AnswerCounts] = [:]
+
+    var isPathLesson: Bool { store.conjugation.mode == .path }
 
     var phase: LessonPhase { rounds.phase }
     var current: ConjugationItem? { rounds.current }
@@ -58,6 +66,12 @@ final class ConjugationLesson {
         start()
     }
 
+    /// The free-practice pool: every form of the selected verbs and tenses that the path has unlocked.
+    static func freePool(_ store: ProgressStore) -> [ConjugationItem] {
+        pool(verbs: store.conjugation.verbs, tenses: store.conjugation.tenses)
+            .filter { store.isUnlocked(verb: $0.verb, tense: $0.tense) }
+    }
+
     static func pool(verbs: Set<String>, tenses: Set<Tense>) -> [ConjugationItem] {
         var pool: [ConjugationItem] = []
         for verb in VerbLibrary.orderedKeys where verbs.contains(verb) {
@@ -72,10 +86,21 @@ final class ConjugationLesson {
 
     func start() {
         store.resetLastMistakes()
+        outcome = nil
+        firstAnswers = [:]
         let settings = store.conjugation
-        let pool = Self.pool(verbs: settings.verbs, tenses: settings.tenses)
-        let count = settings.length.resolve(poolSize: pool.count)
-        let chosen = weightedSample(pool, count: count).shuffled().map { item -> ConjugationItem in
+        let selected: [ConjugationItem]
+        switch settings.mode {
+        case .path:
+            selected = Curriculum.composeLesson(store.curriculum, length: settings.length.resolve(poolSize: .max),
+                                                level: store.level(of:))
+        case .free:
+            let pool = Self.freePool(store)
+            selected = Curriculum.weightedSample(pool, count: settings.length.resolve(poolSize: pool.count),
+                                                 level: { self.store.level(of: $0.cell) })
+        }
+        newCells = Set(selected.map(\.cell)).filter { !store.history.hasAnswers(verb: $0.verb, tense: $0.tense) }
+        let chosen = selected.shuffled().map { item -> ConjugationItem in
             var item = item
             if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
             return item
@@ -92,7 +117,7 @@ final class ConjugationLesson {
         }
         busy = true
         let ok = !normalize(guess).isEmpty && item.accepted.contains { normalize($0) == normalize(guess) }
-        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: ok) }
+        if item.firstAttempt { recordFirstAttempt(item, correct: ok) }
 
         if ok {
             rounds.recordCorrect()
@@ -108,7 +133,7 @@ final class ConjugationLesson {
 
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
-        if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: false) }
+        if item.firstAttempt { recordFirstAttempt(item, correct: false) }
         recordMiss(item)
         feedback = .revealed(item.answer)
     }
@@ -130,6 +155,14 @@ final class ConjugationLesson {
         busy = false
         feedback = .none
         if current != nil { cardNumber += 1 }
+        if rounds.round == 1, phase != .question, outcome == nil {
+            outcome = store.finishFirstRound(results: firstAnswers)
+        }
+    }
+
+    private func recordFirstAttempt(_ item: ConjugationItem, correct: Bool) {
+        store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: correct)
+        firstAnswers[item.cell, default: AnswerCounts()] += AnswerCounts(correct: correct ? 1 : 0, mistakes: correct ? 0 : 1)
     }
 
     private func recordMiss(_ item: ConjugationItem) {
@@ -138,16 +171,6 @@ final class ConjugationLesson {
         let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
         rounds.recordMiss(retry: retry, key: item.key,
                           label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
-    }
-
-    /// Weighted sampling without replacement: a level 0 verb×tense is five times as likely as a mastered one.
-    private func weightedSample(_ pool: [ConjugationItem], count: Int) -> [ConjugationItem] {
-        guard count < pool.count else { return pool }
-        let scored = pool.map { item -> (ConjugationItem, Double) in
-            let weight = 1 + Double(ProgressStore.maxLevel - store.level(of: item.verb, tense: item.tense)) * 0.4
-            return (item, pow(Double.random(in: 0..<1), 1 / weight))
-        }
-        return scored.sorted { $0.1 > $1.1 }.prefix(count).map(\.0)
     }
 }
 

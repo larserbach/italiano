@@ -109,6 +109,11 @@ final class AnswerHistory {
         save()
     }
 
+    func hasAnswers(verb: String, tense: Tense) -> Bool {
+        let cell = "\(verb)|\(tense.rawValue)"
+        return days.values.contains { $0[cell] != nil }
+    }
+
     var firstDay: Date? { days.keys.min().flatMap { date(fromKey: $0) } }
     var isEmpty: Bool { days.isEmpty }
 

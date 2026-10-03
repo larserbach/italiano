@@ -17,6 +17,19 @@ enum Tense: String, CaseIterable, Codable, Identifiable {
         }
     }
 
+    /// For tight spaces such as the learning-path overview.
+    var shortLabel: String {
+        switch self {
+        case .presente: "Pres."
+        case .passatoprossimo: "Pass. pr."
+        case .imperfetto: "Imperf."
+        case .futuro: "Futuro"
+        case .condizionale: "Cond."
+        case .congiuntivo: "Cong."
+        case .imperativo: "Imper."
+        }
+    }
+
     /// Person indices that exist in this tense (there is no io-form of the imperative).
     var persons: Range<Int> { self == .imperativo ? 1..<6 : 0..<6 }
 }

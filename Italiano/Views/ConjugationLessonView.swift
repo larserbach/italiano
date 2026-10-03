@@ -30,7 +30,9 @@ struct ConjugationLessonView: View {
                     firstTry: lesson.rounds.firstTryCorrect, accuracy: lesson.rounds.accuracy,
                     missedTitle: "Diese Formen waren kniffelig", missed: lesson.rounds.missedForms,
                     back: { dismiss() },
-                    repeatTitle: "Lektion wiederholen", repeatAction: lesson.start)
+                    repeatTitle: lesson.isPathLesson ? "Nächste Lektion" : "Lektion wiederholen",
+                    repeatAction: lesson.start,
+                    sections: summarySections)
             }
         }
         .screenBackground()
@@ -49,8 +51,9 @@ struct ConjugationLessonView: View {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    if lesson.rounds.round > 1 {
-                        CardMeta(tag: nil, round: lesson.rounds.round)
+                    let isNew = lesson.newCells.contains(item.cell)
+                    if lesson.rounds.round > 1 || isNew {
+                        CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
                             .padding(.bottom, 10)
                     }
 
@@ -156,6 +159,25 @@ struct ConjugationLessonView: View {
     private var genderHint: String {
         guard let item = lesson.current, let gender = item.gender else { return "" }
         return item.marker == nil ? item.pronoun : gender.spokenName
+    }
+
+    private var summarySections: [SummarySection] {
+        guard let outcome = lesson.outcome else { return [] }
+        var sections: [SummarySection] = []
+        if let unlock = outcome.unlock {
+            let cell = unlock.cell
+            let row: SummarySection.Row = switch unlock.kind {
+            case .verb: .init(label: "Neues Verb", value: "\(cell.verb) · \(cell.tense.label)")
+            case .tense: .init(label: "Neue Zeit", value: "\(cell.verb) · \(cell.tense.label)")
+            }
+            sections.append(SummarySection(title: "Neu freigeschaltet", rows: [row], highlighted: true))
+        }
+        if !outcome.levelChanges.isEmpty {
+            sections.append(SummarySection(title: "Stufen", rows: outcome.levelChanges.map {
+                .init(label: "\($0.cell.verb) · \($0.cell.tense.label)", value: "\($0.from) → \($0.to)")
+            }))
+        }
+        return sections
     }
 
     private func submit() {

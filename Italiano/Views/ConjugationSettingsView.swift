@@ -9,32 +9,23 @@ struct ConjugationSettingsView: View {
 
     var body: some View {
         @Bindable var store = store
-        let poolSize = ConjugationLesson.pool(verbs: store.conjugation.verbs, tenses: store.conjugation.tenses).count
+        let mode = store.conjugation.mode
 
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 ScreenHeader(title: "Coniugazione",
-                             lede: "Such dir Verben und Zeiten aus — dann kann die Lektion starten.")
+                             lede: mode == .path
+                                 ? "Der Lernpfad wählt die Verben und Zeiten für dich und bringt Neues, sobald du so weit bist."
+                                 : "Übe frei mit allem, was du im Lernpfad schon freigeschaltet hast.")
 
-                VStack(alignment: .leading, spacing: 7) {
-                    ControlLabel("Verben")
-                    VerbPicker(selection: $store.conjugation.verbs,
-                               level: { store.level(of: $0, tenses: store.conjugation.tenses) },
-                               isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
-                               preview: .tenseLevels(store.levels(of:)),
-                               onDetails: { sheet = .verb($0) })
+                Picker("Modus", selection: $store.conjugation.mode) {
+                    ForEach(ConjugationMode.allCases) { Text($0.label).tag($0) }
                 }
+                .pickerStyle(.segmented)
 
-                VStack(alignment: .leading, spacing: 7) {
-                    ControlLabel("Zeiten")
-                    FlowLayout {
-                        ForEach(Tense.allCases) { tense in
-                            TenseChip(tense: tense,
-                                      active: store.conjugation.tenses.contains(tense),
-                                      toggle: { store.conjugation.tenses.toggleKeepingOne(tense) },
-                                      info: { sheet = .tense(tense) })
-                        }
-                    }
+                switch mode {
+                case .path: LearningPathSection(onDetails: { sheet = .verb($0) })
+                case .free: freeSelection
                 }
 
                 VStack(alignment: .leading, spacing: 7) {
@@ -53,7 +44,7 @@ struct ConjugationSettingsView: View {
         }
         .safeAreaInset(edge: .bottom) {
             StartBar(title: "Lektion starten",
-                     disabled: poolSize == 0) { lessonRunning = true }
+                     disabled: mode == .free && ConjugationLesson.freePool(store).isEmpty) { lessonRunning = true }
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
@@ -70,6 +61,104 @@ struct ConjugationSettingsView: View {
         .infoSheet($sheet)
         .fullScreenCover(isPresented: $lessonRunning) {
             ConjugationLessonView(store: store)
+        }
+    }
+
+    @ViewBuilder
+    private var freeSelection: some View {
+        @Bindable var store = store
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Verben")
+            VerbPicker(selection: $store.conjugation.verbs,
+                       available: Set(store.unlockedVerbs),
+                       level: { store.level(of: $0, tenses: store.conjugation.tenses) },
+                       isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
+                       preview: .tenseLevels(store.levels(of:)),
+                       onDetails: { sheet = .verb($0) })
+        }
+
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Zeiten")
+            FlowLayout {
+                ForEach(store.unlockedTenses) { tense in
+                    TenseChip(tense: tense,
+                              active: store.conjugation.tenses.contains(tense),
+                              toggle: { store.conjugation.tenses.toggleKeepingOne(tense) },
+                              info: { sheet = .tense(tense) })
+                }
+            }
+            Text("Neue Verben und Zeiten schaltest du im Lernpfad frei.")
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.inkSoft)
+                .padding(.top, 4)
+        }
+    }
+}
+
+/// The learning path at a glance: what comes next, and every unlocked verb with its tense levels.
+private struct LearningPathSection: View {
+    @Environment(ProgressStore.self) private var store
+    let onDetails: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Als Nächstes")
+            nextStep
+                .font(.system(size: 14))
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .card()
+        }
+
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Deine Verben")
+            VStack(spacing: 0) {
+                ForEach(store.unlockedVerbs.reversed(), id: \.self) { verb in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Button { onDetails(verb) } label: {
+                            Text(verb).font(Theme.display(17)).underline(color: Theme.goldSoft)
+                        }
+                        .buttonStyle(.plain)
+                        FlowLayout {
+                            ForEach(store.unlockedTenses(of: verb)) { tense in
+                                HStack(spacing: 5) {
+                                    VerbRing(level: store.level(of: verb, tense: tense))
+                                    Text(tense.shortLabel)
+                                        .font(.system(size: 12.5))
+                                        .foregroundStyle(Theme.inkSoft)
+                                }
+                                .padding(.trailing, 6)
+                                .accessibilityElement(children: .ignore)
+                                .accessibilityLabel("\(tense.label): Stufe \(store.level(of: verb, tense: tense))")
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var nextStep: some View {
+        let frontierLevel = store.level(of: store.curriculum.frontier, tense: .presente)
+        VStack(alignment: .leading, spacing: 8) {
+            if store.openCellCount >= Curriculum.openCap {
+                Text("Erst festigen: \(store.openCellCount) Einheiten liegen noch unter Stufe \(Curriculum.consolidatedLevel). Danach kommt Neues dazu.")
+            } else if let next = Curriculum.nextVerb(store.curriculum) {
+                if frontierLevel >= Curriculum.newVerbLevel {
+                    Text("Nach der nächsten Lektion kommt **\(next)** dazu.")
+                } else {
+                    Text("**\(next)** kommt dazu, sobald \(store.curriculum.frontier) im Presente Stufe \(Curriculum.newVerbLevel) erreicht (jetzt \(frontierLevel)).")
+                }
+            } else {
+                Text("Alle Verben sind freigeschaltet.")
+            }
+            Text("Eine neue Zeit kommt bei einem Verb dazu, sobald seine letzte Zeit Stufe \(Curriculum.consolidatedLevel) erreicht. Pro Lektion steigt eine Stufe höchstens um eins.")
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.inkSoft)
         }
     }
 }
@@ -90,12 +179,22 @@ enum VerbPreview {
 
 struct VerbPicker: View {
     @Binding var selection: Set<String>
+    /// Limits the picker to these verbs; groups without any are left out.
+    var available: Set<String>? = nil
     let level: (String) -> Int
     var isMistake: (String) -> Bool = { _ in false }
     let preview: VerbPreview
     var onDetails: ((String) -> Void)? = nil
 
     @AppStorage(Tutorial.verbRing.defaultsKey) private var coachSeen = false
+
+    private var groups: [VerbGroupSection] {
+        guard let available else { return VerbLibrary.groups }
+        return VerbLibrary.groups.compactMap { group in
+            let verbs = group.verbs.filter(available.contains)
+            return verbs.isEmpty ? nil : VerbGroupSection(label: group.label, verbs: verbs)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -106,7 +205,7 @@ struct VerbPicker: View {
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)
             }
-            ForEach(VerbLibrary.groups) { group in
+            ForEach(groups) { group in
                 VStack(alignment: .leading, spacing: 6) {
                     let allSelected = group.verbs.allSatisfy(selection.contains)
                     HStack(alignment: .firstTextBaseline, spacing: 10) {

@@ -83,6 +83,20 @@ struct RoundCompleteView: View {
     }
 }
 
+/// An extra list in the lesson summary, such as what the lesson unlocked.
+struct SummarySection: Identifiable {
+    struct Row: Identifiable {
+        let label: String
+        let value: String
+        var id: String { label }
+    }
+
+    let title: String
+    let rows: [Row]
+    var highlighted = false
+    var id: String { title }
+}
+
 struct SummaryView: View {
     let title: String
     let lede: String
@@ -95,6 +109,8 @@ struct SummaryView: View {
     let back: () -> Void
     let repeatTitle: String
     let repeatAction: () -> Void
+    /// Shown between the stats and the missed forms.
+    var sections: [SummarySection] = []
 
     var body: some View {
         ScrollView {
@@ -105,20 +121,26 @@ struct SummaryView: View {
                     StatTile(value: "\(firstTry)", label: "Auf Anhieb")
                     StatTile(value: "\(accuracy)%", label: "Trefferquote")
                 }
+                ForEach(sections) { section in
+                    let list = rowList(section.rows)
+                    if section.highlighted {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ControlLabel(section.title)
+                            list.padding(.horizontal, 10)
+                                .background(Theme.goldSoft.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.gold))
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 4) {
+                            ControlLabel(section.title)
+                            list
+                        }
+                    }
+                }
                 if !missed.isEmpty {
                     VStack(alignment: .leading, spacing: 4) {
                         ControlLabel(missedTitle)
-                        ForEach(missed) { form in
-                            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                                Text(form.label).foregroundStyle(Theme.inkSoft)
-                                Spacer()
-                                Text(form.answer).fontWeight(.semibold)
-                            }
-                            .font(.system(size: 14.5))
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 4)
-                            .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
-                        }
+                        rowList(missed.map { SummarySection.Row(label: $0.label, value: $0.answer) })
                     }
                 }
             }
@@ -139,6 +161,24 @@ struct SummaryView: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 10)
             .background(Theme.paper.ignoresSafeArea(edges: .bottom))
+        }
+    }
+
+    private func rowList(_ rows: [SummarySection.Row]) -> some View {
+        VStack(spacing: 0) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Text(row.label).foregroundStyle(Theme.inkSoft)
+                    Spacer()
+                    Text(row.value).fontWeight(.semibold)
+                }
+                .font(.system(size: 14.5))
+                .padding(.vertical, 10)
+                .padding(.horizontal, 4)
+                .overlay(alignment: .bottom) {
+                    if index < rows.count - 1 { Rectangle().fill(Theme.line).frame(height: 1) }
+                }
+            }
         }
     }
 }

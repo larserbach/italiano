@@ -71,7 +71,9 @@ final class IrregularVerbTests: XCTestCase {
     func testImperativeAlternativesAreAccepted() throws {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests")
+        seedCurriculum([("fare", .presente), ("fare", .imperativo)], in: defaults)
         let store = ProgressStore(defaults: defaults, historyURL: nil)
+        store.conjugation.mode = .free
         store.conjugation.verbs = ["fare"]
         store.conjugation.tenses = [.imperativo]
         store.conjugation.length = .count(5)
@@ -94,8 +96,7 @@ final class IrregularVerbTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests2")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests2")
         let store = ProgressStore(defaults: defaults, historyURL: nil)
-        store.recordFirstAttempt(verb: "potere", tense: .presente, correct: true)
-        store.recordFirstAttempt(verb: "potere", tense: .presente, correct: true)
+        store.raise("potere", .presente, lessons: 2)
         XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]), 2)
     }
 
@@ -129,6 +130,7 @@ final class IrregularVerbTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests3")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests3")
         let regular = Set(VerbCatalog.seeds.map(\.infinitive))
+        seedCurriculum(regular.map { ($0, .presente) }, in: defaults)
         let first = ProgressStore(defaults: defaults, historyURL: nil)
         first.conjugation.verbs = regular
         XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).conjugation.verbs, regular)

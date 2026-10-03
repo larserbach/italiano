@@ -32,7 +32,7 @@ struct SettingsView: View {
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Fortschritt")
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Alle Level, die Statistik und die markierten Fehler auf null setzen. Deine Einstellungen bleiben erhalten.")
+                        Text("Alle Level, den Lernpfad, die Statistik und die markierten Fehler auf null setzen. Die Lektionslängen bleiben erhalten.")
                             .font(.system(size: 13.5))
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
@@ -64,10 +64,11 @@ struct SettingsView: View {
             Text("""
                 Das passiert:
                 • Alle Level in Coniugazione und Essere o avere? springen auf 0.
+                • Der Lernpfad beginnt wieder mit parlare im Presente.
                 • Die Statistik wird gelöscht.
                 • Die rot markierten Fehler der letzten Lektion verschwinden.
 
-                Das lässt sich nicht rückgängig machen. Verben, Zeiten und Lektionslänge bleiben wie sie sind.
+                Das lässt sich nicht rückgängig machen. Die Lektionslängen und die Verbauswahl bei Essere o avere? bleiben wie sie sind.
                 """)
         }
     }
