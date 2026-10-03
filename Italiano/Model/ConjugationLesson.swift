@@ -2,12 +2,9 @@ import Foundation
 import Observation
 
 struct ConjugationItem: Hashable {
-    enum Side: Hashable { case italian, german }
-
     let verb: String
     let tense: Tense
     let person: Int
-    var shown: Side = .italian
     /// Set only when the answer depends on the subject's gender.
     var gender: Gender?
     var firstAttempt = true
@@ -80,7 +77,6 @@ final class ConjugationLesson {
         let count = settings.length.resolve(poolSize: pool.count)
         let chosen = weightedSample(pool, count: count).shuffled().map { item -> ConjugationItem in
             var item = item
-            item.shown = pickSide(settings.direction)
             if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
             return item
         }
@@ -142,14 +138,6 @@ final class ConjugationLesson {
         let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
         rounds.recordMiss(retry: retry, key: item.key,
                           label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
-    }
-
-    private func pickSide(_ direction: Direction) -> ConjugationItem.Side {
-        switch direction {
-        case .italian: .italian
-        case .german: .german
-        case .mixed: Bool.random() ? .italian : .german
-        }
     }
 
     /// Weighted sampling without replacement: a level 0 verb×tense is five times as likely as a mastered one.

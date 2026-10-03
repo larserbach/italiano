@@ -53,6 +53,8 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct GhostButtonStyle: ButtonStyle {
     var fullWidth = true
+    /// For actions that delete something.
+    var destructive = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -60,8 +62,8 @@ struct GhostButtonStyle: ButtonStyle {
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .padding(.vertical, 13)
             .padding(.horizontal, fullWidth ? 0 : 16)
-            .foregroundStyle(Theme.inkSoft)
-            .background(RoundedRectangle(cornerRadius: 10).stroke(Theme.line))
+            .foregroundStyle(destructive ? Theme.brick : Theme.inkSoft)
+            .background(RoundedRectangle(cornerRadius: 10).stroke(destructive ? Theme.brick.opacity(0.5) : Theme.line))
             .contentShape(Rectangle())
             .opacity(configuration.isPressed ? 0.6 : 1)
     }

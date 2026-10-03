@@ -110,15 +110,6 @@ final class IrregularVerbTests: XCTestCase {
         XCTAssertEqual(VerbLibrary.verb("parlare").tableForm(.presente, 0), "parlo")
     }
 
-    func testGermanHintOnlyForSharedGermanVerbs() {
-        let hinted = VerbLibrary.orderedKeys.filter { VerbLibrary.needsGermanHint(VerbLibrary.verb($0)) }
-        XCTAssertEqual(Set(hinted), ["rimanere", "restare", "andare", "camminare", "guidare", "potere", "sapere",
-                                     "essere", "stare", "vedere", "guardare"])
-        for verb in VerbLibrary.germanOverlaps.flatMap({ $0 }) {
-            XCTAssertNotNil(VerbLibrary.all[verb], verb)
-        }
-    }
-
     func testIrregularVerbsHaveTheirOwnGroup() {
         XCTAssertEqual(VerbLibrary.groups.last?.label, "Unregelmäßig")
         XCTAssertEqual(VerbLibrary.groups.last?.verbs.count, 30)
@@ -141,6 +132,5 @@ final class IrregularVerbTests: XCTestCase {
         let first = ProgressStore(defaults: defaults, historyURL: nil)
         first.conjugation.verbs = regular
         XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).conjugation.verbs, regular)
-        XCTAssertTrue(ProgressStore.ConjugationSettings().verbs.contains("essere"))
     }
 }

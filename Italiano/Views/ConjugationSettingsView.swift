@@ -38,16 +38,6 @@ struct ConjugationSettingsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 7) {
-                    ControlLabel("Richtung")
-                    FlowLayout {
-                        ForEach(Direction.allCases) { direction in
-                            Button(direction.label) { store.conjugation.direction = direction }
-                                .buttonStyle(ChipStyle(active: store.conjugation.direction == direction))
-                        }
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Lektionslänge")
                     FlowLayout {
                         ForEach(lengths) { length in

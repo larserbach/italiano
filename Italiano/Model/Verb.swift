@@ -359,25 +359,4 @@ enum VerbLibrary {
         VerbCatalog.groups + [VerbGroupSection(label: "Unregelmäßig", verbs: irregularKeys)]
 
     static func verb(_ key: String) -> Verb { all[key]! }
-
-    /// German infinitives shared by more than one verb (rimanere and restare are both "bleiben").
-    /// A German prompt for such a verb names the Italian infinitive, so the answer is unambiguous.
-    static let ambiguousGerman: Set<String> = {
-        let counts = Dictionary(grouping: all.values, by: \.germanInfinitive).mapValues(\.count)
-        return Set(counts.filter { $0.value > 1 }.keys)
-    }()
-
-    /// Verbs whose German prompts could also be answered with another verb of the group, although
-    /// the German words differ: "ich gehe" fits andare and camminare, "ich kann" potere and sapere.
-    static let germanOverlaps: [Set<String>] = [
-        ["andare", "camminare", "guidare"],
-        ["potere", "sapere"],
-        ["essere", "stare", "restare", "rimanere"],
-        ["vedere", "guardare"],
-    ]
-
-    static func needsGermanHint(_ verb: Verb) -> Bool {
-        ambiguousGerman.contains(verb.germanInfinitive)
-            || germanOverlaps.contains { $0.contains(verb.infinitive) }
-    }
 }

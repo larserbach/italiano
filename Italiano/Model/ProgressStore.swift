@@ -1,20 +1,6 @@
 import Foundation
 import Observation
 
-enum Direction: String, CaseIterable, Codable, Identifiable {
-    case italian = "it", german = "de", mixed
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .italian: "Italienisch zeigen"
-        case .german: "Deutsch zeigen"
-        case .mixed: "Gemischt"
-        }
-    }
-}
-
 enum LessonLength: Codable, Hashable, Identifiable {
     case count(Int)
     case all
@@ -42,9 +28,9 @@ final class ProgressStore {
     static let maxLevel = 10
 
     struct ConjugationSettings: Codable {
-        var verbs: Set<String> = Set(VerbLibrary.orderedKeys)
+        /// A fresh install starts small: just the first verb of the picker (parlare).
+        var verbs: Set<String> = Set(VerbLibrary.groups[0].verbs.prefix(1))
         var tenses: Set<Tense> = [.presente]
-        var direction: Direction = .italian
         var length: LessonLength = .count(5)
     }
 
@@ -84,7 +70,7 @@ final class ProgressStore {
         history = AnswerHistory(fileURL: historyURL)
         var conjugation = Self.load(ConjugationSettings.self, key: Keys.settings, from: defaults) ?? ConjugationSettings()
         conjugation.verbs.formIntersection(VerbLibrary.orderedKeys)
-        if conjugation.verbs.isEmpty { conjugation.verbs = Set(VerbLibrary.orderedKeys) }
+        if conjugation.verbs.isEmpty { conjugation.verbs = ConjugationSettings().verbs }
         if conjugation.tenses.isEmpty { conjugation.tenses = [.presente] }
         self.conjugation = conjugation
 
@@ -142,6 +128,17 @@ final class ProgressStore {
 
     func recordAuxAnswer(verb: String, correct: Bool) {
         auxLevels[verb] = Self.step(auxLevel(of: verb), correct: correct)
+    }
+
+    // MARK: Reset
+
+    /// Clears mastery levels (both exercises), the recent mistakes and the statistics.
+    /// Exercise settings are kept.
+    func resetProgress() {
+        tenseLevels = [:]
+        lastMistakes = []
+        auxLevels = [:]
+        history.reset()
     }
 
     // MARK: Helpers

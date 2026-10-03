@@ -102,10 +102,8 @@ final class LessonTests: XCTestCase {
         let store = ProgressStore(defaults: defaults, historyURL: nil)
         store.conjugation.verbs = ["capire"]
         store.conjugation.tenses = [.futuro]
-        store.conjugation.direction = .german
         let lesson = ConjugationLesson(store: store)
         let item = lesson.current!
-        XCTAssertEqual(item.shown, .german)
         lesson.submit(item.answer.uppercased())
         XCTAssertEqual(lesson.feedback, .correct(item.answer))
         XCTAssertEqual(store.level(of: "capire", tense: .futuro), 1)
@@ -184,6 +182,59 @@ final class LessonTests: XCTestCase {
         let reloaded = ProgressStore(defaults: defaults, historyURL: nil)
         XCTAssertEqual(reloaded.conjugation.tenses, [.imperfetto, .congiuntivo])
         XCTAssertEqual(reloaded.aux.length, .all)
+    }
+
+    func testResetProgressClearsLevelsMistakesAndHistoryButKeepsSettings() {
+        let historyURL = FileManager.default.temporaryDirectory.appendingPathComponent("reset-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: historyURL) }
+
+        let store = ProgressStore(defaults: defaults, historyURL: historyURL)
+        store.conjugation.tenses = [.futuro]
+        store.conjugation.length = .count(10)
+        store.recordFirstAttempt(verb: "parlare", tense: .presente, correct: true)
+        store.recordFirstAttempt(verb: "capire", tense: .futuro, correct: false)
+        store.recordAuxAnswer(verb: "arrivare", correct: true)
+        XCTAssertEqual(store.level(of: "parlare", tense: .presente), 1)
+        XCTAssertTrue(store.isRecentMistake(verb: "capire", tenses: [.futuro]))
+        XCTAssertFalse(store.history.isEmpty)
+
+        store.resetProgress()
+
+        for reloaded in [store, ProgressStore(defaults: defaults, historyURL: historyURL)] {
+            XCTAssertEqual(reloaded.level(of: "parlare", tense: .presente), 0)
+            XCTAssertEqual(reloaded.auxLevel(of: "arrivare"), 0)
+            XCTAssertFalse(reloaded.isRecentMistake(verb: "capire", tenses: [.futuro]))
+            XCTAssertTrue(reloaded.history.isEmpty)
+            XCTAssertEqual(reloaded.conjugation.tenses, [.futuro])
+            XCTAssertEqual(reloaded.conjugation.length, .count(10))
+        }
+    }
+
+    func testFreshInstallStartsWithTheFirstVerbPresenteAndFiveQuestions() {
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
+        XCTAssertEqual(store.conjugation.verbs, ["parlare"])
+        XCTAssertEqual(store.conjugation.tenses, [.presente])
+        XCTAssertEqual(store.conjugation.length, .count(5))
+    }
+
+    func testSavedSelectionWithoutKnownVerbsFallsBackToTheFirstVerb() throws {
+        var settings = ProgressStore.ConjugationSettings()
+        settings.verbs = ["xyz"]
+        defaults.set(try JSONEncoder().encode(settings), forKey: "coniugazione-settings")
+        XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).conjugation.verbs, ["parlare"])
+    }
+
+    func testSettingsSavedWithTheOldDirectionStillLoad() throws {
+        var settings = ProgressStore.ConjugationSettings()
+        settings.verbs = ["parlare"]
+        settings.tenses = [.futuro]
+        var saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(settings)) as? [String: Any])
+        saved["direction"] = "mixed"
+        defaults.set(try JSONSerialization.data(withJSONObject: saved), forKey: "coniugazione-settings")
+
+        let store = ProgressStore(defaults: defaults, historyURL: nil)
+        XCTAssertEqual(store.conjugation.verbs, ["parlare"])
+        XCTAssertEqual(store.conjugation.tenses, [.futuro])
     }
 
     func testAuxQuizMarksWrongChoice() {

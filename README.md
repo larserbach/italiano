@@ -7,7 +7,7 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
 
 - **Coniugazione**: type the conjugated form of a verb in one of 7 tenses (Presente,
   Passato prossimo, Imperfetto, Futuro, Condizionale, Congiuntivo, Imperativo). Prompts
-  show the Italian infinitive, the German form, or a mix. Wrong answers come back in
+  show the German form, with the Italian infinitive and the tense underneath. Wrong answers come back in
   repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
   Where the answer depends on the subject's gender (Passato prossimo with essere: sono arrivato /
@@ -25,7 +25,8 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 A one-time hint explains the verb rings; the settings screen (gear on the home screen) shows such hints again.
-Settings and progress are saved on the device.
+The same screen can reset all progress (levels, statistics and the red mistake marks) after a confirmation. Exercise settings stay.
+Settings and progress are saved on the device. A fresh install starts the Coniugazione page with only parlare, Presente indicativo and 5 questions selected.
 
 ## Run it on your iPhone
 

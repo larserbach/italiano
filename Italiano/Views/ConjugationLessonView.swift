@@ -49,8 +49,10 @@ struct ConjugationLessonView: View {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    CardMeta(tag: item.tense.label, round: lesson.rounds.round) { sheet = .tense(item.tense) }
-                        .padding(.bottom, 10)
+                    if lesson.rounds.round > 1 {
+                        CardMeta(tag: nil, round: lesson.rounds.round)
+                            .padding(.bottom, 10)
+                    }
 
                     prompt(item: item, verb: verb)
 
@@ -95,39 +97,32 @@ struct ConjugationLessonView: View {
         }
     }
 
-    @ViewBuilder
+    /// The German form, with the Italian infinitive and the tense underneath. The infinitive also
+    /// tells apart verbs that share a German prompt (rimanere/restare = bleiben).
     private func prompt(item: ConjugationItem, verb: Verb) -> some View {
-        switch item.shown {
-        case .german:
-            VStack(spacing: 3) {
-                let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
-                    .fontWeight(.regular)
-                    .foregroundStyle(Theme.inkSoft)
-                Text("\(pronoun)\(verb.german(item.tense, item.person))")
-                    .font(Theme.display(30, weight: .semibold))
-                    .multilineTextAlignment(.center)
-                // The German prompt also fits another verb (rimanere/restare = bleiben): say which one is meant.
-                if VerbLibrary.needsGermanHint(verb) {
-                    Text("mit \(verb.infinitive)")
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(Theme.inkSoft)
-                }
-            }
-            .padding(.bottom, 16)
-        case .italian:
-            VStack(spacing: 3) {
+        VStack(spacing: 6) {
+            let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
+                .fontWeight(.regular)
+                .foregroundStyle(Theme.inkSoft)
+            Text("\(pronoun)\(verb.german(item.tense, item.person))")
+                .font(Theme.display(30, weight: .semibold))
+                .multilineTextAlignment(.center)
+            HStack(spacing: 6) {
                 Button { sheet = .verb(verb.infinitive) } label: {
-                    Text(verb.infinitive)
-                        .font(Theme.display(30, weight: .semibold))
-                        .underline(color: Theme.goldSoft)
+                    Text(verb.infinitive).underline(color: Theme.goldSoft)
                 }
-                .buttonStyle(.plain)
-                Text("\(verb.groupLabel) · \(verb.meaning)")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(Theme.inkSoft)
+                Text("·")
+                Button { sheet = .tense(item.tense) } label: {
+                    Text(item.tense.label).underline(color: Theme.goldSoft)
+                }
             }
-            .padding(.bottom, 16)
+            .buttonStyle(.plain)
+            .font(.system(size: 13))
+            .foregroundStyle(Theme.inkSoft)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
         }
+        .padding(.bottom, 16)
     }
 
     @ViewBuilder

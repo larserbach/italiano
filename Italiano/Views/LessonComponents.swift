@@ -32,19 +32,21 @@ struct LessonTopBar: View {
 }
 
 struct CardMeta: View {
-    let tag: String
+    let tag: String?
     let round: Int
     var onTagTap: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            if let onTagTap {
-                Button(action: onTagTap) {
-                    Text(tag).underline(color: Theme.goldSoft)
+            if let tag {
+                if let onTagTap {
+                    Button(action: onTagTap) {
+                        Text(tag).underline(color: Theme.goldSoft)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text(tag)
                 }
-                .buttonStyle(.plain)
-            } else {
-                Text(tag)
             }
             if round > 1 {
                 Text("Wiederholungsrunde \(round)")
