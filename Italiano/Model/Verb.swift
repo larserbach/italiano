@@ -21,7 +21,7 @@ enum Tense: String, CaseIterable, Codable, Identifiable {
     var persons: Range<Int> { self == .imperativo ? 1..<6 : 0..<6 }
 }
 
-enum VerbGroup: String {
+enum VerbGroup: String, CaseIterable {
     case are = "-are"
     case ere = "-ere"
     case ire = "-ire"
@@ -137,6 +137,7 @@ struct Verb: Identifiable {
     var id: String { infinitive }
 
     func italian(_ tense: Tense, _ person: Int) -> String { italian[tense]?[person] ?? "" }
+    func german(_ tense: Tense, _ person: Int) -> String { german[tense]?[person] ?? "" }
 
     func hasForm(_ tense: Tense, _ person: Int) -> Bool { (italian[tense]?[person] ?? nil) != nil }
     func hasTense(_ tense: Tense) -> Bool { tense.persons.contains { hasForm(tense, $0) } }
@@ -191,7 +192,6 @@ struct Verb: Identifiable {
         }
         return nil
     }
-    func german(_ tense: Tense, _ person: Int) -> String { german[tense]?[person] ?? "" }
 
     init(seed: VerbSeed) {
         infinitive = seed.infinitive
@@ -270,6 +270,8 @@ enum Conjugator {
     static let seinPraesens = ["bin", "bist", "ist", "sind", "seid", "sind"]
     static let condizionaleEndings = ["ei", "esti", "ebbe", "emmo", "este", "ebbero"]
     static let wuerdeForms = ["würde", "würdest", "würde", "würden", "würdet", "würden"]
+    static let werdeForms = ["werde", "wirst", "wird", "werden", "werdet", "werden"]
+    static let reflexivePronouns = ["mich", "dich", "sich", "uns", "euch", "sich"]
     /// -iare verbs whose i is stressed (io scìo) and therefore kept before i and e.
     static let stressedIVerbs: Set<String> = ["sciare", "inviare", "spiare", "avviare"]
 
@@ -318,9 +320,6 @@ enum Conjugator {
         let tu = group == .are ? String(infinitive.dropLast(3)) + "a" : presente[1]
         return [nil, tu, congiuntivo[0], presente[3], presente[4], congiuntivo[5]]
     }
-
-    static let werdeForms = ["werde", "wirst", "wird", "werden", "werdet", "werden"]
-    static let reflexivePronouns = ["mich", "dich", "sich", "uns", "euch", "sich"]
 
     /// With a reflexive infinitive ("sich befinden") the pronoun follows the auxiliary:
     /// "habe mich befunden".

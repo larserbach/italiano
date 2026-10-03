@@ -36,7 +36,7 @@ enum LessonLength: Codable, Hashable, Identifiable {
     }
 }
 
-/// Everything that survives app restarts: lesson settings and per-verb mastery levels.
+/// Everything that survives app restarts: exercise settings, mastery levels and the answer history.
 @Observable
 final class ProgressStore {
     static let maxLevel = 10
@@ -60,7 +60,7 @@ final class ProgressStore {
     private(set) var tenseLevels: [String: [String: Int]] { didSet { save(tenseLevels, key: Keys.tenseLevels) } }
     /// "verb|tense" pairs answered wrong in round 1 of the most recently started lesson (shown in red).
     private(set) var lastMistakes: Set<String> { didSet { save(lastMistakes, key: Keys.lastMistakes) } }
-    /// Separate mastery for essere/avere — it measures a different skill.
+    /// Separate mastery for essere/avere — it measures a different skill. Only first attempts count.
     private(set) var auxLevels: [String: Int] { didSet { save(auxLevels, key: Keys.auxLevels) } }
 
     /// Every first answer, for the statistics.
@@ -108,6 +108,13 @@ final class ProgressStore {
     // MARK: Conjugation
 
     func level(of verb: String, tense: Tense) -> Int { tenseLevels[verb]?[tense.rawValue] ?? 0 }
+
+    /// The level in every tense the verb has forms in.
+    func levels(of verb: String) -> [Tense: Int] {
+        Dictionary(uniqueKeysWithValues: Tense.allCases.filter(VerbLibrary.verb(verb).hasTense).map {
+            ($0, level(of: verb, tense: $0))
+        })
+    }
 
     /// What a verb chip's ring shows: the average over the given tenses, rounded down.
     /// Tenses the verb has no forms in (potere has no imperative) are left out.

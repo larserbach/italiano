@@ -1,7 +1,8 @@
 import Charts
 import SwiftUI
 
-/// Correct answers vs. mistakes per tense over time, with a breakdown by verb type.
+/// Correct answers vs. mistakes over time: an overview broken down by tense, then one card per
+/// tense broken down by verb type.
 struct ConjugationStatsView: View {
     let history: AnswerHistory
     @AppStorage("stats-range") private var range: StatsRange = .days14

@@ -13,6 +13,8 @@ struct AnswerCounts: Codable, Equatable {
     static func + (lhs: AnswerCounts, rhs: AnswerCounts) -> AnswerCounts {
         AnswerCounts(correct: lhs.correct + rhs.correct, mistakes: lhs.mistakes + rhs.mistakes)
     }
+
+    static func += (lhs: inout AnswerCounts, rhs: AnswerCounts) { lhs = lhs + rhs }
 }
 
 enum StatsRange: String, CaseIterable, Identifiable {
@@ -67,10 +69,18 @@ final class AnswerHistory {
     private(set) var days: [String: [String: AnswerCounts]]
     let calendar: Calendar
     private let fileURL: URL?
+    /// "yyyy-MM-dd" in the calendar's time zone. Built once: queries parse every stored day.
+    private let formatter: DateFormatter
 
     init(fileURL: URL?, calendar: Calendar = .current) {
         self.fileURL = fileURL
         self.calendar = calendar
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.timeZone = calendar.timeZone
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        self.formatter = formatter
         if let fileURL, let data = try? Data(contentsOf: fileURL),
            let stored = try? JSONDecoder().decode([String: [String: AnswerCounts]].self, from: data) {
             days = stored
@@ -141,25 +151,23 @@ final class AnswerHistory {
     /// In the Passato prossimo the auxiliary matters, so -are verbs are split into avere and essere.
     /// In all other tenses only the ending group does.
     func byGroup(in window: StatsWindow, tense: Tense) -> [GroupStats] {
-        let perVerb = countsPerVerb(in: window, tense: tense)
-        let groups: [(String, [String])]
-        if tense == .passatoprossimo {
-            groups = VerbLibrary.groups.map {
-                ($0.label.replacingOccurrences(of: " im Passato prossimo", with: ""), $0.verbs)
-            }
-        } else {
-            let order: [(VerbGroup, String)] = [(.are, "-are"), (.ere, "-ere"), (.ire, "-ire"), (.ireIsc, "-ire (mit -isc-)")]
-            groups = order.map { group, label in
-                (label, VerbLibrary.orderedKeys.filter {
-                    let verb = VerbLibrary.verb($0)
-                    return verb.group == group && !verb.isIrregular
-                })
-            } + [("Unregelmäßig", VerbLibrary.irregularKeys)]
+        var sums: [String: (rank: Int, counts: AnswerCounts)] = [:]
+        for (key, counts) in countsPerVerb(in: window, tense: tense) {
+            let (rank, label) = Self.statsGroup(VerbLibrary.verb(key), tense: tense)
+            sums[label, default: (rank, AnswerCounts())].counts += counts
         }
-        return groups.compactMap { label, verbs in
-            let counts = verbs.compactMap { perVerb[$0] }.reduce(AnswerCounts(), +)
-            return counts.total == 0 ? nil : GroupStats(label: label, counts: counts)
+        return sums.sorted { $0.value.rank < $1.value.rank }
+            .map { GroupStats(label: $0.key, counts: $0.value.counts) }
+    }
+
+    /// A verb's row in `byGroup`, with a rank that orders rows like the verb picker.
+    private static func statsGroup(_ verb: Verb, tense: Tense) -> (rank: Int, label: String) {
+        if verb.isIrregular { return (Int.max, "Unregelmäßig") }
+        let rank = 2 * VerbGroup.allCases.firstIndex(of: verb.group)!
+        if tense == .passatoprossimo, verb.group == .are {
+            return (verb.auxiliary == .avere ? rank : rank + 1, "-are mit \(verb.auxiliary.rawValue)")
         }
+        return (rank, verb.group.rawValue)
     }
 
     func topMistakes(in window: StatsWindow, tense: Tense, limit: Int = 3) -> [VerbMistakes] {
@@ -176,7 +184,7 @@ final class AnswerHistory {
     private func countsPerVerb(in window: StatsWindow, tense: Tense) -> [String: AnswerCounts] {
         var result: [String: AnswerCounts] = [:]
         for entry in entries(in: window) where entry.tense == tense {
-            result[entry.verb, default: AnswerCounts()] = result[entry.verb, default: AnswerCounts()] + entry.counts
+            result[entry.verb, default: AnswerCounts()] += entry.counts
         }
         return result
     }
@@ -204,15 +212,6 @@ final class AnswerHistory {
             current = calendar.date(byAdding: unit, value: 1, to: current)!
         }
         return starts
-    }
-
-    private var formatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.timeZone = calendar.timeZone
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
     }
 
     private func dayKey(_ date: Date) -> String { formatter.string(from: date) }

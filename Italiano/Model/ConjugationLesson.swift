@@ -26,19 +26,8 @@ struct ConjugationItem: Hashable {
     }
 }
 
-struct MissedForm: Identifiable {
-    let id: String
-    let label: String
-    let answer: String
-    var misses: Int
-}
-
-/// Rounds work like the prototype: mistakes are collected and repeated in a
-/// new round once the current one is through, until everything is right.
 @Observable
 final class ConjugationLesson {
-    enum Phase { case question, roundComplete, summary }
-
     enum Feedback: Equatable {
         case none
         case correct(String)
@@ -49,21 +38,15 @@ final class ConjugationLesson {
     }
 
     private let store: ProgressStore
-    private var queue: [ConjugationItem] = []
-    private var roundMissed: [ConjugationItem] = []
-    private var missed: [String: MissedForm] = [:]
     private var busy = false
 
-    private(set) var phase: Phase = .question
-    private(set) var current: ConjugationItem?
+    private(set) var rounds = LessonRounds<ConjugationItem>([])
     /// Increases with every card shown, so views can reset per card even if an item repeats.
     private(set) var cardNumber = 0
     private(set) var feedback: Feedback = .none
-    private(set) var round = 1
-    private(set) var roundTotal = 0
-    private(set) var roundAnswered = 0
-    private(set) var roundCorrect = 0
-    private(set) var totalPlanned = 0
+
+    var phase: LessonPhase { rounds.phase }
+    var current: ConjugationItem? { rounds.current }
 
     /// After a wrong answer or a reveal the card stays until the learner confirms.
     var isReviewing: Bool {
@@ -72,11 +55,6 @@ final class ConjugationLesson {
         default: false
         }
     }
-
-    var roundMissedCount: Int { roundMissed.count }
-    var firstTryCorrect: Int { totalPlanned - missed.count }
-    var accuracy: Int { totalPlanned == 0 ? 0 : Int((Double(firstTryCorrect) / Double(totalPlanned) * 100).rounded()) }
-    var missedForms: [MissedForm] { missed.values.sorted { $0.misses > $1.misses } }
 
     init(store: ProgressStore) {
         self.store = store
@@ -106,15 +84,8 @@ final class ConjugationLesson {
             if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
             return item
         }
-        queue = chosen
-        roundMissed = []
-        missed = [:]
-        round = 1
-        roundTotal = chosen.count
-        roundAnswered = 0
-        roundCorrect = 0
-        totalPlanned = chosen.count
-        nextCard()
+        rounds = LessonRounds(chosen)
+        startCard()
     }
 
     func submit(_ guess: String) {
@@ -125,11 +96,10 @@ final class ConjugationLesson {
         }
         busy = true
         let ok = !normalize(guess).isEmpty && item.accepted.contains { normalize($0) == normalize(guess) }
-        roundAnswered += 1
         if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: ok) }
 
         if ok {
-            roundCorrect += 1
+            rounds.recordCorrect()
             feedback = .correct(item.answer)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.nextCard() }
         } else {
@@ -142,44 +112,36 @@ final class ConjugationLesson {
 
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
-        roundAnswered += 1
         if item.firstAttempt { store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: false) }
         recordMiss(item)
         feedback = .revealed(item.answer)
     }
 
     func startNextRound() {
-        round += 1
-        queue = roundMissed.shuffled()
-        roundMissed = []
-        roundTotal = queue.count
-        roundAnswered = 0
-        roundCorrect = 0
-        nextCard()
+        rounds.startNextRound()
+        startCard()
     }
 
     // MARK: Private
 
     private func nextCard() {
+        rounds.advance()
+        startCard()
+    }
+
+    /// Resets the per-card state for whatever `rounds` shows now.
+    private func startCard() {
         busy = false
         feedback = .none
-        guard !queue.isEmpty else {
-            current = nil
-            phase = roundMissed.isEmpty ? .summary : .roundComplete
-            return
-        }
-        current = queue.removeFirst()
-        cardNumber += 1
-        phase = .question
+        if current != nil { cardNumber += 1 }
     }
 
     private func recordMiss(_ item: ConjugationItem) {
         var retry = item
         retry.firstAttempt = false
-        roundMissed.append(retry)
         let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
-        let label = "\(pronoun) · \(item.verb) · \(item.tense.label)"
-        missed[item.key, default: MissedForm(id: item.key, label: label, answer: item.answer, misses: 0)].misses += 1
+        rounds.recordMiss(retry: retry, key: item.key,
+                          label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
 
     private func pickSide(_ direction: Direction) -> ConjugationItem.Side {

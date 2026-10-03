@@ -91,9 +91,9 @@ final class AnswerHistoryTests: XCTestCase {
         }
         let window = history.window(for: .days14, now: now)
         XCTAssertEqual(history.byGroup(in: window, tense: .passatoprossimo).map(\.label),
-                       ["-are mit avere", "-are mit essere", "-ire (mit -isc-)"])
+                       ["-are mit avere", "-are mit essere", "-ire (isc)"])
         let presente = history.byGroup(in: window, tense: .presente)
-        XCTAssertEqual(presente.map(\.label), ["-are", "-ire (mit -isc-)"])
+        XCTAssertEqual(presente.map(\.label), ["-are", "-ire (isc)"])
         XCTAssertEqual(presente.first?.counts, AnswerCounts(correct: 1, mistakes: 1))
     }
 

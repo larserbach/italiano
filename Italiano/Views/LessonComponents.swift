@@ -139,7 +139,6 @@ struct SummaryView: View {
             .background(Theme.paper.ignoresSafeArea(edges: .bottom))
         }
     }
-
 }
 
 struct StatTile: View {

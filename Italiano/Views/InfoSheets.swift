@@ -3,11 +3,14 @@ import SwiftUI
 enum InfoSheet: Identifiable {
     case tense(Tense)
     case verb(String)
+    /// The verb sheet with the essere/avere level instead of the per-tense levels, for the Aux screens.
+    case auxVerb(String)
 
     var id: String {
         switch self {
         case .tense(let tense): "tense-\(tense.rawValue)"
         case .verb(let verb): "verb-\(verb)"
+        case .auxVerb(let verb): "aux-verb-\(verb)"
         }
     }
 }
@@ -18,6 +21,7 @@ extension View {
             switch item {
             case .tense(let tense): TenseInfoView(tense: tense)
             case .verb(let verb): VerbInfoView(verb: VerbLibrary.verb(verb))
+            case .auxVerb(let verb): VerbInfoView(verb: VerbLibrary.verb(verb), showsTenseLevels: false)
             }
         }
     }
@@ -25,6 +29,7 @@ extension View {
 
 struct VerbInfoView: View {
     let verb: Verb
+    var showsTenseLevels = true
     @Environment(ProgressStore.self) private var store
     @Environment(\.dismiss) private var dismiss
 
@@ -50,12 +55,20 @@ struct VerbInfoView: View {
                     .padding(.top, 18)
                     .padding(.bottom, 4)
                 ConjugationTable(verb: verb)
-                ControlLabel("Level je Zeit")
-                    .padding(.top, 18)
-                    .padding(.bottom, 4)
-                TenseBreakdown(levels: Dictionary(uniqueKeysWithValues: Tense.allCases.filter(verb.hasTense).map {
-                    ($0, store.level(of: verb.infinitive, tense: $0))
-                }))
+                if showsTenseLevels {
+                    ControlLabel("Level je Zeit")
+                        .padding(.top, 18)
+                        .padding(.bottom, 4)
+                    TenseBreakdown(levels: store.levels(of: verb.infinitive))
+                } else {
+                    ControlLabel("Level")
+                        .padding(.top, 18)
+                        .padding(.bottom, 4)
+                    HStack(spacing: 10) {
+                        VerbRing(level: store.auxLevel(of: verb.infinitive))
+                        Text("Essere o avere?").font(.system(size: 14))
+                    }
+                }
             }
             .padding(24)
         }
@@ -108,7 +121,7 @@ struct ConjugationTable: View {
     }
 }
 
-/// One mastery ring per tense; tenses not practised yet are dimmed.
+/// One mastery ring per tense; tenses at level 0 are dimmed.
 struct TenseBreakdown: View {
     let levels: [Tense: Int]
 
