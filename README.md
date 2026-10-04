@@ -1,7 +1,6 @@
 # Italiano
 
-An iOS app for practising Italian verbs, for German speakers. It's a native SwiftUI port of
-the HTML prototype in [`prototype/index.html`](prototype/index.html).
+An iOS app for practising Italian verbs, for German speakers, written in SwiftUI.
 
 It has two exercises. Irregular verbs work in both, and the conjugation exercise has statistics:
 
@@ -50,10 +49,8 @@ app through TestFlight.
 | --- | --- |
 | `Italiano/Model` | Verb data, conjugation rules, lesson and quiz logic, saved progress |
 | `Italiano/Views` | SwiftUI screens |
-| `ItalianoTests` | Unit tests, including a check that every derived form matches the prototype |
-| `tools/` | Scripts that generate `VerbCatalog.swift`, `TenseInfo+Content.swift` and the test fixture from the prototype |
+| `ItalianoTests` | Unit tests, including a check that every derived form matches the fixture `verb-forms.json` |
 
-To add regular verbs, add them to the prototype and run `python3 tools/generate-swift-data.py`
-(this needs Node). Don't edit `Italiano/Model/VerbCatalog.swift` by hand, since the script overwrites it.
+To add regular verbs, add a `VerbSeed` to `Italiano/Model/VerbCatalog.swift` and list it in the matching group, then add its expected forms to `ItalianoTests/verb-forms.json`.
 The Passato prossimo, Condizionale, Congiuntivo and Imperativo forms are derived automatically.
 Irregular verbs are added by hand in `Italiano/Model/IrregularVerbCatalog.swift`.

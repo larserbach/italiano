@@ -9,7 +9,7 @@ struct MissedForm: Identifiable {
 
 enum LessonPhase { case question, roundComplete, summary }
 
-/// Round bookkeeping shared by both exercises. Rounds work like the prototype: mistakes are
+/// Round bookkeeping shared by both exercises. Mistakes are
 /// collected and repeated in a new round once the current one is through, until everything is right.
 struct LessonRounds<Item> {
     private var queue: [Item]

@@ -1,12 +1,12 @@
 import XCTest
 @testable import Italiano
 
-/// Every form the app derives must match what the HTML prototype produced.
+/// Every form the app derives must match the reference forms in the fixture.
 final class VerbFormsTests: XCTestCase {
     private typealias Fixture = [String: [String: [String: [String?]]]]
 
-    func testAllFormsMatchPrototype() throws {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "prototype-forms", withExtension: "json"))
+    func testAllFormsMatchFixture() throws {
+        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "verb-forms", withExtension: "json"))
         let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
 
         XCTAssertEqual(Set(fixture.keys), Set(VerbLibrary.orderedKeys.filter { !VerbLibrary.verb($0).isIrregular }))

@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Colors from the prototype, with the same dark-mode variants.
+/// App colors, each with a dark-mode variant.
 enum Theme {
     static let paper = Color(light: 0xFAF6EC, dark: 0x1C2128)
     static let paperRaised = Color(light: 0xF2EBDA, dark: 0x262C35)
