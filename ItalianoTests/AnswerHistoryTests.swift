@@ -111,7 +111,8 @@ final class AnswerHistoryTests: XCTestCase {
     func testLessonCountsFirstAttemptsOnly() {
         let defaults = UserDefaults(suiteName: "AnswerHistoryTests")!
         defaults.removePersistentDomain(forName: "AnswerHistoryTests")
-        let store = ProgressStore(defaults: defaults, historyURL: url)
+        // The statistics window is relative to the real date.
+        let store = makeStore(defaults, clock: TestClock(now: .now), historyURL: url)
         store.conjugation.verbs = ["parlare"]
         store.conjugation.tenses = [.presente]
         store.conjugation.length = .count(1)

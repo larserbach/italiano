@@ -1,91 +1,189 @@
 import Foundation
 
-/// One verb in one tense — the unit that is unlocked, practised and levelled.
-struct Cell: Hashable, Codable {
-    let verb: String
-    let tense: Tense
-}
-
-struct Unlock: Equatable {
-    enum Kind: String, Codable { case verb, tense }
-
-    let cell: Cell
-    let kind: Kind
-}
-
-/// What the learning path has unlocked so far.
-struct CurriculumState: Codable, Equatable {
-    /// In the order they were unlocked, newest last. Unlocked cells are never locked again.
-    private(set) var unlocked: [Cell]
-    /// The verb introduced most recently; only its Presente level decides about the next verb.
-    private(set) var frontier: String
-    private(set) var lastUnlockKind: Unlock.Kind?
-
-    static let initial = CurriculumState(unlocked: [Cell(verb: Curriculum.verbOrder[0], tense: .presente)],
-                                         frontier: Curriculum.verbOrder[0], lastUnlockKind: nil)
-
-    var newest: Cell { unlocked.last! }
-    var verbs: Set<String> { Set(unlocked.map(\.verb)) }
-
-    func contains(_ cell: Cell) -> Bool { unlocked.contains(cell) }
-
-    mutating func apply(_ unlock: Unlock) {
-        guard !contains(unlock.cell) else { return }
-        unlocked.append(unlock.cell)
-        lastUnlockKind = unlock.kind
-        if unlock.kind == .verb { frontier = unlock.cell.verb }
+/// What the learner is working on: the verb×tense cells in play, and what comes next.
+///
+/// New cells are added after lessons that went well: the last two lessons ≥ 90 % Good (a looked-up answer
+/// counts half) and nearly the whole pool well retrieved. In every open tense each verb family comes first,
+/// with new families and irregular verbs needing less; then new Presente vocabulary and more verbs in the
+/// newest tense take turns. The next tense opens once the newest one has 5 verbs and the Presente 10 per
+/// open tense. A regular family whose last 6 answers in a tense were all Good, across 4 persons, gets new
+/// verbs of that tense at once (fast track).
+struct LearningPool: Codable, Equatable {
+    struct FamilyTense: Hashable, Codable {
+        let family: VerbFamily
+        let tense: Tense
     }
 
-    /// Unlocks every cell the learner already has a level in, so existing progress carries over.
-    /// The latest of those verbs in the path becomes the frontier.
-    static func migrated(levels: [String: [String: Int]]) -> CurriculumState {
-        let cells = levels.flatMap { verb, tenses in
-            tenses.compactMap { raw, level -> Cell? in
-                guard level > 0, let tense = Tense(rawValue: raw), let entry = VerbLibrary.all[verb],
-                      entry.hasTense(tense) else { return nil }
-                return Cell(verb: verb, tense: tense)
+    /// An unbroken run of Good answers and the persons it covered.
+    struct Streak: Codable, Equatable {
+        var count = 0
+        var persons: Set<Int> = []
+
+        var grantsFastTrack: Bool { count >= Curriculum.fastTrackAnswers && persons.count >= Curriculum.fastTrackPersons }
+    }
+
+    struct Addition: Equatable {
+        enum Reason: Equatable { case ready, fastTrack }
+
+        let cell: Cell
+        let reason: Reason
+    }
+
+    /// What decides the next addition, for the decision itself and for showing it.
+    struct Readiness: Equatable {
+        let next: Cell
+        /// A new family in that tense or an irregular verb: the pool needs to be a little less settled.
+        let eager: Bool
+        let fastTrack: Bool
+        /// Share of Good points in the rated lessons, nil before any lesson.
+        let goodShare: Double?
+        let settledCells: Int
+        let settledNeeded: Int
+
+        var lessonsOK: Bool { (goodShare ?? 0) >= Curriculum.goodBar }
+        var poolOK: Bool { settledCells >= settledNeeded }
+    }
+
+    /// In the order they were added. Cells are never removed.
+    private(set) var cells: [Cell]
+    private(set) var addedAt: [Cell: Date]
+    /// First-attempt ratings of the last lesson; readiness looks at the last two lessons.
+    private(set) var previousRatings: [Rating] = []
+    private(set) var streaks: [FamilyTense: Streak] = [:]
+    /// Alternates between new Presente vocabulary and more verbs in the newest tense.
+    private(set) var deepenNext = false
+
+    /// Starts with the first -are verb, both auxiliaries and an -ire verb.
+    static let startCells = ["parlare", "avere", "essere", "dormire"].map { Cell(verb: $0, tense: .presente) }
+
+    static func initial(at now: Date) -> LearningPool { LearningPool(cells: startCells, at: now) }
+
+    /// Drops cells of verbs or tenses that no longer exist; starts over when nothing is left.
+    init(cells: [Cell], at now: Date) {
+        var seen = Set<Cell>()
+        let valid = cells.filter { (VerbLibrary.all[$0.verb]?.hasTense($0.tense) ?? false) && seen.insert($0).inserted }
+        self.cells = valid.isEmpty ? Self.startCells : valid
+        addedAt = Dictionary(uniqueKeysWithValues: self.cells.map { ($0, now) })
+    }
+
+    var verbs: Set<String> { Set(cells.map(\.verb)) }
+
+    func contains(_ cell: Cell) -> Bool { cells.contains(cell) }
+
+    func verbs(in tense: Tense) -> [String] { cells.filter { $0.tense == tense }.map(\.verb) }
+
+    var openTenses: [Tense] { Curriculum.tenseOrder.filter { tense in cells.contains { $0.tense == tense } } }
+
+    func isFresh(_ cell: Cell, at now: Date) -> Bool {
+        addedAt[cell].map { MemoryState.days(from: $0, to: now) < 1 } ?? false
+    }
+
+    // MARK: Answers and lessons
+
+    mutating func record(_ form: FormKey, _ rating: Rating) {
+        let family = VerbFamily(verb: form.verb)
+        guard family != .irregular else { return }
+        let key = FamilyTense(family: family, tense: form.tense)
+        switch rating {
+        case .good:
+            streaks[key, default: Streak()].count += 1
+            streaks[key, default: Streak()].persons.insert(form.person)
+        case .again:
+            streaks[key] = nil
+        case .correct:
+            break
+        }
+    }
+
+    /// Adds at most one cell after a lesson, judged on its first-attempt ratings and the one before.
+    mutating func finishLesson(ratings: [Rating], memory: LearningMemory, at now: Date) -> Addition? {
+        guard !ratings.isEmpty else { return nil }
+        let readiness = readiness(lessonRatings: ratings, memory: memory, at: now)
+        previousRatings = ratings
+        guard let readiness else { return nil }
+        let reason: Addition.Reason
+        if readiness.fastTrack {
+            reason = .fastTrack
+        } else if readiness.lessonsOK && readiness.poolOK {
+            reason = .ready
+        } else {
+            return nil
+        }
+        add(readiness.next, at: now)
+        return Addition(cell: readiness.next, reason: reason)
+    }
+
+    /// The next cell and how close it is. Without `lessonRatings` it shows the state before the next lesson.
+    func readiness(lessonRatings: [Rating] = [], memory: LearningMemory, at now: Date) -> Readiness? {
+        guard let next = nextCell() else { return nil }
+        let family = VerbFamily(verb: next.verb)
+        let eager = family == .irregular || !verbs(in: next.tense).map(VerbFamily.init).contains(family)
+        let recent = previousRatings + lessonRatings
+        let settled = cells.filter {
+            guard let state = memory.cells[$0] else { return false }
+            return state.retrievability(at: now) >= (eager ? 0.7 : 0.8) && state.lastRating == .good
+        }
+        let share = Double(cells.count) * (eager ? 0.8 : 0.9)
+        return Readiness(
+            next: next, eager: eager,
+            fastTrack: family != .irregular && (streaks[FamilyTense(family: family, tense: next.tense)]?.grantsFastTrack ?? false),
+            goodShare: recent.isEmpty ? nil : recent.map(\.goodPoints).reduce(0, +) / Double(recent.count),
+            settledCells: settled.count, settledNeeded: Int(share.rounded(.up)))
+    }
+
+    private mutating func add(_ cell: Cell, at now: Date) {
+        cells.append(cell)
+        addedAt[cell] = now
+        // The next addition is judged on fresh lessons only.
+        previousRatings = []
+        deepenNext = cell.tense == .presente
+    }
+
+    // MARK: What comes next
+
+    /// The next cell: cover every family in each open tense first; open the next tense once the newest one
+    /// has enough verbs and the Presente enough vocabulary; otherwise alternate between new Presente verbs
+    /// and more verbs in the newest tense, irregular and regular verbs taking turns.
+    func nextCell() -> Cell? {
+        for tense in openTenses {
+            let present = Set(verbs(in: tense).map(VerbFamily.init))
+            for family in VerbFamily.allCases where !present.contains(family) {
+                if let verb = candidates(tense, family).first { return Cell(verb: verb, tense: tense) }
             }
         }
-        return CurriculumState(sanitizing: cells.sorted { Curriculum.rank($0) < Curriculum.rank($1) })
-    }
-
-    /// Drops cells of verbs or tenses that no longer exist; falls back to the initial state when nothing is left.
-    init(sanitizing cells: [Cell], frontier: String? = nil, lastUnlockKind: Unlock.Kind? = nil) {
-        var seen = Set<Cell>()
-        let valid = cells.filter {
-            (VerbLibrary.all[$0.verb]?.hasTense($0.tense) ?? false) && seen.insert($0).inserted
+        let latest = openTenses.last ?? .presente
+        let latestIndex = Curriculum.tenseOrder.firstIndex(of: latest)!
+        if verbs(in: latest).count >= Curriculum.nextTenseVerbs,
+           verbs(in: .presente).count >= Curriculum.presenteVerbsPerTense * openTenses.count,
+           latestIndex + 1 < Curriculum.tenseOrder.count {
+            let next = Curriculum.tenseOrder[latestIndex + 1]
+            if let verb = candidates(next, nil).first { return Cell(verb: verb, tense: next) }
         }
-        guard !valid.isEmpty else { self = .initial; return }
-        unlocked = valid
-        let verbs = Set(valid.map(\.verb))
-        self.frontier = frontier.flatMap { verbs.contains($0) ? $0 : nil }
-            ?? Curriculum.verbOrder.last(where: verbs.contains)!
-        self.lastUnlockKind = lastUnlockKind
+        let tense = deepenNext && latest != .presente ? latest : .presente
+        let lastWasIrregular = cells.last.map { VerbFamily(verb: $0.verb) == .irregular } ?? false
+        let options = candidates(tense, nil)
+        let preferred = options.first { (VerbFamily(verb: $0) == .irregular) != lastWasIrregular }
+        if let verb = preferred ?? options.first { return Cell(verb: verb, tense: tense) }
+        return candidates(latest, nil).first.map { Cell(verb: $0, tense: latest) }
     }
 
-    private init(unlocked: [Cell], frontier: String, lastUnlockKind: Unlock.Kind?) {
-        self.unlocked = unlocked
-        self.frontier = frontier
-        self.lastUnlockKind = lastUnlockKind
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(sanitizing: try container.decode([Cell].self, forKey: .unlocked),
-                  frontier: try container.decodeIfPresent(String.self, forKey: .frontier),
-                  lastUnlockKind: try container.decodeIfPresent(Unlock.Kind.self, forKey: .lastUnlockKind))
+    /// Verbs that could join `tense`, in path order. Beyond the Presente only verbs already in the pool,
+    /// and only once they have the tense before (the one before that the verb has, for potere & co.).
+    private func candidates(_ tense: Tense, _ family: VerbFamily?) -> [String] {
+        let source = tense == .presente ? Curriculum.verbOrder : Curriculum.verbOrder.filter(verbs.contains)
+        return source.filter { verb in
+            let entry = VerbLibrary.verb(verb)
+            guard entry.hasTense(tense), !contains(Cell(verb: verb, tense: tense)),
+                  family == nil || VerbFamily(verb: verb) == family else { return false }
+            guard tense != .presente else { return true }
+            let earlier = Curriculum.tenseOrder.prefix { $0 != tense }.filter(entry.hasTense)
+            return earlier.last.map { contains(Cell(verb: verb, tense: $0)) } ?? true
+        }
     }
 }
 
-/// The learning path: which verb and tense come next, how a lesson changes a level, and what a lesson contains.
+/// The fixed parts of the learning path: orders, thresholds and how a lesson is put together.
 enum Curriculum {
-    /// A new verb comes once the frontier verb reaches this level in the Presente.
-    static let newVerbLevel = 3
-    /// A cell counts as consolidated from this level on, and unlocks the verb's next tense.
-    static let consolidatedLevel = 5
-    /// At most this many unlocked cells may be below `consolidatedLevel` before anything new is added.
-    static let openCap = 4
-
     static let tenseOrder: [Tense] = [.presente, .passatoprossimo, .imperfetto, .futuro, .imperativo, .condizionale, .congiuntivo]
 
     /// Regular groups take turns, and the most frequent irregular verbs come early.
@@ -99,6 +197,16 @@ enum Curriculum {
         "bastare", "cadere",
     ]
 
+    /// Share of Good points in the last two lessons needed for a new cell.
+    static let goodBar = 0.9
+    /// The next tense opens once the newest tense has this many verbs …
+    static let nextTenseVerbs = 5
+    /// … and the Presente this many verbs per open tense.
+    static let presenteVerbsPerTense = 10
+    /// Fast track for a regular family in a tense: this many Good answers in a row, over this many persons.
+    static let fastTrackAnswers = 6
+    static let fastTrackPersons = 4
+
     private static let verbRank = Dictionary(uniqueKeysWithValues: verbOrder.enumerated().map { ($1, $0) })
 
     /// Sorts cells by verb, then tense, along the path.
@@ -106,99 +214,53 @@ enum Curriculum {
         (verbRank[cell.verb] ?? Int.max, tenseOrder.firstIndex(of: cell.tense)!)
     }
 
-    // MARK: Levels
-
-    /// How a lesson changes a cell's level, judged on its first answers only.
-    static func levelChange(correct: Int, total: Int) -> Int {
-        guard total >= 2 else { return 0 }
-        let share = Double(correct) / Double(total)
-        if share >= 0.8 { return 1 }
-        if share < 0.5 { return -1 }
-        return 0
-    }
-
-    // MARK: Unlocking
-
-    static func openCount(_ state: CurriculumState, level: (Cell) -> Int) -> Int {
-        state.unlocked.filter { level($0) < consolidatedLevel }.count
-    }
-
-    /// The first verb of the path that has not been introduced yet.
-    static func nextVerb(_ state: CurriculumState) -> String? {
-        let introduced = state.verbs
-        return verbOrder.first { !introduced.contains($0) }
-    }
-
-    /// At most one unlock. A new verb needs the frontier at `newVerbLevel` in the Presente; a new tense
-    /// needs the verb's previous tense at `consolidatedLevel`. Nothing is added while `openCap` cells are open.
-    /// When both are due they take turns.
-    static func nextUnlock(_ state: CurriculumState, level: (Cell) -> Int) -> Unlock? {
-        guard openCount(state, level: level) < openCap else { return nil }
-
-        var verbUnlock: Unlock?
-        if level(Cell(verb: state.frontier, tense: .presente)) >= newVerbLevel, let verb = nextVerb(state) {
-            verbUnlock = Unlock(cell: Cell(verb: verb, tense: .presente), kind: .verb)
-        }
-        let tenseUnlock = verbOrder
-            .filter(state.verbs.contains)
-            .compactMap { nextTense(of: $0, in: state, level: level) }
-            .first
-            .map { Unlock(cell: $0, kind: .tense) }
-
-        return state.lastUnlockKind == .verb ? tenseUnlock ?? verbUnlock : verbUnlock ?? tenseUnlock
-    }
-
-    /// The verb's first missing tense, if the tense before it is consolidated.
-    private static func nextTense(of verb: String, in state: CurriculumState, level: (Cell) -> Int) -> Cell? {
-        let tenses = tenseOrder.filter(VerbLibrary.verb(verb).hasTense)
-        guard let index = tenses.firstIndex(where: { !state.contains(Cell(verb: verb, tense: $0)) }),
-              index > 0, level(Cell(verb: verb, tense: tenses[index - 1])) >= consolidatedLevel else { return nil }
-        return Cell(verb: verb, tense: tenses[index])
-    }
-
-    // MARK: Lessons
-
-    /// A learning-path lesson: a few cells with several persons each, so every cell gets enough answers
-    /// to be judged. The newest cell is always there and at least half the cells are still open.
-    /// Fewer than `length` items only when the unlocked cells have fewer forms than that.
-    static func composeLesson(_ state: CurriculumState, length: Int, level: (Cell) -> Int) -> [ConjugationItem] {
-        let newest = state.newest
-        var chosen = [newest]
-        let target = min((length + 3) / 4, state.unlocked.count)
-        let open = state.unlocked.filter { $0 != newest && level($0) < consolidatedLevel }
-        chosen += weightedSample(open, count: max(0, (target + 1) / 2 - chosen.count), level: level)
-        var rest = state.unlocked.filter { !chosen.contains($0) }
-        chosen += weightedSample(rest, count: target - chosen.count, level: level)
-
-        // Add cells while the chosen ones have too few forms to fill the lesson.
-        rest = weightedSample(state.unlocked.filter { !chosen.contains($0) }, count: .max, level: level)
-        while chosen.map(persons).map(\.count).reduce(0, +) < length, !rest.isEmpty {
-            chosen.append(rest.removeFirst())
-        }
-
-        // Deal persons round-robin so the cells share the lesson evenly.
-        var decks = chosen.map { persons($0).shuffled() }
-        var items: [ConjugationItem] = []
-        while items.count < length, decks.contains(where: { !$0.isEmpty }) {
-            for index in decks.indices where items.count < length && !decks[index].isEmpty {
-                let cell = chosen[index]
-                items.append(ConjugationItem(verb: cell.verb, tense: cell.tense, person: decks[index].removeFirst()))
-            }
-        }
-        return items
-    }
-
-    private static func persons(_ cell: Cell) -> [Int] {
+    static func forms(_ cell: Cell) -> [FormKey] {
         cell.tense.persons.filter { VerbLibrary.verb(cell.verb).hasForm(cell.tense, $0) }
+            .map { FormKey(verb: cell.verb, tense: cell.tense, person: $0) }
     }
 
-    /// Weighted sampling without replacement: level 0 is five times as likely as a mastered level.
-    static func weightedSample<T>(_ items: [T], count: Int, level: (T) -> Int) -> [T] {
-        guard count > 0 else { return [] }
-        let scored = items.map { item -> (T, Double) in
-            let weight = 1 + Double(ProgressStore.maxLevel - level(item)) * 0.4
-            return (item, pow(Double.random(in: 0..<1), 1 / weight))
+    /// Picks `length` forms, favouring what is least known (all three memory levels), difficult, freshly
+    /// added, or in a person × tense that lags behind the rest. At most 4 per verb×tense, unless there are
+    /// too few verb×tense to fill the lesson.
+    static func pickLesson<R: RandomNumberGenerator>(from candidates: [FormKey], pool: LearningPool, memory: LearningMemory,
+                                                     length: Int, at now: Date, using rng: inout R) -> [FormKey] {
+        guard !candidates.isEmpty else { return [] }
+        var known: [FormKey: Double] = [:]
+        for form in candidates { known[form] = memory.known(form, at: now) }
+        let mean = known.values.reduce(0, +) / Double(known.count)
+        // A person × tense that lags behind the average is trained more.
+        var sums: [PersonTense: (total: Double, count: Int)] = [:]
+        for (form, value) in known {
+            let key = PersonTense(form)
+            let sum = sums[key] ?? (0, 0)
+            sums[key] = (sum.total + value, sum.count + 1)
         }
-        return scored.sorted { $0.1 > $1.1 }.prefix(count).map(\.0)
+        let personBoost = sums.mapValues { max(0, mean - $0.total / Double($0.count)) * 1.5 }
+
+        let scored = known.keys.map { form -> (FormKey, Double) in
+            var need = (1 - known[form]!) * (0.7 + 0.06 * (memory.forms[form]?.difficulty ?? 5))
+            need += personBoost[PersonTense(form)] ?? 0
+            if pool.isFresh(form.cell, at: now) { need += 0.3 }
+            return (form, pow(Double.random(in: 0.001..<1, using: &rng), 1 / max(0.01, need * need)))
+        }
+        let cellCount = Set(candidates.map(\.cell)).count
+        let cap = max(4, (length + cellCount - 1) / cellCount)
+        var perCell: [Cell: Int] = [:]
+        var picked: [FormKey] = []
+        for (form, _) in scored.sorted(by: { $0.1 > $1.1 }) where picked.count < length && perCell[form.cell, default: 0] < cap {
+            picked.append(form)
+            perCell[form.cell, default: 0] += 1
+        }
+        return picked
+    }
+}
+
+private struct PersonTense: Hashable {
+    let tense: Tense
+    let person: Int
+
+    init(_ form: FormKey) {
+        tense = form.tense
+        person = form.person
     }
 }

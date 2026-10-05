@@ -16,7 +16,7 @@ struct ConjugationSettingsView: View {
                 ScreenHeader(title: "Coniugazione",
                              lede: mode == .path
                                  ? "Der Lernpfad wählt die Verben und Zeiten für dich und bringt Neues, sobald du so weit bist."
-                                 : "Übe frei mit allem, was du im Lernpfad schon freigeschaltet hast.")
+                                 : "Übe frei mit allem, was schon in deinem Lernpfad ist.")
 
                 Picker("Modus", selection: $store.conjugation.mode) {
                     ForEach(ConjugationMode.allCases) { Text($0.label).tag($0) }
@@ -24,7 +24,7 @@ struct ConjugationSettingsView: View {
                 .pickerStyle(.segmented)
 
                 switch mode {
-                case .path: LearningPathSection(onDetails: { sheet = .verb($0) })
+                case .path: LearningPathSection()
                 case .free: freeSelection
                 }
 
@@ -96,9 +96,9 @@ struct ConjugationSettingsView: View {
 }
 
 /// The learning path at a glance: what comes next, and every unlocked verb with its tense levels.
+/// A verb row opens its detailed progress.
 private struct LearningPathSection: View {
     @Environment(ProgressStore.self) private var store
-    let onDetails: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -114,51 +114,88 @@ private struct LearningPathSection: View {
             ControlLabel("Deine Verben")
             VStack(spacing: 0) {
                 ForEach(store.unlockedVerbs.reversed(), id: \.self) { verb in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button { onDetails(verb) } label: {
-                            Text(verb).font(Theme.display(17)).underline(color: Theme.goldSoft)
-                        }
-                        .buttonStyle(.plain)
-                        FlowLayout {
-                            ForEach(store.unlockedTenses(of: verb)) { tense in
-                                HStack(spacing: 5) {
-                                    VerbRing(level: store.level(of: verb, tense: tense))
-                                    Text(tense.shortLabel)
-                                        .font(.system(size: 12.5))
-                                        .foregroundStyle(Theme.inkSoft)
-                                }
-                                .padding(.trailing, 6)
-                                .accessibilityElement(children: .ignore)
-                                .accessibilityLabel("\(tense.label): Stufe \(store.level(of: verb, tense: tense))")
-                            }
-                        }
+                    NavigationLink {
+                        VerbProgressView(verb: verb)
+                    } label: {
+                        verbRow(verb)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, 12)
-                    .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
+                    .buttonStyle(.plain)
                 }
             }
         }
     }
 
+    private func verbRow(_ verb: String) -> some View {
+        HStack(alignment: .center, spacing: 10) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(verb).font(Theme.display(17))
+                FlowLayout {
+                    ForEach(store.unlockedTenses(of: verb)) { tense in
+                        HStack(spacing: 5) {
+                            VerbRing(level: store.level(of: verb, tense: tense))
+                            Text(tense.shortLabel)
+                                .font(.system(size: 12.5))
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                        .padding(.trailing, 6)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("\(tense.label): Stufe \(store.level(of: verb, tense: tense))")
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Theme.inkSoft)
+        }
+        .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
+    }
+
     @ViewBuilder
     private var nextStep: some View {
-        let frontierLevel = store.level(of: store.curriculum.frontier, tense: .presente)
         VStack(alignment: .leading, spacing: 8) {
-            if store.openCellCount >= Curriculum.openCap {
-                Text("Erst festigen: \(store.openCellCount) Einheiten liegen noch unter Stufe \(Curriculum.consolidatedLevel). Danach kommt Neues dazu.")
-            } else if let next = Curriculum.nextVerb(store.curriculum) {
-                if frontierLevel >= Curriculum.newVerbLevel {
-                    Text("Nach der nächsten Lektion kommt **\(next)** dazu.")
+            if let readiness = store.readiness {
+                let family = VerbFamily(verb: readiness.next.verb)
+                Text("**\(readiness.next.verb)** · \(readiness.next.tense.label)")
+                Text(reason(readiness, family: family))
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.inkSoft)
+                if readiness.fastTrack {
+                    Text("Schnellspur: \(family.label) im \(readiness.next.tense.label) sitzt – kommt nach der nächsten Lektion.")
+                        .font(.system(size: 13))
                 } else {
-                    Text("**\(next)** kommt dazu, sobald \(store.curriculum.frontier) im Presente Stufe \(Curriculum.newVerbLevel) erreicht (jetzt \(frontierLevel)).")
+                    VStack(alignment: .leading, spacing: 3) {
+                        check(readiness.lessonsOK, readiness.goodShare.map {
+                            "Letzte Lektion \(DaysText.percent($0)) gut (nötig \(DaysText.percent(Curriculum.goodBar)) über zwei Lektionen)"
+                        } ?? "Noch keine Lektion bewertet")
+                        check(readiness.poolOK, "\(readiness.settledCells) von \(store.pool.cells.count) Einheiten sitzen (nötig \(readiness.settledNeeded))")
+                    }
+                    .font(.system(size: 13))
                 }
             } else {
-                Text("Alle Verben sind freigeschaltet.")
+                Text("Alle Verben und Zeiten sind im Pool.")
             }
-            Text("Eine neue Zeit kommt bei einem Verb dazu, sobald seine letzte Zeit Stufe \(Curriculum.consolidatedLevel) erreicht. Pro Lektion steigt eine Stufe höchstens um eins.")
+            Text("Tippe ein Verb an, um seine Werte zu sehen.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.inkSoft)
+        }
+    }
+
+    private func reason(_ readiness: LearningPool.Readiness, family: VerbFamily) -> String {
+        if !store.pool.openTenses.contains(readiness.next.tense) { return "Neue Zeit" }
+        if !store.pool.verbs(in: readiness.next.tense).map(VerbFamily.init).contains(family) {
+            return "Neue Gruppe im \(readiness.next.tense.label): \(family.label)"
+        }
+        return family == .irregular ? "Unregelmäßiges Verb" : "Weiteres Verb (\(family.label))"
+    }
+
+    private func check(_ ok: Bool, _ text: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Image(systemName: ok ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(ok ? Theme.olive : Theme.inkSoft)
+            Text(text)
         }
     }
 }

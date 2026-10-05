@@ -71,8 +71,8 @@ final class IrregularVerbTests: XCTestCase {
     func testImperativeAlternativesAreAccepted() throws {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests")
-        seedCurriculum([("fare", .presente), ("fare", .imperativo)], in: defaults)
-        let store = ProgressStore(defaults: defaults, historyURL: nil)
+        seedPool([("fare", .presente), ("fare", .imperativo)], in: defaults)
+        let store = makeStore(defaults)
         store.conjugation.mode = .free
         store.conjugation.verbs = ["fare"]
         store.conjugation.tenses = [.imperativo]
@@ -95,9 +95,13 @@ final class IrregularVerbTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "IrregularVerbTests2")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests2")
-        let store = ProgressStore(defaults: defaults, historyURL: nil)
-        store.raise("potere", .presente, lessons: 2)
-        XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]), 2)
+        let clock = TestClock()
+        let store = makeStore(defaults, clock: clock)
+        store.practiseDaily("potere", .presente, days: 6, clock: clock)
+        XCTAssertGreaterThan(store.level(of: "potere", tense: .presente), 0)
+        // potere has no imperative, so it does not pull the average down.
+        XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]),
+                       store.level(of: "potere", tense: .presente))
     }
 
     func testTableFormsShowGendersAndVariants() {
@@ -130,9 +134,9 @@ final class IrregularVerbTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests3")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests3")
         let regular = Set(VerbCatalog.seeds.map(\.infinitive))
-        seedCurriculum(regular.map { ($0, .presente) }, in: defaults)
-        let first = ProgressStore(defaults: defaults, historyURL: nil)
+        seedPool(regular.map { ($0, .presente) }, in: defaults)
+        let first = makeStore(defaults)
         first.conjugation.verbs = regular
-        XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).conjugation.verbs, regular)
+        XCTAssertEqual(makeStore(defaults).conjugation.verbs, regular)
     }
 }

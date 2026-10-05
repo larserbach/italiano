@@ -41,7 +41,7 @@ enum VerbGroup: String, CaseIterable {
     case ireIsc = "-ire (isc)"
 }
 
-enum Auxiliary: String {
+enum Auxiliary: String, Codable {
     case avere, essere
 }
 

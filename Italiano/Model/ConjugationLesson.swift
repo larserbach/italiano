@@ -11,6 +11,7 @@ struct ConjugationItem: Hashable {
 
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
     var cell: Cell { Cell(verb: verb, tense: tense) }
+    var form: FormKey { FormKey(verb: verb, tense: tense, person: person) }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
@@ -42,11 +43,19 @@ final class ConjugationLesson {
     /// Increases with every card shown, so views can reset per card even if an item repeats.
     private(set) var cardNumber = 0
     private(set) var feedback: Feedback = .none
-    /// Level changes and the unlock from round 1; set once round 1 is through.
+    /// Stability changes and the pool addition from round 1; set once round 1 is through.
     private(set) var outcome: LessonOutcome?
     /// Cells answered for the first time in this lesson, for the "Neu" badge.
     private(set) var newCells: Set<Cell> = []
-    private var firstAnswers: [Cell: AnswerCounts] = [:]
+    /// Whether the learner opened the verb or tense description on the current card; a right answer then
+    /// counts as Correct instead of Good.
+    private(set) var lookedUp = false
+    /// Stabilities when the lesson started, to show what it changed.
+    private var stabilitiesBefore: [Cell: Double] = [:]
+    /// Cells with a first answer in this lesson.
+    private var answeredCells: Set<Cell> = []
+    /// First-attempt ratings of round 1.
+    private var ratings: [Rating] = []
 
     var isPathLesson: Bool { store.conjugation.mode == .path }
 
@@ -87,21 +96,22 @@ final class ConjugationLesson {
     func start() {
         store.resetLastMistakes()
         outcome = nil
-        firstAnswers = [:]
+        answeredCells = []
+        ratings = []
         let settings = store.conjugation
-        let selected: [ConjugationItem]
+        let selected: [FormKey]
         switch settings.mode {
         case .path:
-            selected = Curriculum.composeLesson(store.curriculum, length: settings.length.resolve(poolSize: .max),
-                                                level: store.level(of:))
+            selected = store.pickLesson(length: settings.length.resolve(poolSize: .max))
         case .free:
-            let pool = Self.freePool(store)
-            selected = Curriculum.weightedSample(pool, count: settings.length.resolve(poolSize: pool.count),
-                                                 level: { self.store.level(of: $0.cell) })
+            let pool = Self.freePool(store).map(\.form)
+            selected = store.pickLesson(length: settings.length.resolve(poolSize: pool.count), from: pool)
         }
-        newCells = Set(selected.map(\.cell)).filter { !store.history.hasAnswers(verb: $0.verb, tense: $0.tense) }
-        let chosen = selected.shuffled().map { item -> ConjugationItem in
-            var item = item
+        let cells = Set(selected.map(\.cell))
+        newCells = cells.filter { store.state(of: $0) == nil }
+        stabilitiesBefore = Dictionary(uniqueKeysWithValues: cells.compactMap { cell in store.state(of: cell).map { (cell, $0.stability) } })
+        let chosen = selected.shuffled().map { form -> ConjugationItem in
+            var item = ConjugationItem(verb: form.verb, tense: form.tense, person: form.person)
             if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
             return item
         }
@@ -117,7 +127,7 @@ final class ConjugationLesson {
         }
         busy = true
         let ok = !normalize(guess).isEmpty && item.accepted.contains { normalize($0) == normalize(guess) }
-        if item.firstAttempt { recordFirstAttempt(item, correct: ok) }
+        if item.firstAttempt { recordFirstAttempt(item, ok ? (lookedUp ? .correct : .good) : .again) }
 
         if ok {
             rounds.recordCorrect()
@@ -133,9 +143,15 @@ final class ConjugationLesson {
 
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
-        if item.firstAttempt { recordFirstAttempt(item, correct: false) }
+        if item.firstAttempt { recordFirstAttempt(item, .again) }
         recordMiss(item)
         feedback = .revealed(item.answer)
+    }
+
+    /// The learner opened the verb or tense description while answering.
+    func noteLookup() {
+        guard current != nil, !isReviewing else { return }
+        lookedUp = true
     }
 
     func startNextRound() {
@@ -154,15 +170,17 @@ final class ConjugationLesson {
     private func startCard() {
         busy = false
         feedback = .none
+        lookedUp = false
         if current != nil { cardNumber += 1 }
         if rounds.round == 1, phase != .question, outcome == nil {
-            outcome = store.finishFirstRound(results: firstAnswers)
+            outcome = store.finishLesson(ratings: ratings, practised: answeredCells, before: stabilitiesBefore)
         }
     }
 
-    private func recordFirstAttempt(_ item: ConjugationItem, correct: Bool) {
-        store.recordFirstAttempt(verb: item.verb, tense: item.tense, correct: correct)
-        firstAnswers[item.cell, default: AnswerCounts()] += AnswerCounts(correct: correct ? 1 : 0, mistakes: correct ? 0 : 1)
+    private func recordFirstAttempt(_ item: ConjugationItem, _ rating: Rating) {
+        store.record(item, rating)
+        answeredCells.insert(item.cell)
+        ratings.append(rating)
     }
 
     private func recordMiss(_ item: ConjugationItem) {

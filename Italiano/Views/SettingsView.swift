@@ -64,8 +64,8 @@ struct SettingsView: View {
             Text("""
                 Das passiert:
                 • Alle Level in Coniugazione und Essere o avere? springen auf 0.
-                • Der Lernpfad beginnt wieder mit parlare im Presente.
-                • Die Statistik wird gelöscht.
+                • Der Lernpfad beginnt wieder mit parlare, avere, essere und dormire im Presente.
+                • Die Statistik und das Antwortprotokoll werden gelöscht.
                 • Die rot markierten Fehler der letzten Lektion verschwinden.
 
                 Das lässt sich nicht rückgängig machen. Die Lektionslängen und die Verbauswahl bei Essere o avere? bleiben wie sie sind.

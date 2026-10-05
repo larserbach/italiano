@@ -111,11 +111,17 @@ struct ConjugationLessonView: View {
                 .font(Theme.display(30, weight: .semibold))
                 .multilineTextAlignment(.center)
             HStack(spacing: 6) {
-                Button { sheet = .verb(verb.infinitive) } label: {
+                Button {
+                    lesson.noteLookup()
+                    sheet = .verb(verb.infinitive)
+                } label: {
                     Text(verb.infinitive).underline(color: Theme.goldSoft)
                 }
                 Text("·")
-                Button { sheet = .tense(item.tense) } label: {
+                Button {
+                    lesson.noteLookup()
+                    sheet = .tense(item.tense)
+                } label: {
                     Text(item.tense.label).underline(color: Theme.goldSoft)
                 }
             }
@@ -132,7 +138,9 @@ struct ConjugationLessonView: View {
     private var feedbackText: some View {
         switch lesson.feedback {
         case .none: Text(" ")
-        case .correct(let answer): Text("Giusto! \(answer)").foregroundStyle(Theme.olive)
+        case .correct(let answer):
+            Text(lesson.lookedUp ? "Giusto! \(answer) · nachgeschaut, zählt halb" : "Giusto! \(answer)")
+                .foregroundStyle(Theme.olive)
         case .wrong(let answer): Text("Fast — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
         case .wrongGender(let answer):
             Text("Fast — das Partizip passt sich an (\(genderHint)): \(answer)").foregroundStyle(Theme.brick)
@@ -164,17 +172,18 @@ struct ConjugationLessonView: View {
     private var summarySections: [SummarySection] {
         guard let outcome = lesson.outcome else { return [] }
         var sections: [SummarySection] = []
-        if let unlock = outcome.unlock {
-            let cell = unlock.cell
-            let row: SummarySection.Row = switch unlock.kind {
-            case .verb: .init(label: "Neues Verb", value: "\(cell.verb) · \(cell.tense.label)")
-            case .tense: .init(label: "Neue Zeit", value: "\(cell.verb) · \(cell.tense.label)")
-            }
-            sections.append(SummarySection(title: "Neu freigeschaltet", rows: [row], highlighted: true))
+        if let addition = outcome.addition {
+            let cell = addition.cell
+            let label = addition.reason == .fastTrack
+                ? "Schnellspur (\(VerbFamily(verb: cell.verb).label) sitzt)"
+                : (cell.tense == .presente ? "Neues Verb" : "Neue Zeit")
+            sections.append(SummarySection(title: "Neu im Pool", rows: [.init(label: label, value: "\(cell.verb) · \(cell.tense.label)")],
+                                           highlighted: true))
         }
-        if !outcome.levelChanges.isEmpty {
-            sections.append(SummarySection(title: "Stufen", rows: outcome.levelChanges.map {
-                .init(label: "\($0.cell.verb) · \($0.cell.tense.label)", value: "\($0.from) → \($0.to)")
+        if !outcome.changes.isEmpty {
+            sections.append(SummarySection(title: "Stabilität", rows: outcome.changes.map {
+                .init(label: "\($0.cell.verb) · \($0.cell.tense.label)",
+                      value: "\($0.from.map(DaysText.number) ?? "neu") → \(DaysText.of($0.to))")
             }))
         }
         return sections
