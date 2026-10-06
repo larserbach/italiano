@@ -13,7 +13,7 @@ enum Exercise: Hashable, CaseIterable {
     var description: String {
         switch self {
         case .conjugation:
-            "Italienische Verben in verschiedenen Zeiten üben — mit Lektionen, Wiederholungsrunden für Fehler und einem Fortschritts-Level pro Verb."
+            "Italienische Verben Schritt für Schritt: Der Lernpfad bringt neue Verben und Zeiten, sobald du so weit bist — mit Wiederholungsrunden für Fehler."
         case .essereAvere:
             "Multiple-Choice-Training: Welches Hilfsverb braucht dieses Verb im Passato prossimo — und in welcher Form (ho, sono, ha, è, …)?"
         }

@@ -30,7 +30,9 @@ struct ConjugationLessonView: View {
                     firstTry: lesson.rounds.firstTryCorrect, accuracy: lesson.rounds.accuracy,
                     missedTitle: "Diese Formen waren kniffelig", missed: lesson.rounds.missedForms,
                     back: { dismiss() },
-                    repeatTitle: "Lektion wiederholen", repeatAction: lesson.start)
+                    repeatTitle: lesson.isPathLesson ? "Nächste Lektion" : "Lektion wiederholen",
+                    repeatAction: lesson.start,
+                    sections: summarySections)
             }
         }
         .screenBackground()
@@ -49,8 +51,11 @@ struct ConjugationLessonView: View {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    CardMeta(tag: item.tense.label, round: lesson.rounds.round) { sheet = .tense(item.tense) }
-                        .padding(.bottom, 10)
+                    let isNew = lesson.newUnits.contains(item.unit)
+                    if lesson.rounds.round > 1 || isNew {
+                        CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
+                            .padding(.bottom, 10)
+                    }
 
                     prompt(item: item, verb: verb)
 
@@ -95,46 +100,47 @@ struct ConjugationLessonView: View {
         }
     }
 
-    @ViewBuilder
+    /// The German form, with the Italian infinitive and the tense underneath. The infinitive also
+    /// tells apart verbs that share a German prompt (rimanere/restare = bleiben).
     private func prompt(item: ConjugationItem, verb: Verb) -> some View {
-        switch item.shown {
-        case .german:
-            VStack(spacing: 3) {
-                let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
-                    .fontWeight(.regular)
-                    .foregroundStyle(Theme.inkSoft)
-                Text("\(pronoun)\(verb.german(item.tense, item.person))")
-                    .font(Theme.display(30, weight: .semibold))
-                    .multilineTextAlignment(.center)
-                // The German prompt also fits another verb (rimanere/restare = bleiben): say which one is meant.
-                if VerbLibrary.needsGermanHint(verb) {
-                    Text("mit \(verb.infinitive)")
-                        .font(.system(size: 12.5))
-                        .foregroundStyle(Theme.inkSoft)
+        VStack(spacing: 6) {
+            let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
+                .fontWeight(.regular)
+                .foregroundStyle(Theme.inkSoft)
+            Text("\(pronoun)\(verb.german(item.tense, item.person))")
+                .font(Theme.display(30, weight: .semibold))
+                .multilineTextAlignment(.center)
+            HStack(spacing: 6) {
+                Button {
+                    lesson.noteLookup()
+                    sheet = .verb(verb.infinitive)
+                } label: {
+                    Text(verb.infinitive).underline(color: Theme.goldSoft)
+                }
+                Text("·")
+                Button {
+                    lesson.noteLookup()
+                    sheet = .tense(item.tense)
+                } label: {
+                    Text(item.tense.label).underline(color: Theme.goldSoft)
                 }
             }
-            .padding(.bottom, 16)
-        case .italian:
-            VStack(spacing: 3) {
-                Button { sheet = .verb(verb.infinitive) } label: {
-                    Text(verb.infinitive)
-                        .font(Theme.display(30, weight: .semibold))
-                        .underline(color: Theme.goldSoft)
-                }
-                .buttonStyle(.plain)
-                Text("\(verb.groupLabel) · \(verb.meaning)")
-                    .font(.system(size: 12.5))
-                    .foregroundStyle(Theme.inkSoft)
-            }
-            .padding(.bottom, 16)
+            .buttonStyle(.plain)
+            .font(.system(size: 13))
+            .foregroundStyle(Theme.inkSoft)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
         }
+        .padding(.bottom, 16)
     }
 
     @ViewBuilder
     private var feedbackText: some View {
         switch lesson.feedback {
         case .none: Text(" ")
-        case .correct(let answer): Text("Giusto! \(answer)").foregroundStyle(Theme.olive)
+        case .correct(let answer):
+            Text(lesson.lookedUp ? "Giusto! \(answer) · nachgeschaut, zählt halb" : "Giusto! \(answer)")
+                .foregroundStyle(Theme.olive)
         case .wrong(let answer): Text("Fast — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
         case .wrongGender(let answer):
             Text("Fast — das Partizip passt sich an (\(genderHint)): \(answer)").foregroundStyle(Theme.brick)
@@ -161,6 +167,22 @@ struct ConjugationLessonView: View {
     private var genderHint: String {
         guard let item = lesson.current, let gender = item.gender else { return "" }
         return item.marker == nil ? item.pronoun : gender.spokenName
+    }
+
+    private var summarySections: [SummarySection] {
+        guard let outcome = lesson.outcome else { return [] }
+        var sections: [SummarySection] = []
+        if !outcome.additions.isEmpty {
+            sections.append(SummarySection(title: "Neu im Pool", rows: outcome.additions.map {
+                .init(label: "dank \($0.cause.label)", value: $0.unit.label)
+            }, highlighted: true))
+        }
+        if !outcome.changes.isEmpty {
+            sections.append(SummarySection(title: "Gut in den letzten \(Curriculum.windowSize) Antworten", rows: outcome.changes.map {
+                .init(label: $0.unit.label, value: "\($0.from.map(DaysText.percent) ?? "neu") → \($0.to.map(DaysText.percent) ?? "–")")
+            }))
+        }
+        return sections
     }
 
     private func submit() {

@@ -71,7 +71,9 @@ final class IrregularVerbTests: XCTestCase {
     func testImperativeAlternativesAreAccepted() throws {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests")
-        let store = ProgressStore(defaults: defaults, historyURL: nil)
+        seedPool([("fare", .presente), ("fare", .imperativo)], in: defaults)
+        let store = makeStore(defaults)
+        store.conjugation.mode = .free
         store.conjugation.verbs = ["fare"]
         store.conjugation.tenses = [.imperativo]
         store.conjugation.length = .count(5)
@@ -93,10 +95,13 @@ final class IrregularVerbTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "IrregularVerbTests2")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests2")
-        let store = ProgressStore(defaults: defaults, historyURL: nil)
-        store.recordFirstAttempt(verb: "potere", tense: .presente, correct: true)
-        store.recordFirstAttempt(verb: "potere", tense: .presente, correct: true)
-        XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]), 2)
+        seedPool([("potere", .presente)], in: defaults)
+        let store = makeStore(defaults)
+        store.practise("potere", .presente, answers: 20)
+        XCTAssertGreaterThan(store.level(of: "potere", tense: .presente), 0)
+        // potere has no imperative, so it does not pull the average down.
+        XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]),
+                       store.level(of: "potere", tense: .presente))
     }
 
     func testTableFormsShowGendersAndVariants() {
@@ -108,15 +113,6 @@ final class IrregularVerbTests: XCTestCase {
         XCTAssertNil(VerbLibrary.verb("dire").tableForm(.imperativo, 0))
         XCTAssertNil(VerbLibrary.verb("potere").tableForm(.imperativo, 1))
         XCTAssertEqual(VerbLibrary.verb("parlare").tableForm(.presente, 0), "parlo")
-    }
-
-    func testGermanHintOnlyForSharedGermanVerbs() {
-        let hinted = VerbLibrary.orderedKeys.filter { VerbLibrary.needsGermanHint(VerbLibrary.verb($0)) }
-        XCTAssertEqual(Set(hinted), ["rimanere", "restare", "andare", "camminare", "guidare", "potere", "sapere",
-                                     "essere", "stare", "vedere", "guardare"])
-        for verb in VerbLibrary.germanOverlaps.flatMap({ $0 }) {
-            XCTAssertNotNil(VerbLibrary.all[verb], verb)
-        }
     }
 
     func testIrregularVerbsHaveTheirOwnGroup() {
@@ -138,9 +134,9 @@ final class IrregularVerbTests: XCTestCase {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests3")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests3")
         let regular = Set(VerbCatalog.seeds.map(\.infinitive))
-        let first = ProgressStore(defaults: defaults, historyURL: nil)
+        seedPool(regular.map { ($0, .presente) }, in: defaults)
+        let first = makeStore(defaults)
         first.conjugation.verbs = regular
-        XCTAssertEqual(ProgressStore(defaults: defaults, historyURL: nil).conjugation.verbs, regular)
-        XCTAssertTrue(ProgressStore.ConjugationSettings().verbs.contains("essere"))
+        XCTAssertEqual(makeStore(defaults).conjugation.verbs, regular)
     }
 }

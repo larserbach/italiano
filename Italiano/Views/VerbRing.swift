@@ -34,3 +34,30 @@ struct VerbRing: View {
         return path
     }
 }
+
+/// Progress of a group or irregular verb toward performing well: the arc fills with the share of Good
+/// answers against the bar, a check mark once it has made it.
+struct ProgressRing: View {
+    let progress: LearningPool.Progress
+
+    var body: some View {
+        ZStack {
+            Circle().stroke(Theme.line, lineWidth: 2.5)
+            Circle()
+                .trim(from: 0, to: progress.fraction)
+                .stroke(progress.passed ? Theme.olive : Theme.gold, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            if progress.passed {
+                Image(systemName: "checkmark").font(.system(size: 9, weight: .bold)).foregroundStyle(Theme.olive)
+            } else {
+                Text(progress.share.map { "\(Int(($0 * 100).rounded()))" } ?? "–")
+                    .font(.system(size: 8.5, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
+            }
+        }
+        .frame(width: 26, height: 26)
+        .accessibilityElement()
+        .accessibilityLabel(progress.passed ? "geschafft"
+                            : "\(progress.share.map { DaysText.percent($0) } ?? "noch keine Antworten") gut, \(progress.answers) von \(Curriculum.windowSize) Antworten")
+    }
+}

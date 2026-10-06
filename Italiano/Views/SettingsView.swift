@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(ProgressStore.self) private var store
     @State private var didReset = false
+    @State private var didResetProgress = false
+    @State private var confirmingProgressReset = false
 
     var body: some View {
         ScrollView {
@@ -25,6 +28,23 @@ struct SettingsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .card()
                 }
+
+                VStack(alignment: .leading, spacing: 7) {
+                    ControlLabel("Fortschritt")
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Alle Level, den Lernpfad, die Statistik und die markierten Fehler auf null setzen. Die Lektionslängen bleiben erhalten.")
+                            .font(.system(size: 13.5))
+                            .foregroundStyle(Theme.inkSoft)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button(didResetProgress ? "Zurückgesetzt ✓" : "Fortschritt zurücksetzen") {
+                            confirmingProgressReset = true
+                        }
+                        .buttonStyle(GhostButtonStyle(destructive: !didResetProgress))
+                        .disabled(didResetProgress)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .card()
+                }
             }
             .padding(.horizontal, 18)
             .padding(.top, 8)
@@ -34,5 +54,22 @@ struct SettingsView: View {
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Fortschritt zurücksetzen?", isPresented: $confirmingProgressReset) {
+            Button("Abbrechen", role: .cancel) {}
+            Button("Zurücksetzen", role: .destructive) {
+                store.resetProgress()
+                didResetProgress = true
+            }
+        } message: {
+            Text("""
+                Das passiert:
+                • Alle Level in Coniugazione und Essere o avere? springen auf 0.
+                • Der Lernpfad beginnt wieder mit parlare, avere, essere und dormire im Presente.
+                • Die Statistik und das Antwortprotokoll werden gelöscht.
+                • Die rot markierten Fehler der letzten Lektion verschwinden.
+
+                Das lässt sich nicht rückgängig machen. Die Lektionslängen und die Verbauswahl bei Essere o avere? bleiben wie sie sind.
+                """)
+        }
     }
 }

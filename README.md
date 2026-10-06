@@ -1,13 +1,12 @@
 # Italiano
 
-An iOS app for practising Italian verbs, for German speakers. It's a native SwiftUI port of
-the HTML prototype in [`prototype/index.html`](prototype/index.html).
+An iOS app for practising Italian verbs, for German speakers, written in SwiftUI.
 
 It has two exercises. Irregular verbs work in both, and the conjugation exercise has statistics:
 
 - **Coniugazione**: type the conjugated form of a verb in one of 7 tenses (Presente,
   Passato prossimo, Imperfetto, Futuro, Condizionale, Congiuntivo, Imperativo). Prompts
-  show the Italian infinitive, the German form, or a mix. Wrong answers come back in
+  show the German form, with the Italian infinitive and the tense underneath. Wrong answers come back in
   repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
   Where the answer depends on the subject's gender (Passato prossimo with essere: sono arrivato /
@@ -25,7 +24,8 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 A one-time hint explains the verb rings; the settings screen (gear on the home screen) shows such hints again.
-Settings and progress are saved on the device.
+The same screen can reset all progress (levels, statistics and the red mistake marks) after a confirmation. Exercise settings stay.
+Settings and progress are saved on the device. A fresh install starts the Coniugazione page with only parlare, Presente indicativo and 5 questions selected.
 
 ## Run it on your iPhone
 
@@ -49,10 +49,8 @@ app through TestFlight.
 | --- | --- |
 | `Italiano/Model` | Verb data, conjugation rules, lesson and quiz logic, saved progress |
 | `Italiano/Views` | SwiftUI screens |
-| `ItalianoTests` | Unit tests, including a check that every derived form matches the prototype |
-| `tools/` | Scripts that generate `VerbCatalog.swift`, `TenseInfo+Content.swift` and the test fixture from the prototype |
+| `ItalianoTests` | Unit tests, including a check that every derived form matches the fixture `verb-forms.json` |
 
-To add regular verbs, add them to the prototype and run `python3 tools/generate-swift-data.py`
-(this needs Node). Don't edit `Italiano/Model/VerbCatalog.swift` by hand, since the script overwrites it.
+To add regular verbs, add a `VerbSeed` to `Italiano/Model/VerbCatalog.swift` and list it in the matching group, then add its expected forms to `ItalianoTests/verb-forms.json`.
 The Passato prossimo, Condizionale, Congiuntivo and Imperativo forms are derived automatically.
 Irregular verbs are added by hand in `Italiano/Model/IrregularVerbCatalog.swift`.

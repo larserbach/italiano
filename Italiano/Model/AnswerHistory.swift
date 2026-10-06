@@ -104,6 +104,11 @@ final class AnswerHistory {
         save()
     }
 
+    func reset() {
+        days = [:]
+        save()
+    }
+
     var firstDay: Date? { days.keys.min().flatMap { date(fromKey: $0) } }
     var isEmpty: Bool { days.isEmpty }
 

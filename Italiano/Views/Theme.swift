@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Colors from the prototype, with the same dark-mode variants.
+/// App colors, each with a dark-mode variant.
 enum Theme {
     static let paper = Color(light: 0xFAF6EC, dark: 0x1C2128)
     static let paperRaised = Color(light: 0xF2EBDA, dark: 0x262C35)
@@ -53,6 +53,8 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct GhostButtonStyle: ButtonStyle {
     var fullWidth = true
+    /// For actions that delete something.
+    var destructive = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -60,8 +62,8 @@ struct GhostButtonStyle: ButtonStyle {
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .padding(.vertical, 13)
             .padding(.horizontal, fullWidth ? 0 : 16)
-            .foregroundStyle(Theme.inkSoft)
-            .background(RoundedRectangle(cornerRadius: 10).stroke(Theme.line))
+            .foregroundStyle(destructive ? Theme.brick : Theme.inkSoft)
+            .background(RoundedRectangle(cornerRadius: 10).stroke(destructive ? Theme.brick.opacity(0.5) : Theme.line))
             .contentShape(Rectangle())
             .opacity(configuration.isPressed ? 0.6 : 1)
     }
