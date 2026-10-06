@@ -184,6 +184,9 @@ enum Curriculum {
         "diventare", "conoscere", "guidare", "chiedere", "temere", "rispondere", "ballare", "aprire", "nuotare", "vivere",
         "mancare", "piacere", "passeggiare", "rimanere", "sembrare", "tenere", "sciare", "decidere", "durare", "scegliere",
         "bastare", "cadere",
+        "ripetere", "servire", "spedire", "battere", "vestire", "costruire", "cedere", "fuggire", "obbedire",
+        "premere", "bollire", "guarire", "correre", "mentire", "suggerire", "scendere", "offrire", "reagire",
+        "perdere", "soffrire", "unire", "vincere", "scoprire", "restituire",
     ]
 
     /// A unit performs well with this share of Good points in its last `windowSize` answers …
