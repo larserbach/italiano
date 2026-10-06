@@ -3774,5 +3774,2837 @@
     "putzen sie"
    ]
   }
+ },
+ "ripetere": {
+  "it": {
+   "presente": [
+    "ripeto",
+    "ripeti",
+    "ripete",
+    "ripetiamo",
+    "ripetete",
+    "ripetono"
+   ],
+   "passatoprossimo": [
+    "ho ripetuto",
+    "hai ripetuto",
+    "ha ripetuto",
+    "abbiamo ripetuto",
+    "avete ripetuto",
+    "hanno ripetuto"
+   ],
+   "imperfetto": [
+    "ripetevo",
+    "ripetevi",
+    "ripeteva",
+    "ripetevamo",
+    "ripetevate",
+    "ripetevano"
+   ],
+   "futuro": [
+    "ripeterò",
+    "ripeterai",
+    "ripeterà",
+    "ripeteremo",
+    "ripeterete",
+    "ripeteranno"
+   ],
+   "condizionale": [
+    "ripeterei",
+    "ripeteresti",
+    "ripeterebbe",
+    "ripeteremmo",
+    "ripetereste",
+    "ripeterebbero"
+   ],
+   "congiuntivo": [
+    "ripeta",
+    "ripeta",
+    "ripeta",
+    "ripetiamo",
+    "ripetiate",
+    "ripetano"
+   ],
+   "imperativo": [
+    null,
+    "ripeti",
+    "ripeta",
+    "ripetiamo",
+    "ripetete",
+    "ripetano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "wiederhole",
+    "wiederholst",
+    "wiederholt",
+    "wiederholen",
+    "wiederholt",
+    "wiederholen"
+   ],
+   "passatoprossimo": [
+    "habe wiederholt",
+    "hast wiederholt",
+    "hat wiederholt",
+    "haben wiederholt",
+    "habt wiederholt",
+    "haben wiederholt"
+   ],
+   "imperfetto": [
+    "wiederholte",
+    "wiederholtest",
+    "wiederholte",
+    "wiederholten",
+    "wiederholtet",
+    "wiederholten"
+   ],
+   "futuro": [
+    "werde wiederholen",
+    "wirst wiederholen",
+    "wird wiederholen",
+    "werden wiederholen",
+    "werdet wiederholen",
+    "werden wiederholen"
+   ],
+   "condizionale": [
+    "würde wiederholen",
+    "würdest wiederholen",
+    "würde wiederholen",
+    "würden wiederholen",
+    "würdet wiederholen",
+    "würden wiederholen"
+   ],
+   "congiuntivo": [
+    "wiederhole",
+    "wiederholst",
+    "wiederholt",
+    "wiederholen",
+    "wiederholt",
+    "wiederholen"
+   ],
+   "imperativo": [
+    null,
+    "wiederhole",
+    "wiederholen sie",
+    "wiederholen wir",
+    "wiederholt",
+    "wiederholen sie"
+   ]
+  }
+ },
+ "battere": {
+  "it": {
+   "presente": [
+    "batto",
+    "batti",
+    "batte",
+    "battiamo",
+    "battete",
+    "battono"
+   ],
+   "passatoprossimo": [
+    "ho battuto",
+    "hai battuto",
+    "ha battuto",
+    "abbiamo battuto",
+    "avete battuto",
+    "hanno battuto"
+   ],
+   "imperfetto": [
+    "battevo",
+    "battevi",
+    "batteva",
+    "battevamo",
+    "battevate",
+    "battevano"
+   ],
+   "futuro": [
+    "batterò",
+    "batterai",
+    "batterà",
+    "batteremo",
+    "batterete",
+    "batteranno"
+   ],
+   "condizionale": [
+    "batterei",
+    "batteresti",
+    "batterebbe",
+    "batteremmo",
+    "battereste",
+    "batterebbero"
+   ],
+   "congiuntivo": [
+    "batta",
+    "batta",
+    "batta",
+    "battiamo",
+    "battiate",
+    "battano"
+   ],
+   "imperativo": [
+    null,
+    "batti",
+    "batta",
+    "battiamo",
+    "battete",
+    "battano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "schlage",
+    "schlägst",
+    "schlägt",
+    "schlagen",
+    "schlagt",
+    "schlagen"
+   ],
+   "passatoprossimo": [
+    "habe geschlagen",
+    "hast geschlagen",
+    "hat geschlagen",
+    "haben geschlagen",
+    "habt geschlagen",
+    "haben geschlagen"
+   ],
+   "imperfetto": [
+    "schlug",
+    "schlugst",
+    "schlug",
+    "schlugen",
+    "schlugt",
+    "schlugen"
+   ],
+   "futuro": [
+    "werde schlagen",
+    "wirst schlagen",
+    "wird schlagen",
+    "werden schlagen",
+    "werdet schlagen",
+    "werden schlagen"
+   ],
+   "condizionale": [
+    "würde schlagen",
+    "würdest schlagen",
+    "würde schlagen",
+    "würden schlagen",
+    "würdet schlagen",
+    "würden schlagen"
+   ],
+   "congiuntivo": [
+    "schlage",
+    "schlägst",
+    "schlägt",
+    "schlagen",
+    "schlagt",
+    "schlagen"
+   ],
+   "imperativo": [
+    null,
+    "schlag",
+    "schlagen sie",
+    "schlagen wir",
+    "schlagt",
+    "schlagen sie"
+   ]
+  }
+ },
+ "cedere": {
+  "it": {
+   "presente": [
+    "cedo",
+    "cedi",
+    "cede",
+    "cediamo",
+    "cedete",
+    "cedono"
+   ],
+   "passatoprossimo": [
+    "ho ceduto",
+    "hai ceduto",
+    "ha ceduto",
+    "abbiamo ceduto",
+    "avete ceduto",
+    "hanno ceduto"
+   ],
+   "imperfetto": [
+    "cedevo",
+    "cedevi",
+    "cedeva",
+    "cedevamo",
+    "cedevate",
+    "cedevano"
+   ],
+   "futuro": [
+    "cederò",
+    "cederai",
+    "cederà",
+    "cederemo",
+    "cederete",
+    "cederanno"
+   ],
+   "condizionale": [
+    "cederei",
+    "cederesti",
+    "cederebbe",
+    "cederemmo",
+    "cedereste",
+    "cederebbero"
+   ],
+   "congiuntivo": [
+    "ceda",
+    "ceda",
+    "ceda",
+    "cediamo",
+    "cediate",
+    "cedano"
+   ],
+   "imperativo": [
+    null,
+    "cedi",
+    "ceda",
+    "cediamo",
+    "cedete",
+    "cedano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "gebe nach",
+    "gibst nach",
+    "gibt nach",
+    "geben nach",
+    "gebt nach",
+    "geben nach"
+   ],
+   "passatoprossimo": [
+    "habe nachgegeben",
+    "hast nachgegeben",
+    "hat nachgegeben",
+    "haben nachgegeben",
+    "habt nachgegeben",
+    "haben nachgegeben"
+   ],
+   "imperfetto": [
+    "gab nach",
+    "gabst nach",
+    "gab nach",
+    "gaben nach",
+    "gabt nach",
+    "gaben nach"
+   ],
+   "futuro": [
+    "werde nachgeben",
+    "wirst nachgeben",
+    "wird nachgeben",
+    "werden nachgeben",
+    "werdet nachgeben",
+    "werden nachgeben"
+   ],
+   "condizionale": [
+    "würde nachgeben",
+    "würdest nachgeben",
+    "würde nachgeben",
+    "würden nachgeben",
+    "würdet nachgeben",
+    "würden nachgeben"
+   ],
+   "congiuntivo": [
+    "gebe nach",
+    "gibst nach",
+    "gibt nach",
+    "geben nach",
+    "gebt nach",
+    "geben nach"
+   ],
+   "imperativo": [
+    null,
+    "gib nach",
+    "nachgeben sie",
+    "nachgeben wir",
+    "gebt nach",
+    "nachgeben sie"
+   ]
+  }
+ },
+ "premere": {
+  "it": {
+   "presente": [
+    "premo",
+    "premi",
+    "preme",
+    "premiamo",
+    "premete",
+    "premono"
+   ],
+   "passatoprossimo": [
+    "ho premuto",
+    "hai premuto",
+    "ha premuto",
+    "abbiamo premuto",
+    "avete premuto",
+    "hanno premuto"
+   ],
+   "imperfetto": [
+    "premevo",
+    "premevi",
+    "premeva",
+    "premevamo",
+    "premevate",
+    "premevano"
+   ],
+   "futuro": [
+    "premerò",
+    "premerai",
+    "premerà",
+    "premeremo",
+    "premerete",
+    "premeranno"
+   ],
+   "condizionale": [
+    "premerei",
+    "premeresti",
+    "premerebbe",
+    "premeremmo",
+    "premereste",
+    "premerebbero"
+   ],
+   "congiuntivo": [
+    "prema",
+    "prema",
+    "prema",
+    "premiamo",
+    "premiate",
+    "premano"
+   ],
+   "imperativo": [
+    null,
+    "premi",
+    "prema",
+    "premiamo",
+    "premete",
+    "premano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "drücke",
+    "drückst",
+    "drückt",
+    "drücken",
+    "drückt",
+    "drücken"
+   ],
+   "passatoprossimo": [
+    "habe gedrückt",
+    "hast gedrückt",
+    "hat gedrückt",
+    "haben gedrückt",
+    "habt gedrückt",
+    "haben gedrückt"
+   ],
+   "imperfetto": [
+    "drückte",
+    "drücktest",
+    "drückte",
+    "drückten",
+    "drücktet",
+    "drückten"
+   ],
+   "futuro": [
+    "werde drücken",
+    "wirst drücken",
+    "wird drücken",
+    "werden drücken",
+    "werdet drücken",
+    "werden drücken"
+   ],
+   "condizionale": [
+    "würde drücken",
+    "würdest drücken",
+    "würde drücken",
+    "würden drücken",
+    "würdet drücken",
+    "würden drücken"
+   ],
+   "congiuntivo": [
+    "drücke",
+    "drückst",
+    "drückt",
+    "drücken",
+    "drückt",
+    "drücken"
+   ],
+   "imperativo": [
+    null,
+    "drück",
+    "drücken sie",
+    "drücken wir",
+    "drückt",
+    "drücken sie"
+   ]
+  }
+ },
+ "correre": {
+  "it": {
+   "presente": [
+    "corro",
+    "corri",
+    "corre",
+    "corriamo",
+    "correte",
+    "corrono"
+   ],
+   "passatoprossimo": [
+    "ho corso",
+    "hai corso",
+    "ha corso",
+    "abbiamo corso",
+    "avete corso",
+    "hanno corso"
+   ],
+   "imperfetto": [
+    "correvo",
+    "correvi",
+    "correva",
+    "correvamo",
+    "correvate",
+    "correvano"
+   ],
+   "futuro": [
+    "correrò",
+    "correrai",
+    "correrà",
+    "correremo",
+    "correrete",
+    "correranno"
+   ],
+   "condizionale": [
+    "correrei",
+    "correresti",
+    "correrebbe",
+    "correremmo",
+    "correreste",
+    "correrebbero"
+   ],
+   "congiuntivo": [
+    "corra",
+    "corra",
+    "corra",
+    "corriamo",
+    "corriate",
+    "corrano"
+   ],
+   "imperativo": [
+    null,
+    "corri",
+    "corra",
+    "corriamo",
+    "correte",
+    "corrano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "renne",
+    "rennst",
+    "rennt",
+    "rennen",
+    "rennt",
+    "rennen"
+   ],
+   "passatoprossimo": [
+    "bin gerannt",
+    "bist gerannt",
+    "ist gerannt",
+    "sind gerannt",
+    "seid gerannt",
+    "sind gerannt"
+   ],
+   "imperfetto": [
+    "rannte",
+    "ranntest",
+    "rannte",
+    "rannten",
+    "ranntet",
+    "rannten"
+   ],
+   "futuro": [
+    "werde rennen",
+    "wirst rennen",
+    "wird rennen",
+    "werden rennen",
+    "werdet rennen",
+    "werden rennen"
+   ],
+   "condizionale": [
+    "würde rennen",
+    "würdest rennen",
+    "würde rennen",
+    "würden rennen",
+    "würdet rennen",
+    "würden rennen"
+   ],
+   "congiuntivo": [
+    "renne",
+    "rennst",
+    "rennt",
+    "rennen",
+    "rennt",
+    "rennen"
+   ],
+   "imperativo": [
+    null,
+    "renn",
+    "rennen sie",
+    "rennen wir",
+    "rennt",
+    "rennen sie"
+   ]
+  }
+ },
+ "scendere": {
+  "it": {
+   "presente": [
+    "scendo",
+    "scendi",
+    "scende",
+    "scendiamo",
+    "scendete",
+    "scendono"
+   ],
+   "passatoprossimo": [
+    "sono sceso",
+    "sei sceso",
+    "è sceso",
+    "siamo scesi",
+    "siete scesi",
+    "sono scesi"
+   ],
+   "imperfetto": [
+    "scendevo",
+    "scendevi",
+    "scendeva",
+    "scendevamo",
+    "scendevate",
+    "scendevano"
+   ],
+   "futuro": [
+    "scenderò",
+    "scenderai",
+    "scenderà",
+    "scenderemo",
+    "scenderete",
+    "scenderanno"
+   ],
+   "condizionale": [
+    "scenderei",
+    "scenderesti",
+    "scenderebbe",
+    "scenderemmo",
+    "scendereste",
+    "scenderebbero"
+   ],
+   "congiuntivo": [
+    "scenda",
+    "scenda",
+    "scenda",
+    "scendiamo",
+    "scendiate",
+    "scendano"
+   ],
+   "imperativo": [
+    null,
+    "scendi",
+    "scenda",
+    "scendiamo",
+    "scendete",
+    "scendano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "gehe hinunter",
+    "gehst hinunter",
+    "geht hinunter",
+    "gehen hinunter",
+    "geht hinunter",
+    "gehen hinunter"
+   ],
+   "passatoprossimo": [
+    "bin hinuntergegangen",
+    "bist hinuntergegangen",
+    "ist hinuntergegangen",
+    "sind hinuntergegangen",
+    "seid hinuntergegangen",
+    "sind hinuntergegangen"
+   ],
+   "imperfetto": [
+    "ging hinunter",
+    "gingst hinunter",
+    "ging hinunter",
+    "gingen hinunter",
+    "gingt hinunter",
+    "gingen hinunter"
+   ],
+   "futuro": [
+    "werde hinuntergehen",
+    "wirst hinuntergehen",
+    "wird hinuntergehen",
+    "werden hinuntergehen",
+    "werdet hinuntergehen",
+    "werden hinuntergehen"
+   ],
+   "condizionale": [
+    "würde hinuntergehen",
+    "würdest hinuntergehen",
+    "würde hinuntergehen",
+    "würden hinuntergehen",
+    "würdet hinuntergehen",
+    "würden hinuntergehen"
+   ],
+   "congiuntivo": [
+    "gehe hinunter",
+    "gehst hinunter",
+    "geht hinunter",
+    "gehen hinunter",
+    "geht hinunter",
+    "gehen hinunter"
+   ],
+   "imperativo": [
+    null,
+    "geh hinunter",
+    "hinuntergehen sie",
+    "hinuntergehen wir",
+    "geht hinunter",
+    "hinuntergehen sie"
+   ]
+  }
+ },
+ "perdere": {
+  "it": {
+   "presente": [
+    "perdo",
+    "perdi",
+    "perde",
+    "perdiamo",
+    "perdete",
+    "perdono"
+   ],
+   "passatoprossimo": [
+    "ho perso",
+    "hai perso",
+    "ha perso",
+    "abbiamo perso",
+    "avete perso",
+    "hanno perso"
+   ],
+   "imperfetto": [
+    "perdevo",
+    "perdevi",
+    "perdeva",
+    "perdevamo",
+    "perdevate",
+    "perdevano"
+   ],
+   "futuro": [
+    "perderò",
+    "perderai",
+    "perderà",
+    "perderemo",
+    "perderete",
+    "perderanno"
+   ],
+   "condizionale": [
+    "perderei",
+    "perderesti",
+    "perderebbe",
+    "perderemmo",
+    "perdereste",
+    "perderebbero"
+   ],
+   "congiuntivo": [
+    "perda",
+    "perda",
+    "perda",
+    "perdiamo",
+    "perdiate",
+    "perdano"
+   ],
+   "imperativo": [
+    null,
+    "perdi",
+    "perda",
+    "perdiamo",
+    "perdete",
+    "perdano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "verliere",
+    "verlierst",
+    "verliert",
+    "verlieren",
+    "verliert",
+    "verlieren"
+   ],
+   "passatoprossimo": [
+    "habe verloren",
+    "hast verloren",
+    "hat verloren",
+    "haben verloren",
+    "habt verloren",
+    "haben verloren"
+   ],
+   "imperfetto": [
+    "verlor",
+    "verlorst",
+    "verlor",
+    "verloren",
+    "verlort",
+    "verloren"
+   ],
+   "futuro": [
+    "werde verlieren",
+    "wirst verlieren",
+    "wird verlieren",
+    "werden verlieren",
+    "werdet verlieren",
+    "werden verlieren"
+   ],
+   "condizionale": [
+    "würde verlieren",
+    "würdest verlieren",
+    "würde verlieren",
+    "würden verlieren",
+    "würdet verlieren",
+    "würden verlieren"
+   ],
+   "congiuntivo": [
+    "verliere",
+    "verlierst",
+    "verliert",
+    "verlieren",
+    "verliert",
+    "verlieren"
+   ],
+   "imperativo": [
+    null,
+    "verlier",
+    "verlieren sie",
+    "verlieren wir",
+    "verliert",
+    "verlieren sie"
+   ]
+  }
+ },
+ "vincere": {
+  "it": {
+   "presente": [
+    "vinco",
+    "vinci",
+    "vince",
+    "vinciamo",
+    "vincete",
+    "vincono"
+   ],
+   "passatoprossimo": [
+    "ho vinto",
+    "hai vinto",
+    "ha vinto",
+    "abbiamo vinto",
+    "avete vinto",
+    "hanno vinto"
+   ],
+   "imperfetto": [
+    "vincevo",
+    "vincevi",
+    "vinceva",
+    "vincevamo",
+    "vincevate",
+    "vincevano"
+   ],
+   "futuro": [
+    "vincerò",
+    "vincerai",
+    "vincerà",
+    "vinceremo",
+    "vincerete",
+    "vinceranno"
+   ],
+   "condizionale": [
+    "vincerei",
+    "vinceresti",
+    "vincerebbe",
+    "vinceremmo",
+    "vincereste",
+    "vincerebbero"
+   ],
+   "congiuntivo": [
+    "vinca",
+    "vinca",
+    "vinca",
+    "vinciamo",
+    "vinciate",
+    "vincano"
+   ],
+   "imperativo": [
+    null,
+    "vinci",
+    "vinca",
+    "vinciamo",
+    "vincete",
+    "vincano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "gewinne",
+    "gewinnst",
+    "gewinnt",
+    "gewinnen",
+    "gewinnt",
+    "gewinnen"
+   ],
+   "passatoprossimo": [
+    "habe gewonnen",
+    "hast gewonnen",
+    "hat gewonnen",
+    "haben gewonnen",
+    "habt gewonnen",
+    "haben gewonnen"
+   ],
+   "imperfetto": [
+    "gewann",
+    "gewannst",
+    "gewann",
+    "gewannen",
+    "gewannt",
+    "gewannen"
+   ],
+   "futuro": [
+    "werde gewinnen",
+    "wirst gewinnen",
+    "wird gewinnen",
+    "werden gewinnen",
+    "werdet gewinnen",
+    "werden gewinnen"
+   ],
+   "condizionale": [
+    "würde gewinnen",
+    "würdest gewinnen",
+    "würde gewinnen",
+    "würden gewinnen",
+    "würdet gewinnen",
+    "würden gewinnen"
+   ],
+   "congiuntivo": [
+    "gewinne",
+    "gewinnst",
+    "gewinnt",
+    "gewinnen",
+    "gewinnt",
+    "gewinnen"
+   ],
+   "imperativo": [
+    null,
+    "gewinn",
+    "gewinnen sie",
+    "gewinnen wir",
+    "gewinnt",
+    "gewinnen sie"
+   ]
+  }
+ },
+ "servire": {
+  "it": {
+   "presente": [
+    "servo",
+    "servi",
+    "serve",
+    "serviamo",
+    "servite",
+    "servono"
+   ],
+   "passatoprossimo": [
+    "ho servito",
+    "hai servito",
+    "ha servito",
+    "abbiamo servito",
+    "avete servito",
+    "hanno servito"
+   ],
+   "imperfetto": [
+    "servivo",
+    "servivi",
+    "serviva",
+    "servivamo",
+    "servivate",
+    "servivano"
+   ],
+   "futuro": [
+    "servirò",
+    "servirai",
+    "servirà",
+    "serviremo",
+    "servirete",
+    "serviranno"
+   ],
+   "condizionale": [
+    "servirei",
+    "serviresti",
+    "servirebbe",
+    "serviremmo",
+    "servireste",
+    "servirebbero"
+   ],
+   "congiuntivo": [
+    "serva",
+    "serva",
+    "serva",
+    "serviamo",
+    "serviate",
+    "servano"
+   ],
+   "imperativo": [
+    null,
+    "servi",
+    "serva",
+    "serviamo",
+    "servite",
+    "servano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "diene",
+    "dienst",
+    "dient",
+    "dienen",
+    "dient",
+    "dienen"
+   ],
+   "passatoprossimo": [
+    "habe gedient",
+    "hast gedient",
+    "hat gedient",
+    "haben gedient",
+    "habt gedient",
+    "haben gedient"
+   ],
+   "imperfetto": [
+    "diente",
+    "dientest",
+    "diente",
+    "dienten",
+    "dientet",
+    "dienten"
+   ],
+   "futuro": [
+    "werde dienen",
+    "wirst dienen",
+    "wird dienen",
+    "werden dienen",
+    "werdet dienen",
+    "werden dienen"
+   ],
+   "condizionale": [
+    "würde dienen",
+    "würdest dienen",
+    "würde dienen",
+    "würden dienen",
+    "würdet dienen",
+    "würden dienen"
+   ],
+   "congiuntivo": [
+    "diene",
+    "dienst",
+    "dient",
+    "dienen",
+    "dient",
+    "dienen"
+   ],
+   "imperativo": [
+    null,
+    "dien",
+    "dienen sie",
+    "dienen wir",
+    "dient",
+    "dienen sie"
+   ]
+  }
+ },
+ "vestire": {
+  "it": {
+   "presente": [
+    "vesto",
+    "vesti",
+    "veste",
+    "vestiamo",
+    "vestite",
+    "vestono"
+   ],
+   "passatoprossimo": [
+    "ho vestito",
+    "hai vestito",
+    "ha vestito",
+    "abbiamo vestito",
+    "avete vestito",
+    "hanno vestito"
+   ],
+   "imperfetto": [
+    "vestivo",
+    "vestivi",
+    "vestiva",
+    "vestivamo",
+    "vestivate",
+    "vestivano"
+   ],
+   "futuro": [
+    "vestirò",
+    "vestirai",
+    "vestirà",
+    "vestiremo",
+    "vestirete",
+    "vestiranno"
+   ],
+   "condizionale": [
+    "vestirei",
+    "vestiresti",
+    "vestirebbe",
+    "vestiremmo",
+    "vestireste",
+    "vestirebbero"
+   ],
+   "congiuntivo": [
+    "vesta",
+    "vesta",
+    "vesta",
+    "vestiamo",
+    "vestiate",
+    "vestano"
+   ],
+   "imperativo": [
+    null,
+    "vesti",
+    "vesta",
+    "vestiamo",
+    "vestite",
+    "vestano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "ziehe an",
+    "ziehst an",
+    "zieht an",
+    "ziehen an",
+    "zieht an",
+    "ziehen an"
+   ],
+   "passatoprossimo": [
+    "habe angezogen",
+    "hast angezogen",
+    "hat angezogen",
+    "haben angezogen",
+    "habt angezogen",
+    "haben angezogen"
+   ],
+   "imperfetto": [
+    "zog an",
+    "zogst an",
+    "zog an",
+    "zogen an",
+    "zogt an",
+    "zogen an"
+   ],
+   "futuro": [
+    "werde anziehen",
+    "wirst anziehen",
+    "wird anziehen",
+    "werden anziehen",
+    "werdet anziehen",
+    "werden anziehen"
+   ],
+   "condizionale": [
+    "würde anziehen",
+    "würdest anziehen",
+    "würde anziehen",
+    "würden anziehen",
+    "würdet anziehen",
+    "würden anziehen"
+   ],
+   "congiuntivo": [
+    "ziehe an",
+    "ziehst an",
+    "zieht an",
+    "ziehen an",
+    "zieht an",
+    "ziehen an"
+   ],
+   "imperativo": [
+    null,
+    "zieh an",
+    "anziehen sie",
+    "anziehen wir",
+    "zieht an",
+    "anziehen sie"
+   ]
+  }
+ },
+ "fuggire": {
+  "it": {
+   "presente": [
+    "fuggo",
+    "fuggi",
+    "fugge",
+    "fuggiamo",
+    "fuggite",
+    "fuggono"
+   ],
+   "passatoprossimo": [
+    "sono fuggito",
+    "sei fuggito",
+    "è fuggito",
+    "siamo fuggiti",
+    "siete fuggiti",
+    "sono fuggiti"
+   ],
+   "imperfetto": [
+    "fuggivo",
+    "fuggivi",
+    "fuggiva",
+    "fuggivamo",
+    "fuggivate",
+    "fuggivano"
+   ],
+   "futuro": [
+    "fuggirò",
+    "fuggirai",
+    "fuggirà",
+    "fuggiremo",
+    "fuggirete",
+    "fuggiranno"
+   ],
+   "condizionale": [
+    "fuggirei",
+    "fuggiresti",
+    "fuggirebbe",
+    "fuggiremmo",
+    "fuggireste",
+    "fuggirebbero"
+   ],
+   "congiuntivo": [
+    "fugga",
+    "fugga",
+    "fugga",
+    "fuggiamo",
+    "fuggiate",
+    "fuggano"
+   ],
+   "imperativo": [
+    null,
+    "fuggi",
+    "fugga",
+    "fuggiamo",
+    "fuggite",
+    "fuggano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "fliehe",
+    "fliehst",
+    "flieht",
+    "fliehen",
+    "flieht",
+    "fliehen"
+   ],
+   "passatoprossimo": [
+    "bin geflohen",
+    "bist geflohen",
+    "ist geflohen",
+    "sind geflohen",
+    "seid geflohen",
+    "sind geflohen"
+   ],
+   "imperfetto": [
+    "floh",
+    "flohst",
+    "floh",
+    "flohen",
+    "floht",
+    "flohen"
+   ],
+   "futuro": [
+    "werde fliehen",
+    "wirst fliehen",
+    "wird fliehen",
+    "werden fliehen",
+    "werdet fliehen",
+    "werden fliehen"
+   ],
+   "condizionale": [
+    "würde fliehen",
+    "würdest fliehen",
+    "würde fliehen",
+    "würden fliehen",
+    "würdet fliehen",
+    "würden fliehen"
+   ],
+   "congiuntivo": [
+    "fliehe",
+    "fliehst",
+    "flieht",
+    "fliehen",
+    "flieht",
+    "fliehen"
+   ],
+   "imperativo": [
+    null,
+    "flieh",
+    "fliehen sie",
+    "fliehen wir",
+    "flieht",
+    "fliehen sie"
+   ]
+  }
+ },
+ "bollire": {
+  "it": {
+   "presente": [
+    "bollo",
+    "bolli",
+    "bolle",
+    "bolliamo",
+    "bollite",
+    "bollono"
+   ],
+   "passatoprossimo": [
+    "ho bollito",
+    "hai bollito",
+    "ha bollito",
+    "abbiamo bollito",
+    "avete bollito",
+    "hanno bollito"
+   ],
+   "imperfetto": [
+    "bollivo",
+    "bollivi",
+    "bolliva",
+    "bollivamo",
+    "bollivate",
+    "bollivano"
+   ],
+   "futuro": [
+    "bollirò",
+    "bollirai",
+    "bollirà",
+    "bolliremo",
+    "bollirete",
+    "bolliranno"
+   ],
+   "condizionale": [
+    "bollirei",
+    "bolliresti",
+    "bollirebbe",
+    "bolliremmo",
+    "bollireste",
+    "bollirebbero"
+   ],
+   "congiuntivo": [
+    "bolla",
+    "bolla",
+    "bolla",
+    "bolliamo",
+    "bolliate",
+    "bollano"
+   ],
+   "imperativo": [
+    null,
+    "bolli",
+    "bolla",
+    "bolliamo",
+    "bollite",
+    "bollano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "koche",
+    "kochst",
+    "kocht",
+    "kochen",
+    "kocht",
+    "kochen"
+   ],
+   "passatoprossimo": [
+    "habe gekocht",
+    "hast gekocht",
+    "hat gekocht",
+    "haben gekocht",
+    "habt gekocht",
+    "haben gekocht"
+   ],
+   "imperfetto": [
+    "kochte",
+    "kochtest",
+    "kochte",
+    "kochten",
+    "kochtet",
+    "kochten"
+   ],
+   "futuro": [
+    "werde kochen",
+    "wirst kochen",
+    "wird kochen",
+    "werden kochen",
+    "werdet kochen",
+    "werden kochen"
+   ],
+   "condizionale": [
+    "würde kochen",
+    "würdest kochen",
+    "würde kochen",
+    "würden kochen",
+    "würdet kochen",
+    "würden kochen"
+   ],
+   "congiuntivo": [
+    "koche",
+    "kochst",
+    "kocht",
+    "kochen",
+    "kocht",
+    "kochen"
+   ],
+   "imperativo": [
+    null,
+    "koch",
+    "kochen sie",
+    "kochen wir",
+    "kocht",
+    "kochen sie"
+   ]
+  }
+ },
+ "mentire": {
+  "it": {
+   "presente": [
+    "mento",
+    "menti",
+    "mente",
+    "mentiamo",
+    "mentite",
+    "mentono"
+   ],
+   "passatoprossimo": [
+    "ho mentito",
+    "hai mentito",
+    "ha mentito",
+    "abbiamo mentito",
+    "avete mentito",
+    "hanno mentito"
+   ],
+   "imperfetto": [
+    "mentivo",
+    "mentivi",
+    "mentiva",
+    "mentivamo",
+    "mentivate",
+    "mentivano"
+   ],
+   "futuro": [
+    "mentirò",
+    "mentirai",
+    "mentirà",
+    "mentiremo",
+    "mentirete",
+    "mentiranno"
+   ],
+   "condizionale": [
+    "mentirei",
+    "mentiresti",
+    "mentirebbe",
+    "mentiremmo",
+    "mentireste",
+    "mentirebbero"
+   ],
+   "congiuntivo": [
+    "menta",
+    "menta",
+    "menta",
+    "mentiamo",
+    "mentiate",
+    "mentano"
+   ],
+   "imperativo": [
+    null,
+    "menti",
+    "menta",
+    "mentiamo",
+    "mentite",
+    "mentano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "lüge",
+    "lügst",
+    "lügt",
+    "lügen",
+    "lügt",
+    "lügen"
+   ],
+   "passatoprossimo": [
+    "habe gelogen",
+    "hast gelogen",
+    "hat gelogen",
+    "haben gelogen",
+    "habt gelogen",
+    "haben gelogen"
+   ],
+   "imperfetto": [
+    "log",
+    "logst",
+    "log",
+    "logen",
+    "logt",
+    "logen"
+   ],
+   "futuro": [
+    "werde lügen",
+    "wirst lügen",
+    "wird lügen",
+    "werden lügen",
+    "werdet lügen",
+    "werden lügen"
+   ],
+   "condizionale": [
+    "würde lügen",
+    "würdest lügen",
+    "würde lügen",
+    "würden lügen",
+    "würdet lügen",
+    "würden lügen"
+   ],
+   "congiuntivo": [
+    "lüge",
+    "lügst",
+    "lügt",
+    "lügen",
+    "lügt",
+    "lügen"
+   ],
+   "imperativo": [
+    null,
+    "lüg",
+    "lügen sie",
+    "lügen wir",
+    "lügt",
+    "lügen sie"
+   ]
+  }
+ },
+ "offrire": {
+  "it": {
+   "presente": [
+    "offro",
+    "offri",
+    "offre",
+    "offriamo",
+    "offrite",
+    "offrono"
+   ],
+   "passatoprossimo": [
+    "ho offerto",
+    "hai offerto",
+    "ha offerto",
+    "abbiamo offerto",
+    "avete offerto",
+    "hanno offerto"
+   ],
+   "imperfetto": [
+    "offrivo",
+    "offrivi",
+    "offriva",
+    "offrivamo",
+    "offrivate",
+    "offrivano"
+   ],
+   "futuro": [
+    "offrirò",
+    "offrirai",
+    "offrirà",
+    "offriremo",
+    "offrirete",
+    "offriranno"
+   ],
+   "condizionale": [
+    "offrirei",
+    "offriresti",
+    "offrirebbe",
+    "offriremmo",
+    "offrireste",
+    "offrirebbero"
+   ],
+   "congiuntivo": [
+    "offra",
+    "offra",
+    "offra",
+    "offriamo",
+    "offriate",
+    "offrano"
+   ],
+   "imperativo": [
+    null,
+    "offri",
+    "offra",
+    "offriamo",
+    "offrite",
+    "offrano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "biete an",
+    "bietest an",
+    "bietet an",
+    "bieten an",
+    "bietet an",
+    "bieten an"
+   ],
+   "passatoprossimo": [
+    "habe angeboten",
+    "hast angeboten",
+    "hat angeboten",
+    "haben angeboten",
+    "habt angeboten",
+    "haben angeboten"
+   ],
+   "imperfetto": [
+    "bot an",
+    "botst an",
+    "bot an",
+    "boten an",
+    "botet an",
+    "boten an"
+   ],
+   "futuro": [
+    "werde anbieten",
+    "wirst anbieten",
+    "wird anbieten",
+    "werden anbieten",
+    "werdet anbieten",
+    "werden anbieten"
+   ],
+   "condizionale": [
+    "würde anbieten",
+    "würdest anbieten",
+    "würde anbieten",
+    "würden anbieten",
+    "würdet anbieten",
+    "würden anbieten"
+   ],
+   "congiuntivo": [
+    "biete an",
+    "bietest an",
+    "bietet an",
+    "bieten an",
+    "bietet an",
+    "bieten an"
+   ],
+   "imperativo": [
+    null,
+    "biete an",
+    "anbieten sie",
+    "anbieten wir",
+    "bietet an",
+    "anbieten sie"
+   ]
+  }
+ },
+ "soffrire": {
+  "it": {
+   "presente": [
+    "soffro",
+    "soffri",
+    "soffre",
+    "soffriamo",
+    "soffrite",
+    "soffrono"
+   ],
+   "passatoprossimo": [
+    "ho sofferto",
+    "hai sofferto",
+    "ha sofferto",
+    "abbiamo sofferto",
+    "avete sofferto",
+    "hanno sofferto"
+   ],
+   "imperfetto": [
+    "soffrivo",
+    "soffrivi",
+    "soffriva",
+    "soffrivamo",
+    "soffrivate",
+    "soffrivano"
+   ],
+   "futuro": [
+    "soffrirò",
+    "soffrirai",
+    "soffrirà",
+    "soffriremo",
+    "soffrirete",
+    "soffriranno"
+   ],
+   "condizionale": [
+    "soffrirei",
+    "soffriresti",
+    "soffrirebbe",
+    "soffriremmo",
+    "soffrireste",
+    "soffrirebbero"
+   ],
+   "congiuntivo": [
+    "soffra",
+    "soffra",
+    "soffra",
+    "soffriamo",
+    "soffriate",
+    "soffrano"
+   ],
+   "imperativo": [
+    null,
+    "soffri",
+    "soffra",
+    "soffriamo",
+    "soffrite",
+    "soffrano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "leide",
+    "leidest",
+    "leidet",
+    "leiden",
+    "leidet",
+    "leiden"
+   ],
+   "passatoprossimo": [
+    "habe gelitten",
+    "hast gelitten",
+    "hat gelitten",
+    "haben gelitten",
+    "habt gelitten",
+    "haben gelitten"
+   ],
+   "imperfetto": [
+    "litt",
+    "littst",
+    "litt",
+    "litten",
+    "littet",
+    "litten"
+   ],
+   "futuro": [
+    "werde leiden",
+    "wirst leiden",
+    "wird leiden",
+    "werden leiden",
+    "werdet leiden",
+    "werden leiden"
+   ],
+   "condizionale": [
+    "würde leiden",
+    "würdest leiden",
+    "würde leiden",
+    "würden leiden",
+    "würdet leiden",
+    "würden leiden"
+   ],
+   "congiuntivo": [
+    "leide",
+    "leidest",
+    "leidet",
+    "leiden",
+    "leidet",
+    "leiden"
+   ],
+   "imperativo": [
+    null,
+    "leide",
+    "leiden sie",
+    "leiden wir",
+    "leidet",
+    "leiden sie"
+   ]
+  }
+ },
+ "scoprire": {
+  "it": {
+   "presente": [
+    "scopro",
+    "scopri",
+    "scopre",
+    "scopriamo",
+    "scoprite",
+    "scoprono"
+   ],
+   "passatoprossimo": [
+    "ho scoperto",
+    "hai scoperto",
+    "ha scoperto",
+    "abbiamo scoperto",
+    "avete scoperto",
+    "hanno scoperto"
+   ],
+   "imperfetto": [
+    "scoprivo",
+    "scoprivi",
+    "scopriva",
+    "scoprivamo",
+    "scoprivate",
+    "scoprivano"
+   ],
+   "futuro": [
+    "scoprirò",
+    "scoprirai",
+    "scoprirà",
+    "scopriremo",
+    "scoprirete",
+    "scopriranno"
+   ],
+   "condizionale": [
+    "scoprirei",
+    "scopriresti",
+    "scoprirebbe",
+    "scopriremmo",
+    "scoprireste",
+    "scoprirebbero"
+   ],
+   "congiuntivo": [
+    "scopra",
+    "scopra",
+    "scopra",
+    "scopriamo",
+    "scopriate",
+    "scoprano"
+   ],
+   "imperativo": [
+    null,
+    "scopri",
+    "scopra",
+    "scopriamo",
+    "scoprite",
+    "scoprano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "entdecke",
+    "entdeckst",
+    "entdeckt",
+    "entdecken",
+    "entdeckt",
+    "entdecken"
+   ],
+   "passatoprossimo": [
+    "habe entdeckt",
+    "hast entdeckt",
+    "hat entdeckt",
+    "haben entdeckt",
+    "habt entdeckt",
+    "haben entdeckt"
+   ],
+   "imperfetto": [
+    "entdeckte",
+    "entdecktest",
+    "entdeckte",
+    "entdeckten",
+    "entdecktet",
+    "entdeckten"
+   ],
+   "futuro": [
+    "werde entdecken",
+    "wirst entdecken",
+    "wird entdecken",
+    "werden entdecken",
+    "werdet entdecken",
+    "werden entdecken"
+   ],
+   "condizionale": [
+    "würde entdecken",
+    "würdest entdecken",
+    "würde entdecken",
+    "würden entdecken",
+    "würdet entdecken",
+    "würden entdecken"
+   ],
+   "congiuntivo": [
+    "entdecke",
+    "entdeckst",
+    "entdeckt",
+    "entdecken",
+    "entdeckt",
+    "entdecken"
+   ],
+   "imperativo": [
+    null,
+    "entdeck",
+    "entdecken sie",
+    "entdecken wir",
+    "entdeckt",
+    "entdecken sie"
+   ]
+  }
+ },
+ "spedire": {
+  "it": {
+   "presente": [
+    "spedisco",
+    "spedisci",
+    "spedisce",
+    "spediamo",
+    "spedite",
+    "spediscono"
+   ],
+   "passatoprossimo": [
+    "ho spedito",
+    "hai spedito",
+    "ha spedito",
+    "abbiamo spedito",
+    "avete spedito",
+    "hanno spedito"
+   ],
+   "imperfetto": [
+    "spedivo",
+    "spedivi",
+    "spediva",
+    "spedivamo",
+    "spedivate",
+    "spedivano"
+   ],
+   "futuro": [
+    "spedirò",
+    "spedirai",
+    "spedirà",
+    "spediremo",
+    "spedirete",
+    "spediranno"
+   ],
+   "condizionale": [
+    "spedirei",
+    "spediresti",
+    "spedirebbe",
+    "spediremmo",
+    "spedireste",
+    "spedirebbero"
+   ],
+   "congiuntivo": [
+    "spedisca",
+    "spedisca",
+    "spedisca",
+    "spediamo",
+    "spediate",
+    "spediscano"
+   ],
+   "imperativo": [
+    null,
+    "spedisci",
+    "spedisca",
+    "spediamo",
+    "spedite",
+    "spediscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "schicke",
+    "schickst",
+    "schickt",
+    "schicken",
+    "schickt",
+    "schicken"
+   ],
+   "passatoprossimo": [
+    "habe geschickt",
+    "hast geschickt",
+    "hat geschickt",
+    "haben geschickt",
+    "habt geschickt",
+    "haben geschickt"
+   ],
+   "imperfetto": [
+    "schickte",
+    "schicktest",
+    "schickte",
+    "schickten",
+    "schicktet",
+    "schickten"
+   ],
+   "futuro": [
+    "werde schicken",
+    "wirst schicken",
+    "wird schicken",
+    "werden schicken",
+    "werdet schicken",
+    "werden schicken"
+   ],
+   "condizionale": [
+    "würde schicken",
+    "würdest schicken",
+    "würde schicken",
+    "würden schicken",
+    "würdet schicken",
+    "würden schicken"
+   ],
+   "congiuntivo": [
+    "schicke",
+    "schickst",
+    "schickt",
+    "schicken",
+    "schickt",
+    "schicken"
+   ],
+   "imperativo": [
+    null,
+    "schick",
+    "schicken sie",
+    "schicken wir",
+    "schickt",
+    "schicken sie"
+   ]
+  }
+ },
+ "costruire": {
+  "it": {
+   "presente": [
+    "costruisco",
+    "costruisci",
+    "costruisce",
+    "costruiamo",
+    "costruite",
+    "costruiscono"
+   ],
+   "passatoprossimo": [
+    "ho costruito",
+    "hai costruito",
+    "ha costruito",
+    "abbiamo costruito",
+    "avete costruito",
+    "hanno costruito"
+   ],
+   "imperfetto": [
+    "costruivo",
+    "costruivi",
+    "costruiva",
+    "costruivamo",
+    "costruivate",
+    "costruivano"
+   ],
+   "futuro": [
+    "costruirò",
+    "costruirai",
+    "costruirà",
+    "costruiremo",
+    "costruirete",
+    "costruiranno"
+   ],
+   "condizionale": [
+    "costruirei",
+    "costruiresti",
+    "costruirebbe",
+    "costruiremmo",
+    "costruireste",
+    "costruirebbero"
+   ],
+   "congiuntivo": [
+    "costruisca",
+    "costruisca",
+    "costruisca",
+    "costruiamo",
+    "costruiate",
+    "costruiscano"
+   ],
+   "imperativo": [
+    null,
+    "costruisci",
+    "costruisca",
+    "costruiamo",
+    "costruite",
+    "costruiscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "baue",
+    "baust",
+    "baut",
+    "bauen",
+    "baut",
+    "bauen"
+   ],
+   "passatoprossimo": [
+    "habe gebaut",
+    "hast gebaut",
+    "hat gebaut",
+    "haben gebaut",
+    "habt gebaut",
+    "haben gebaut"
+   ],
+   "imperfetto": [
+    "baute",
+    "bautest",
+    "baute",
+    "bauten",
+    "bautet",
+    "bauten"
+   ],
+   "futuro": [
+    "werde bauen",
+    "wirst bauen",
+    "wird bauen",
+    "werden bauen",
+    "werdet bauen",
+    "werden bauen"
+   ],
+   "condizionale": [
+    "würde bauen",
+    "würdest bauen",
+    "würde bauen",
+    "würden bauen",
+    "würdet bauen",
+    "würden bauen"
+   ],
+   "congiuntivo": [
+    "baue",
+    "baust",
+    "baut",
+    "bauen",
+    "baut",
+    "bauen"
+   ],
+   "imperativo": [
+    null,
+    "bau",
+    "bauen sie",
+    "bauen wir",
+    "baut",
+    "bauen sie"
+   ]
+  }
+ },
+ "obbedire": {
+  "it": {
+   "presente": [
+    "obbedisco",
+    "obbedisci",
+    "obbedisce",
+    "obbediamo",
+    "obbedite",
+    "obbediscono"
+   ],
+   "passatoprossimo": [
+    "ho obbedito",
+    "hai obbedito",
+    "ha obbedito",
+    "abbiamo obbedito",
+    "avete obbedito",
+    "hanno obbedito"
+   ],
+   "imperfetto": [
+    "obbedivo",
+    "obbedivi",
+    "obbediva",
+    "obbedivamo",
+    "obbedivate",
+    "obbedivano"
+   ],
+   "futuro": [
+    "obbedirò",
+    "obbedirai",
+    "obbedirà",
+    "obbediremo",
+    "obbedirete",
+    "obbediranno"
+   ],
+   "condizionale": [
+    "obbedirei",
+    "obbediresti",
+    "obbedirebbe",
+    "obbediremmo",
+    "obbedireste",
+    "obbedirebbero"
+   ],
+   "congiuntivo": [
+    "obbedisca",
+    "obbedisca",
+    "obbedisca",
+    "obbediamo",
+    "obbediate",
+    "obbediscano"
+   ],
+   "imperativo": [
+    null,
+    "obbedisci",
+    "obbedisca",
+    "obbediamo",
+    "obbedite",
+    "obbediscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "gehorche",
+    "gehorchst",
+    "gehorcht",
+    "gehorchen",
+    "gehorcht",
+    "gehorchen"
+   ],
+   "passatoprossimo": [
+    "habe gehorcht",
+    "hast gehorcht",
+    "hat gehorcht",
+    "haben gehorcht",
+    "habt gehorcht",
+    "haben gehorcht"
+   ],
+   "imperfetto": [
+    "gehorchte",
+    "gehorchtest",
+    "gehorchte",
+    "gehorchten",
+    "gehorchtet",
+    "gehorchten"
+   ],
+   "futuro": [
+    "werde gehorchen",
+    "wirst gehorchen",
+    "wird gehorchen",
+    "werden gehorchen",
+    "werdet gehorchen",
+    "werden gehorchen"
+   ],
+   "condizionale": [
+    "würde gehorchen",
+    "würdest gehorchen",
+    "würde gehorchen",
+    "würden gehorchen",
+    "würdet gehorchen",
+    "würden gehorchen"
+   ],
+   "congiuntivo": [
+    "gehorche",
+    "gehorchst",
+    "gehorcht",
+    "gehorchen",
+    "gehorcht",
+    "gehorchen"
+   ],
+   "imperativo": [
+    null,
+    "gehorch",
+    "gehorchen sie",
+    "gehorchen wir",
+    "gehorcht",
+    "gehorchen sie"
+   ]
+  }
+ },
+ "guarire": {
+  "it": {
+   "presente": [
+    "guarisco",
+    "guarisci",
+    "guarisce",
+    "guariamo",
+    "guarite",
+    "guariscono"
+   ],
+   "passatoprossimo": [
+    "ho guarito",
+    "hai guarito",
+    "ha guarito",
+    "abbiamo guarito",
+    "avete guarito",
+    "hanno guarito"
+   ],
+   "imperfetto": [
+    "guarivo",
+    "guarivi",
+    "guariva",
+    "guarivamo",
+    "guarivate",
+    "guarivano"
+   ],
+   "futuro": [
+    "guarirò",
+    "guarirai",
+    "guarirà",
+    "guariremo",
+    "guarirete",
+    "guariranno"
+   ],
+   "condizionale": [
+    "guarirei",
+    "guariresti",
+    "guarirebbe",
+    "guariremmo",
+    "guarireste",
+    "guarirebbero"
+   ],
+   "congiuntivo": [
+    "guarisca",
+    "guarisca",
+    "guarisca",
+    "guariamo",
+    "guariate",
+    "guariscano"
+   ],
+   "imperativo": [
+    null,
+    "guarisci",
+    "guarisca",
+    "guariamo",
+    "guarite",
+    "guariscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "heile",
+    "heilst",
+    "heilt",
+    "heilen",
+    "heilt",
+    "heilen"
+   ],
+   "passatoprossimo": [
+    "habe geheilt",
+    "hast geheilt",
+    "hat geheilt",
+    "haben geheilt",
+    "habt geheilt",
+    "haben geheilt"
+   ],
+   "imperfetto": [
+    "heilte",
+    "heiltest",
+    "heilte",
+    "heilten",
+    "heiltet",
+    "heilten"
+   ],
+   "futuro": [
+    "werde heilen",
+    "wirst heilen",
+    "wird heilen",
+    "werden heilen",
+    "werdet heilen",
+    "werden heilen"
+   ],
+   "condizionale": [
+    "würde heilen",
+    "würdest heilen",
+    "würde heilen",
+    "würden heilen",
+    "würdet heilen",
+    "würden heilen"
+   ],
+   "congiuntivo": [
+    "heile",
+    "heilst",
+    "heilt",
+    "heilen",
+    "heilt",
+    "heilen"
+   ],
+   "imperativo": [
+    null,
+    "heile",
+    "heilen sie",
+    "heilen wir",
+    "heilt",
+    "heilen sie"
+   ]
+  }
+ },
+ "suggerire": {
+  "it": {
+   "presente": [
+    "suggerisco",
+    "suggerisci",
+    "suggerisce",
+    "suggeriamo",
+    "suggerite",
+    "suggeriscono"
+   ],
+   "passatoprossimo": [
+    "ho suggerito",
+    "hai suggerito",
+    "ha suggerito",
+    "abbiamo suggerito",
+    "avete suggerito",
+    "hanno suggerito"
+   ],
+   "imperfetto": [
+    "suggerivo",
+    "suggerivi",
+    "suggeriva",
+    "suggerivamo",
+    "suggerivate",
+    "suggerivano"
+   ],
+   "futuro": [
+    "suggerirò",
+    "suggerirai",
+    "suggerirà",
+    "suggeriremo",
+    "suggerirete",
+    "suggeriranno"
+   ],
+   "condizionale": [
+    "suggerirei",
+    "suggeriresti",
+    "suggerirebbe",
+    "suggeriremmo",
+    "suggerireste",
+    "suggerirebbero"
+   ],
+   "congiuntivo": [
+    "suggerisca",
+    "suggerisca",
+    "suggerisca",
+    "suggeriamo",
+    "suggeriate",
+    "suggeriscano"
+   ],
+   "imperativo": [
+    null,
+    "suggerisci",
+    "suggerisca",
+    "suggeriamo",
+    "suggerite",
+    "suggeriscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "schlage vor",
+    "schlägst vor",
+    "schlägt vor",
+    "schlagen vor",
+    "schlagt vor",
+    "schlagen vor"
+   ],
+   "passatoprossimo": [
+    "habe vorgeschlagen",
+    "hast vorgeschlagen",
+    "hat vorgeschlagen",
+    "haben vorgeschlagen",
+    "habt vorgeschlagen",
+    "haben vorgeschlagen"
+   ],
+   "imperfetto": [
+    "schlug vor",
+    "schlugst vor",
+    "schlug vor",
+    "schlugen vor",
+    "schlugt vor",
+    "schlugen vor"
+   ],
+   "futuro": [
+    "werde vorschlagen",
+    "wirst vorschlagen",
+    "wird vorschlagen",
+    "werden vorschlagen",
+    "werdet vorschlagen",
+    "werden vorschlagen"
+   ],
+   "condizionale": [
+    "würde vorschlagen",
+    "würdest vorschlagen",
+    "würde vorschlagen",
+    "würden vorschlagen",
+    "würdet vorschlagen",
+    "würden vorschlagen"
+   ],
+   "congiuntivo": [
+    "schlage vor",
+    "schlägst vor",
+    "schlägt vor",
+    "schlagen vor",
+    "schlagt vor",
+    "schlagen vor"
+   ],
+   "imperativo": [
+    null,
+    "schlag vor",
+    "vorschlagen sie",
+    "vorschlagen wir",
+    "schlagt vor",
+    "vorschlagen sie"
+   ]
+  }
+ },
+ "reagire": {
+  "it": {
+   "presente": [
+    "reagisco",
+    "reagisci",
+    "reagisce",
+    "reagiamo",
+    "reagite",
+    "reagiscono"
+   ],
+   "passatoprossimo": [
+    "ho reagito",
+    "hai reagito",
+    "ha reagito",
+    "abbiamo reagito",
+    "avete reagito",
+    "hanno reagito"
+   ],
+   "imperfetto": [
+    "reagivo",
+    "reagivi",
+    "reagiva",
+    "reagivamo",
+    "reagivate",
+    "reagivano"
+   ],
+   "futuro": [
+    "reagirò",
+    "reagirai",
+    "reagirà",
+    "reagiremo",
+    "reagirete",
+    "reagiranno"
+   ],
+   "condizionale": [
+    "reagirei",
+    "reagiresti",
+    "reagirebbe",
+    "reagiremmo",
+    "reagireste",
+    "reagirebbero"
+   ],
+   "congiuntivo": [
+    "reagisca",
+    "reagisca",
+    "reagisca",
+    "reagiamo",
+    "reagiate",
+    "reagiscano"
+   ],
+   "imperativo": [
+    null,
+    "reagisci",
+    "reagisca",
+    "reagiamo",
+    "reagite",
+    "reagiscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "reagiere",
+    "reagierst",
+    "reagiert",
+    "reagieren",
+    "reagiert",
+    "reagieren"
+   ],
+   "passatoprossimo": [
+    "habe reagiert",
+    "hast reagiert",
+    "hat reagiert",
+    "haben reagiert",
+    "habt reagiert",
+    "haben reagiert"
+   ],
+   "imperfetto": [
+    "reagierte",
+    "reagiertest",
+    "reagierte",
+    "reagierten",
+    "reagiertet",
+    "reagierten"
+   ],
+   "futuro": [
+    "werde reagieren",
+    "wirst reagieren",
+    "wird reagieren",
+    "werden reagieren",
+    "werdet reagieren",
+    "werden reagieren"
+   ],
+   "condizionale": [
+    "würde reagieren",
+    "würdest reagieren",
+    "würde reagieren",
+    "würden reagieren",
+    "würdet reagieren",
+    "würden reagieren"
+   ],
+   "congiuntivo": [
+    "reagiere",
+    "reagierst",
+    "reagiert",
+    "reagieren",
+    "reagiert",
+    "reagieren"
+   ],
+   "imperativo": [
+    null,
+    "reagiere",
+    "reagieren sie",
+    "reagieren wir",
+    "reagiert",
+    "reagieren sie"
+   ]
+  }
+ },
+ "unire": {
+  "it": {
+   "presente": [
+    "unisco",
+    "unisci",
+    "unisce",
+    "uniamo",
+    "unite",
+    "uniscono"
+   ],
+   "passatoprossimo": [
+    "ho unito",
+    "hai unito",
+    "ha unito",
+    "abbiamo unito",
+    "avete unito",
+    "hanno unito"
+   ],
+   "imperfetto": [
+    "univo",
+    "univi",
+    "univa",
+    "univamo",
+    "univate",
+    "univano"
+   ],
+   "futuro": [
+    "unirò",
+    "unirai",
+    "unirà",
+    "uniremo",
+    "unirete",
+    "uniranno"
+   ],
+   "condizionale": [
+    "unirei",
+    "uniresti",
+    "unirebbe",
+    "uniremmo",
+    "unireste",
+    "unirebbero"
+   ],
+   "congiuntivo": [
+    "unisca",
+    "unisca",
+    "unisca",
+    "uniamo",
+    "uniate",
+    "uniscano"
+   ],
+   "imperativo": [
+    null,
+    "unisci",
+    "unisca",
+    "uniamo",
+    "unite",
+    "uniscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "vereine",
+    "vereinst",
+    "vereint",
+    "vereinen",
+    "vereint",
+    "vereinen"
+   ],
+   "passatoprossimo": [
+    "habe vereint",
+    "hast vereint",
+    "hat vereint",
+    "haben vereint",
+    "habt vereint",
+    "haben vereint"
+   ],
+   "imperfetto": [
+    "vereinte",
+    "vereintest",
+    "vereinte",
+    "vereinten",
+    "vereintet",
+    "vereinten"
+   ],
+   "futuro": [
+    "werde vereinen",
+    "wirst vereinen",
+    "wird vereinen",
+    "werden vereinen",
+    "werdet vereinen",
+    "werden vereinen"
+   ],
+   "condizionale": [
+    "würde vereinen",
+    "würdest vereinen",
+    "würde vereinen",
+    "würden vereinen",
+    "würdet vereinen",
+    "würden vereinen"
+   ],
+   "congiuntivo": [
+    "vereine",
+    "vereinst",
+    "vereint",
+    "vereinen",
+    "vereint",
+    "vereinen"
+   ],
+   "imperativo": [
+    null,
+    "vereine",
+    "vereinen sie",
+    "vereinen wir",
+    "vereint",
+    "vereinen sie"
+   ]
+  }
+ },
+ "restituire": {
+  "it": {
+   "presente": [
+    "restituisco",
+    "restituisci",
+    "restituisce",
+    "restituiamo",
+    "restituite",
+    "restituiscono"
+   ],
+   "passatoprossimo": [
+    "ho restituito",
+    "hai restituito",
+    "ha restituito",
+    "abbiamo restituito",
+    "avete restituito",
+    "hanno restituito"
+   ],
+   "imperfetto": [
+    "restituivo",
+    "restituivi",
+    "restituiva",
+    "restituivamo",
+    "restituivate",
+    "restituivano"
+   ],
+   "futuro": [
+    "restituirò",
+    "restituirai",
+    "restituirà",
+    "restituiremo",
+    "restituirete",
+    "restituiranno"
+   ],
+   "condizionale": [
+    "restituirei",
+    "restituiresti",
+    "restituirebbe",
+    "restituiremmo",
+    "restituireste",
+    "restituirebbero"
+   ],
+   "congiuntivo": [
+    "restituisca",
+    "restituisca",
+    "restituisca",
+    "restituiamo",
+    "restituiate",
+    "restituiscano"
+   ],
+   "imperativo": [
+    null,
+    "restituisci",
+    "restituisca",
+    "restituiamo",
+    "restituite",
+    "restituiscano"
+   ]
+  },
+  "de": {
+   "presente": [
+    "gebe zurück",
+    "gibst zurück",
+    "gibt zurück",
+    "geben zurück",
+    "gebt zurück",
+    "geben zurück"
+   ],
+   "passatoprossimo": [
+    "habe zurückgegeben",
+    "hast zurückgegeben",
+    "hat zurückgegeben",
+    "haben zurückgegeben",
+    "habt zurückgegeben",
+    "haben zurückgegeben"
+   ],
+   "imperfetto": [
+    "gab zurück",
+    "gabst zurück",
+    "gab zurück",
+    "gaben zurück",
+    "gabt zurück",
+    "gaben zurück"
+   ],
+   "futuro": [
+    "werde zurückgeben",
+    "wirst zurückgeben",
+    "wird zurückgeben",
+    "werden zurückgeben",
+    "werdet zurückgeben",
+    "werden zurückgeben"
+   ],
+   "condizionale": [
+    "würde zurückgeben",
+    "würdest zurückgeben",
+    "würde zurückgeben",
+    "würden zurückgeben",
+    "würdet zurückgeben",
+    "würden zurückgeben"
+   ],
+   "congiuntivo": [
+    "gebe zurück",
+    "gibst zurück",
+    "gibt zurück",
+    "geben zurück",
+    "gebt zurück",
+    "geben zurück"
+   ],
+   "imperativo": [
+    null,
+    "gib zurück",
+    "zurückgeben sie",
+    "zurückgeben wir",
+    "gebt zurück",
+    "zurückgeben sie"
+   ]
+  }
  }
 }

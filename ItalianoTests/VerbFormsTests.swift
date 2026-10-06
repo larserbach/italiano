@@ -47,7 +47,7 @@ final class VerbFormsTests: XCTestCase {
             !VerbLibrary.verb($0).isIrregular && VerbLibrary.verb($0).isGendered(.passatoprossimo)
         }
         XCTAssertEqual(Set(gendered), ["arrivare", "diventare", "durare", "entrare", "mancare", "restare",
-                                       "sembrare", "tornare", "bastare", "partire"])
+                                       "sembrare", "tornare", "bastare", "partire", "scendere", "fuggire"])
         XCTAssertFalse(Tense.allCases.filter { $0 != .passatoprossimo }.contains { arrivare.isGendered($0) })
     }
 
