@@ -1,10 +1,11 @@
 import Foundation
 @testable import Italiano
 
-/// Stores a learning pool with these cells, so the next `ProgressStore` on `defaults` starts from it.
+/// Stores a learning pool with the groups and irregular verbs of these verbs, so the next `ProgressStore` on
+/// `defaults` starts from it.
 func seedPool(_ cells: [(String, Tense)], in defaults: UserDefaults) {
-    let pool = LearningPool(cells: cells.map { Cell(verb: $0.0, tense: $0.1) }, at: Date(timeIntervalSinceReferenceDate: 800_000_000))
-    defaults.set(try! JSONEncoder().encode(pool), forKey: "coniugazione-pool")
+    let pool = LearningPool(units: cells.map { PoolUnit(verb: $0.0, tense: $0.1) }, at: Date(timeIntervalSinceReferenceDate: 800_000_000))
+    defaults.set(try! JSONEncoder().encode(pool), forKey: "coniugazione-group-pool")
 }
 
 /// A clock the tests move forward by hand.
@@ -36,23 +37,15 @@ struct SeededGenerator: RandomNumberGenerator {
 }
 
 extension ProgressStore {
-    /// A lesson on one verb×tense: `answers` first attempts with `rating`, then the end of round 1.
+    /// A lesson on one verb in one tense: `answers` first attempts with `rating`, going round the persons,
+    /// then the end of round 1.
     @discardableResult
-    func practise(_ verb: String, _ tense: Tense, rating: Rating = .good, answers: Int = 3) -> LessonOutcome {
-        let cell = Cell(verb: verb, tense: tense)
-        let before = state(of: cell).map { [cell: $0.stability] } ?? [:]
-        let forms = Curriculum.forms(cell)
+    func practise(_ verb: String, _ tense: Tense, rating: Rating = .good, answers: Int = 6) -> LessonOutcome {
+        let unit = PoolUnit(verb: verb, tense: tense)
+        let before = progress(of: unit).share.map { [unit: $0] } ?? [:]
         for index in 0..<answers {
-            record(ConjugationItem(verb: verb, tense: tense, person: forms[index % forms.count].person), rating)
+            record(ConjugationItem(verb: verb, tense: tense, person: unit.persons[index % unit.persons.count]), rating)
         }
-        return finishLesson(ratings: Array(repeating: rating, count: answers), practised: [cell], before: before)
-    }
-
-    /// One Good lesson on each of `days` consecutive days.
-    func practiseDaily(_ verb: String, _ tense: Tense, days: Int, clock: TestClock) {
-        for _ in 0..<days {
-            clock.advance(days: 1)
-            practise(verb, tense)
-        }
+        return finishLesson(practised: [unit], before: before)
     }
 }

@@ -51,7 +51,7 @@ struct ConjugationLessonView: View {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
 
                 VStack(spacing: 0) {
-                    let isNew = lesson.newCells.contains(item.cell)
+                    let isNew = lesson.newUnits.contains(item.unit)
                     if lesson.rounds.round > 1 || isNew {
                         CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
                             .padding(.bottom, 10)
@@ -172,18 +172,14 @@ struct ConjugationLessonView: View {
     private var summarySections: [SummarySection] {
         guard let outcome = lesson.outcome else { return [] }
         var sections: [SummarySection] = []
-        if let addition = outcome.addition {
-            let cell = addition.cell
-            let label = addition.reason == .fastTrack
-                ? "Schnellspur (\(VerbFamily(verb: cell.verb).label) sitzt)"
-                : (cell.tense == .presente ? "Neues Verb" : "Neue Zeit")
-            sections.append(SummarySection(title: "Neu im Pool", rows: [.init(label: label, value: "\(cell.verb) · \(cell.tense.label)")],
-                                           highlighted: true))
+        if !outcome.additions.isEmpty {
+            sections.append(SummarySection(title: "Neu im Pool", rows: outcome.additions.map {
+                .init(label: "dank \($0.cause.label)", value: $0.unit.label)
+            }, highlighted: true))
         }
         if !outcome.changes.isEmpty {
-            sections.append(SummarySection(title: "Stabilität", rows: outcome.changes.map {
-                .init(label: "\($0.cell.verb) · \($0.cell.tense.label)",
-                      value: "\($0.from.map(DaysText.number) ?? "neu") → \(DaysText.of($0.to))")
+            sections.append(SummarySection(title: "Gut in den letzten \(Curriculum.windowSize) Antworten", rows: outcome.changes.map {
+                .init(label: $0.unit.label, value: "\($0.from.map(DaysText.percent) ?? "neu") → \($0.to.map(DaysText.percent) ?? "–")")
             }))
         }
         return sections

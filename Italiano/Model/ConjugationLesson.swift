@@ -11,6 +11,8 @@ struct ConjugationItem: Hashable {
 
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
     var cell: Cell { Cell(verb: verb, tense: tense) }
+    /// The group (or irregular verb) in that tense this question belongs to.
+    var unit: PoolUnit { PoolUnit(verb: verb, tense: tense) }
     var form: FormKey { FormKey(verb: verb, tense: tense, person: person) }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
@@ -43,19 +45,17 @@ final class ConjugationLesson {
     /// Increases with every card shown, so views can reset per card even if an item repeats.
     private(set) var cardNumber = 0
     private(set) var feedback: Feedback = .none
-    /// Stability changes and the pool addition from round 1; set once round 1 is through.
+    /// Progress changes and pool additions from round 1; set once round 1 is through.
     private(set) var outcome: LessonOutcome?
-    /// Cells answered for the first time in this lesson, for the "Neu" badge.
-    private(set) var newCells: Set<Cell> = []
+    /// Groups and irregular verbs answered for the first time in this lesson, for the "Neu" badge.
+    private(set) var newUnits: Set<PoolUnit> = []
     /// Whether the learner opened the verb or tense description on the current card; a right answer then
     /// counts as Correct instead of Good.
     private(set) var lookedUp = false
-    /// Stabilities when the lesson started, to show what it changed.
-    private var stabilitiesBefore: [Cell: Double] = [:]
-    /// Cells with a first answer in this lesson.
-    private var answeredCells: Set<Cell> = []
-    /// First-attempt ratings of round 1.
-    private var ratings: [Rating] = []
+    /// Shares of Good points when the lesson started, to show what it changed.
+    private var sharesBefore: [PoolUnit: Double] = [:]
+    /// Units with a first answer in this lesson.
+    private var answeredUnits: Set<PoolUnit> = []
 
     var isPathLesson: Bool { store.conjugation.mode == .path }
 
@@ -96,20 +96,19 @@ final class ConjugationLesson {
     func start() {
         store.resetLastMistakes()
         outcome = nil
-        answeredCells = []
-        ratings = []
+        answeredUnits = []
         let settings = store.conjugation
         let selected: [FormKey]
         switch settings.mode {
         case .path:
             selected = store.pickLesson(length: settings.length.resolve(poolSize: .max))
         case .free:
-            let pool = Self.freePool(store).map(\.form)
-            selected = store.pickLesson(length: settings.length.resolve(poolSize: pool.count), from: pool)
+            selected = store.pickLesson(length: settings.length.resolve(poolSize: Self.freePool(store).count),
+                                        verbs: settings.verbs, tenses: settings.tenses)
         }
-        let cells = Set(selected.map(\.cell))
-        newCells = cells.filter { store.state(of: $0) == nil }
-        stabilitiesBefore = Dictionary(uniqueKeysWithValues: cells.compactMap { cell in store.state(of: cell).map { (cell, $0.stability) } })
+        let units = Set(selected.map { PoolUnit(verb: $0.verb, tense: $0.tense) })
+        newUnits = units.filter { store.progress(of: $0).answers == 0 }
+        sharesBefore = Dictionary(uniqueKeysWithValues: units.compactMap { unit in store.progress(of: unit).share.map { (unit, $0) } })
         let chosen = selected.shuffled().map { form -> ConjugationItem in
             var item = ConjugationItem(verb: form.verb, tense: form.tense, person: form.person)
             if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
@@ -173,14 +172,13 @@ final class ConjugationLesson {
         lookedUp = false
         if current != nil { cardNumber += 1 }
         if rounds.round == 1, phase != .question, outcome == nil {
-            outcome = store.finishLesson(ratings: ratings, practised: answeredCells, before: stabilitiesBefore)
+            outcome = store.finishLesson(practised: answeredUnits, before: sharesBefore)
         }
     }
 
     private func recordFirstAttempt(_ item: ConjugationItem, _ rating: Rating) {
         store.record(item, rating)
-        answeredCells.insert(item.cell)
-        ratings.append(rating)
+        answeredUnits.insert(item.unit)
     }
 
     private func recordMiss(_ item: ConjugationItem) {

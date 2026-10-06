@@ -56,7 +56,7 @@ struct VerbInfoView: View {
                     .padding(.bottom, 4)
                 ConjugationTable(verb: verb)
                 if showsTenseLevels {
-                    ControlLabel("Level je Zeit")
+                    ControlLabel("Fortschritt je Zeit")
                         .padding(.top, 18)
                         .padding(.bottom, 4)
                     TenseBreakdown(levels: store.levels(of: verb.infinitive))

@@ -1,184 +1,173 @@
 import Foundation
 
-/// What the learner is working on: the verb×tense cells in play, and what comes next.
+/// What the learner is working on: whole regular groups and single irregular verbs, each in a tense.
 ///
-/// New cells are added after lessons that went well: the last two lessons ≥ 90 % Good (a looked-up answer
-/// counts half) and nearly the whole pool well retrieved. In every open tense each verb family comes first,
-/// with new families and irregular verbs needing less; then new Presente vocabulary and more verbs in the
-/// newest tense take turns. The next tense opens once the newest one has 5 verbs and the Presente 10 per
-/// open tense. A regular family whose last 6 answers in a tense were all Good, across 4 persons, gets new
-/// verbs of that tense at once (fast track).
+/// It starts with all -are verbs and essere in the Presente. A unit that performs well (≥ 80 % Good in its
+/// last 20 answers, a looked-up answer counting half, every person answered at least twice) unlocks:
+/// a regular group the next group in the same tense and itself in the next tense; an irregular verb the
+/// next irregular verb in the same tense, and itself in the next tense once a regular group has that tense.
+/// A unit in a later tense only unlocks while the same group or verb still performs well in every earlier
+/// tense in the pool.
 struct LearningPool: Codable, Equatable {
-    struct FamilyTense: Hashable, Codable {
-        let family: VerbFamily
-        let tense: Tense
+    /// The last answers of a unit, with the person each was about.
+    struct Window: Codable, Equatable {
+        private(set) var ratings: [Rating] = []
+        private(set) var persons: [Int] = []
+
+        mutating func append(_ rating: Rating, person: Int) {
+            ratings.append(rating)
+            persons.append(person)
+            // A window saved with a larger size shrinks to the current one.
+            if ratings.count > Curriculum.windowSize {
+                ratings.removeFirst(ratings.count - Curriculum.windowSize)
+                persons.removeFirst(persons.count - Curriculum.windowSize)
+            }
+        }
+
+        /// The answers that count: the last `windowSize`.
+        var recentRatings: ArraySlice<Rating> { ratings.suffix(Curriculum.windowSize) }
+        var recentPersons: ArraySlice<Int> { persons.suffix(Curriculum.windowSize) }
+
+        /// Share of Good points, nil without answers.
+        var share: Double? {
+            recentRatings.isEmpty ? nil : recentRatings.map(\.goodPoints).reduce(0, +) / Double(recentRatings.count)
+        }
     }
 
-    /// An unbroken run of Good answers and the persons it covered.
-    struct Streak: Codable, Equatable {
-        var count = 0
-        var persons: Set<Int> = []
+    /// How a unit is doing against the bar.
+    struct Progress: Equatable {
+        let answers: Int
+        let share: Double?
+        /// Persons with fewer than two answers in the window.
+        let missingPersons: [Int]
+        /// Already performed well once and unlocked what comes after it.
+        let passed: Bool
 
-        var grantsFastTrack: Bool { count >= Curriculum.fastTrackAnswers && persons.count >= Curriculum.fastTrackPersons }
+        var performsWell: Bool {
+            answers >= Curriculum.windowSize && (share ?? 0) >= Curriculum.goodBar && missingPersons.isEmpty
+        }
+
+        /// 0…1 for rings and bars: the share against the bar, scaled down while the window is still filling.
+        var fraction: Double {
+            if passed { return 1 }
+            let filled = min(1, Double(answers) / Double(Curriculum.windowSize))
+            return min(1, (share ?? 0) / Curriculum.goodBar) * filled
+        }
     }
 
     struct Addition: Equatable {
-        enum Reason: Equatable { case ready, fastTrack }
-
-        let cell: Cell
-        let reason: Reason
+        let unit: PoolUnit
+        /// The unit whose good performance brought it.
+        let cause: PoolUnit
     }
 
-    /// What decides the next addition, for the decision itself and for showing it.
-    struct Readiness: Equatable {
-        let next: Cell
-        /// A new family in that tense or an irregular verb: the pool needs to be a little less settled.
-        let eager: Bool
-        let fastTrack: Bool
-        /// Share of Good points in the rated lessons, nil before any lesson.
-        let goodShare: Double?
-        let settledCells: Int
-        let settledNeeded: Int
+    /// In the order they were added. Units are never removed.
+    private(set) var units: [PoolUnit]
+    private(set) var addedAt: [PoolUnit: Date]
+    private(set) var windows: [PoolUnit: Window] = [:]
+    private(set) var passed: Set<PoolUnit> = []
 
-        var lessonsOK: Bool { (goodShare ?? 0) >= Curriculum.goodBar }
-        var poolOK: Bool { settledCells >= settledNeeded }
+    static let startUnits: [PoolUnit] = [.group(.are, .presente), .irregular("essere", .presente)]
+
+    static func initial(at now: Date) -> LearningPool { LearningPool(units: startUnits, at: now) }
+
+    /// Drops units of verbs or tenses that no longer exist; starts over when nothing is left.
+    init(units: [PoolUnit], at now: Date) {
+        var seen = Set<PoolUnit>()
+        let valid = units.filter { unit in
+            if case .irregular(let verb, let tense) = unit, VerbLibrary.all[verb]?.hasTense(tense) != true { return false }
+            return seen.insert(unit).inserted
+        }
+        self.units = valid.isEmpty ? Self.startUnits : valid
+        addedAt = Dictionary(uniqueKeysWithValues: self.units.map { ($0, now) })
     }
 
-    /// In the order they were added. Cells are never removed.
-    private(set) var cells: [Cell]
-    private(set) var addedAt: [Cell: Date]
-    /// First-attempt ratings of the last lesson; readiness looks at the last two lessons.
-    private(set) var previousRatings: [Rating] = []
-    private(set) var streaks: [FamilyTense: Streak] = [:]
-    /// Alternates between new Presente vocabulary and more verbs in the newest tense.
-    private(set) var deepenNext = false
+    func contains(_ unit: PoolUnit) -> Bool { units.contains(unit) }
 
-    /// Starts with the first -are verb, both auxiliaries and an -ire verb.
-    static let startCells = ["parlare", "avere", "essere", "dormire"].map { Cell(verb: $0, tense: .presente) }
-
-    static func initial(at now: Date) -> LearningPool { LearningPool(cells: startCells, at: now) }
-
-    /// Drops cells of verbs or tenses that no longer exist; starts over when nothing is left.
-    init(cells: [Cell], at now: Date) {
-        var seen = Set<Cell>()
-        let valid = cells.filter { (VerbLibrary.all[$0.verb]?.hasTense($0.tense) ?? false) && seen.insert($0).inserted }
-        self.cells = valid.isEmpty ? Self.startCells : valid
-        addedAt = Dictionary(uniqueKeysWithValues: self.cells.map { ($0, now) })
+    func isFresh(_ unit: PoolUnit, at now: Date) -> Bool {
+        addedAt[unit].map { MemoryState.days(from: $0, to: now) < 1 } ?? false
     }
 
-    var verbs: Set<String> { Set(cells.map(\.verb)) }
-
-    func contains(_ cell: Cell) -> Bool { cells.contains(cell) }
-
-    func verbs(in tense: Tense) -> [String] { cells.filter { $0.tense == tense }.map(\.verb) }
-
-    var openTenses: [Tense] { Curriculum.tenseOrder.filter { tense in cells.contains { $0.tense == tense } } }
-
-    func isFresh(_ cell: Cell, at now: Date) -> Bool {
-        addedAt[cell].map { MemoryState.days(from: $0, to: now) < 1 } ?? false
+    func progress(of unit: PoolUnit) -> Progress {
+        let window = windows[unit] ?? Window()
+        let missing = unit.persons.filter { person in window.recentPersons.filter { $0 == person }.count < Curriculum.answersPerPerson }
+        return Progress(answers: window.recentRatings.count, share: window.share, missingPersons: missing, passed: passed.contains(unit))
     }
 
     // MARK: Answers and lessons
 
-    mutating func record(_ form: FormKey, _ rating: Rating) {
-        let family = VerbFamily(verb: form.verb)
-        guard family != .irregular else { return }
-        let key = FamilyTense(family: family, tense: form.tense)
-        switch rating {
-        case .good:
-            streaks[key, default: Streak()].count += 1
-            streaks[key, default: Streak()].persons.insert(form.person)
-        case .again:
-            streaks[key] = nil
-        case .correct:
-            break
+    mutating func record(_ key: MemoryKey, _ rating: Rating) {
+        windows[key.unit, default: Window()].append(rating, person: key.person)
+    }
+
+    /// The same group or irregular verb in earlier tenses that does not perform well right now; while there
+    /// is any, the unit unlocks nothing.
+    func blockers(of unit: PoolUnit) -> [PoolUnit] {
+        let earlier = Curriculum.tenseOrder.prefix { $0 != unit.tense }
+        return earlier.compactMap { tense -> PoolUnit? in
+            let other: PoolUnit = switch unit {
+            case .group(let family, _): .group(family, tense)
+            case .irregular(let verb, _): .irregular(verb, tense)
+            }
+            return contains(other) && !progress(of: other).performsWell ? other : nil
         }
     }
 
-    /// Adds at most one cell after a lesson, judged on its first-attempt ratings and the one before.
-    mutating func finishLesson(ratings: [Rating], memory: LearningMemory, at now: Date) -> Addition? {
-        guard !ratings.isEmpty else { return nil }
-        let readiness = readiness(lessonRatings: ratings, memory: memory, at: now)
-        previousRatings = ratings
-        guard let readiness else { return nil }
-        let reason: Addition.Reason
-        if readiness.fastTrack {
-            reason = .fastTrack
-        } else if readiness.lessonsOK && readiness.poolOK {
-            reason = .ready
-        } else {
-            return nil
-        }
-        add(readiness.next, at: now)
-        return Addition(cell: readiness.next, reason: reason)
-    }
-
-    /// The next cell and how close it is. Without `lessonRatings` it shows the state before the next lesson.
-    func readiness(lessonRatings: [Rating] = [], memory: LearningMemory, at now: Date) -> Readiness? {
-        guard let next = nextCell() else { return nil }
-        let family = VerbFamily(verb: next.verb)
-        let eager = family == .irregular || !verbs(in: next.tense).map(VerbFamily.init).contains(family)
-        let recent = previousRatings + lessonRatings
-        let settled = cells.filter {
-            guard let state = memory.cells[$0] else { return false }
-            return state.retrievability(at: now) >= (eager ? 0.7 : 0.8) && state.lastRating == .good
-        }
-        let share = Double(cells.count) * (eager ? 0.8 : 0.9)
-        return Readiness(
-            next: next, eager: eager,
-            fastTrack: family != .irregular && (streaks[FamilyTense(family: family, tense: next.tense)]?.grantsFastTrack ?? false),
-            goodShare: recent.isEmpty ? nil : recent.map(\.goodPoints).reduce(0, +) / Double(recent.count),
-            settledCells: settled.count, settledNeeded: Int(share.rounded(.up)))
-    }
-
-    private mutating func add(_ cell: Cell, at now: Date) {
-        cells.append(cell)
-        addedAt[cell] = now
-        // The next addition is judged on fresh lessons only.
-        previousRatings = []
-        deepenNext = cell.tense == .presente
-    }
-
-    // MARK: What comes next
-
-    /// The next cell: cover every family in each open tense first; open the next tense once the newest one
-    /// has enough verbs and the Presente enough vocabulary; otherwise alternate between new Presente verbs
-    /// and more verbs in the newest tense, irregular and regular verbs taking turns.
-    func nextCell() -> Cell? {
-        for tense in openTenses {
-            let present = Set(verbs(in: tense).map(VerbFamily.init))
-            for family in VerbFamily.allCases where !present.contains(family) {
-                if let verb = candidates(tense, family).first { return Cell(verb: verb, tense: tense) }
+    /// After a lesson: every unit that performs well for the first time, and is not held back by an
+    /// earlier tense, unlocks what comes after it.
+    mutating func finishLesson(at now: Date) -> [Addition] {
+        var additions: [Addition] = []
+        for unit in units where !passed.contains(unit) && progress(of: unit).performsWell && blockers(of: unit).isEmpty {
+            passed.insert(unit)
+            for next in unlocks(of: unit) where !contains(next) {
+                add(next, at: now)
+                additions.append(Addition(unit: next, cause: unit))
             }
         }
-        let latest = openTenses.last ?? .presente
-        let latestIndex = Curriculum.tenseOrder.firstIndex(of: latest)!
-        if verbs(in: latest).count >= Curriculum.nextTenseVerbs,
-           verbs(in: .presente).count >= Curriculum.presenteVerbsPerTense * openTenses.count,
-           latestIndex + 1 < Curriculum.tenseOrder.count {
-            let next = Curriculum.tenseOrder[latestIndex + 1]
-            if let verb = candidates(next, nil).first { return Cell(verb: verb, tense: next) }
+        // An irregular verb that did well waits for its next tense until a regular group has it.
+        for unit in units where passed.contains(unit) {
+            guard case .irregular(let verb, let tense) = unit, let next = Self.nextTense(after: tense, for: verb),
+                  isOpenForRegular(next), !contains(.irregular(verb, next)), blockers(of: unit).isEmpty else { continue }
+            add(.irregular(verb, next), at: now)
+            additions.append(Addition(unit: .irregular(verb, next), cause: unit))
         }
-        let tense = deepenNext && latest != .presente ? latest : .presente
-        let lastWasIrregular = cells.last.map { VerbFamily(verb: $0.verb) == .irregular } ?? false
-        let options = candidates(tense, nil)
-        let preferred = options.first { (VerbFamily(verb: $0) == .irregular) != lastWasIrregular }
-        if let verb = preferred ?? options.first { return Cell(verb: verb, tense: tense) }
-        return candidates(latest, nil).first.map { Cell(verb: $0, tense: latest) }
+        return additions
     }
 
-    /// Verbs that could join `tense`, in path order. Beyond the Presente only verbs already in the pool,
-    /// and only once they have the tense before (the one before that the verb has, for potere & co.).
-    private func candidates(_ tense: Tense, _ family: VerbFamily?) -> [String] {
-        let source = tense == .presente ? Curriculum.verbOrder : Curriculum.verbOrder.filter(verbs.contains)
-        return source.filter { verb in
-            let entry = VerbLibrary.verb(verb)
-            guard entry.hasTense(tense), !contains(Cell(verb: verb, tense: tense)),
-                  family == nil || VerbFamily(verb: verb) == family else { return false }
-            guard tense != .presente else { return true }
-            let earlier = Curriculum.tenseOrder.prefix { $0 != tense }.filter(entry.hasTense)
-            return earlier.last.map { contains(Cell(verb: verb, tense: $0)) } ?? true
+    /// What a unit brings once it performs well (already present ones included).
+    func unlocks(of unit: PoolUnit) -> [PoolUnit] {
+        switch unit {
+        case .group(let family, let tense):
+            var result: [PoolUnit] = []
+            if let index = VerbFamily.regular.firstIndex(of: family), index + 1 < VerbFamily.regular.count {
+                result.append(.group(VerbFamily.regular[index + 1], tense))
+            }
+            if let next = Self.nextTense(after: tense, for: nil) { result.append(.group(family, next)) }
+            return result
+        case .irregular(let verb, let tense):
+            var result: [PoolUnit] = []
+            if let next = VerbFamily.irregular.verbs.first(where: { $0 != verb && VerbLibrary.verb($0).hasTense(tense)
+                                                                    && !contains(.irregular($0, tense)) }) {
+                result.append(.irregular(next, tense))
+            }
+            if let next = Self.nextTense(after: tense, for: verb), isOpenForRegular(next) { result.append(.irregular(verb, next)) }
+            return result
         }
+    }
+
+    private func isOpenForRegular(_ tense: Tense) -> Bool {
+        units.contains { if case .group(_, let open) = $0 { open == tense } else { false } }
+    }
+
+    /// The next tense in path order that the verb has (any tense for regular groups).
+    static func nextTense(after tense: Tense, for verb: String?) -> Tense? {
+        let later = Curriculum.tenseOrder.drop { $0 != tense }.dropFirst()
+        return later.first { tense in verb.map { VerbLibrary.verb($0).hasTense(tense) } ?? true }
+    }
+
+    private mutating func add(_ unit: PoolUnit, at now: Date) {
+        units.append(unit)
+        addedAt[unit] = now
     }
 }
 
@@ -197,59 +186,69 @@ enum Curriculum {
         "bastare", "cadere",
     ]
 
-    /// Share of Good points in the last two lessons needed for a new cell.
-    static let goodBar = 0.9
-    /// The next tense opens once the newest tense has this many verbs …
-    static let nextTenseVerbs = 5
-    /// … and the Presente this many verbs per open tense.
-    static let presenteVerbsPerTense = 10
-    /// Fast track for a regular family in a tense: this many Good answers in a row, over this many persons.
-    static let fastTrackAnswers = 6
-    static let fastTrackPersons = 4
+    /// A unit performs well with this share of Good points in its last `windowSize` answers …
+    static let goodBar = 0.8
+    static let windowSize = 20
+    /// … and every person answered at least this often among them.
+    static let answersPerPerson = 2
 
-    private static let verbRank = Dictionary(uniqueKeysWithValues: verbOrder.enumerated().map { ($1, $0) })
-
-    /// Sorts cells by verb, then tense, along the path.
-    static func rank(_ cell: Cell) -> (Int, Int) {
-        (verbRank[cell.verb] ?? Int.max, tenseOrder.firstIndex(of: cell.tense)!)
-    }
-
-    static func forms(_ cell: Cell) -> [FormKey] {
-        cell.tense.persons.filter { VerbLibrary.verb(cell.verb).hasForm(cell.tense, $0) }
-            .map { FormKey(verb: cell.verb, tense: cell.tense, person: $0) }
-    }
-
-    /// Picks `length` forms, favouring what is least known (all three memory levels), difficult, freshly
-    /// added, or in a person × tense that lags behind the rest. At most 4 per verb×tense, unless there are
-    /// too few verb×tense to fill the lesson.
-    static func pickLesson<R: RandomNumberGenerator>(from candidates: [FormKey], pool: LearningPool, memory: LearningMemory,
-                                                     length: Int, at now: Date, using rng: inout R) -> [FormKey] {
-        guard !candidates.isEmpty else { return [] }
-        var known: [FormKey: Double] = [:]
-        for form in candidates { known[form] = memory.known(form, at: now) }
+    /// Picks `length` questions, favouring what is least known, difficult, freshly added, or in a person ×
+    /// tense that lags behind the rest. For a regular group the verb is chosen at random from `verbs`
+    /// (different verbs within a lesson where possible). At most 4 questions per unit, unless there are too
+    /// few units to fill the lesson.
+    static func pickLesson<R: RandomNumberGenerator>(units: [PoolUnit], verbs: (PoolUnit) -> [String], pool: LearningPool,
+                                                     memory: LearningMemory, length: Int, at now: Date,
+                                                     using rng: inout R) -> [FormKey] {
+        let keys = units.flatMap(\.keys)
+        guard !keys.isEmpty, length > 0 else { return [] }
+        var known: [MemoryKey: Double] = [:]
+        for key in keys { known[key] = memory[key]?.retrievability(at: now) ?? 0 }
         let mean = known.values.reduce(0, +) / Double(known.count)
         // A person × tense that lags behind the average is trained more.
         var sums: [PersonTense: (total: Double, count: Int)] = [:]
-        for (form, value) in known {
-            let key = PersonTense(form)
-            let sum = sums[key] ?? (0, 0)
-            sums[key] = (sum.total + value, sum.count + 1)
+        for (key, value) in known {
+            let sum = sums[PersonTense(key)] ?? (0, 0)
+            sums[PersonTense(key)] = (sum.total + value, sum.count + 1)
         }
         let personBoost = sums.mapValues { max(0, mean - $0.total / Double($0.count)) * 1.5 }
 
-        let scored = known.keys.map { form -> (FormKey, Double) in
-            var need = (1 - known[form]!) * (0.7 + 0.06 * (memory.forms[form]?.difficulty ?? 5))
-            need += personBoost[PersonTense(form)] ?? 0
-            if pool.isFresh(form.cell, at: now) { need += 0.3 }
-            return (form, pow(Double.random(in: 0.001..<1, using: &rng), 1 / max(0.01, need * need)))
+        func ranked() -> [MemoryKey] {
+            keys.map { key -> (MemoryKey, Double) in
+                var need = (1 - known[key]!) * (0.7 + 0.06 * (memory[key]?.difficulty ?? 5))
+                need += personBoost[PersonTense(key)] ?? 0
+                if pool.isFresh(key.unit, at: now) { need += 0.3 }
+                return (key, pow(Double.random(in: 0.001..<1, using: &rng), 1 / max(0.01, need * need)))
+            }
+            .sorted { $0.1 > $1.1 }
+            .map(\.0)
         }
-        let cellCount = Set(candidates.map(\.cell)).count
-        let cap = max(4, (length + cellCount - 1) / cellCount)
-        var perCell: [Cell: Int] = [:]
+
+        let cap = max(4, (length + units.count - 1) / units.count)
+        var perUnit: [PoolUnit: Int] = [:]
+        var usedVerbs: Set<String> = []
         var picked: [FormKey] = []
-        for (form, _) in scored.sorted(by: { $0.1 > $1.1 }) where picked.count < length && perCell[form.cell, default: 0] < cap {
-            picked.append(form)
-            perCell[form.cell, default: 0] += 1
+        // A regular pattern may come again (with another verb) when there are too few patterns for the lesson.
+        for pass in 0..<4 where picked.count < length {
+            for key in ranked() where picked.count < length && perUnit[key.unit, default: 0] < (pass == 0 ? cap : length) {
+                let form: FormKey
+                switch key {
+                case .form(let irregular):
+                    guard pass == 0 else { continue }
+                    form = irregular
+                case .pattern(let pattern):
+                    let options = verbs(key.unit).filter {
+                        VerbLibrary.verb($0).hasForm(pattern.tense, pattern.person)
+                            && !picked.contains(FormKey(verb: $0, tense: pattern.tense, person: pattern.person))
+                    }
+                    let fresh = options.filter { !usedVerbs.contains($0) }
+                    guard let verb = (fresh.isEmpty ? options : fresh).randomElement(using: &rng) else { continue }
+                    form = FormKey(verb: verb, tense: pattern.tense, person: pattern.person)
+                }
+                guard !picked.contains(form) else { continue }
+                picked.append(form)
+                usedVerbs.insert(form.verb)
+                perUnit[key.unit, default: 0] += 1
+            }
         }
         return picked
     }
@@ -259,8 +258,8 @@ private struct PersonTense: Hashable {
     let tense: Tense
     let person: Int
 
-    init(_ form: FormKey) {
-        tense = form.tense
-        person = form.person
+    init(_ key: MemoryKey) {
+        tense = key.tense
+        person = key.person
     }
 }

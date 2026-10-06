@@ -95,108 +95,122 @@ struct ConjugationSettingsView: View {
     }
 }
 
-/// The learning path at a glance: what comes next, and every unlocked verb with its tense levels.
-/// A verb row opens its detailed progress.
+/// The learning path at a glance: what is closest to bringing something new, and every group and
+/// irregular verb in the pool with its progress per tense. A row opens the details.
 private struct LearningPathSection: View {
     @Environment(ProgressStore.self) private var store
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             ControlLabel("Als Nächstes")
-            nextStep
+            nextSteps
                 .font(.system(size: 14))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .card()
         }
 
+        let families = VerbFamily.regular.filter { family in store.pool.units.contains { $0 == .group(family, $0.tense) } }
         VStack(alignment: .leading, spacing: 7) {
-            ControlLabel("Deine Verben")
+            ControlLabel("Verbgruppen")
             VStack(spacing: 0) {
-                ForEach(store.unlockedVerbs.reversed(), id: \.self) { verb in
-                    NavigationLink {
-                        VerbProgressView(verb: verb)
-                    } label: {
-                        verbRow(verb)
-                    }
-                    .buttonStyle(.plain)
+                ForEach(families, id: \.self) { family in
+                    row(.family(family), detail: "\(family.verbs.count) Verben")
+                }
+            }
+        }
+
+        let irregular = VerbFamily.irregular.verbs.filter { verb in store.pool.units.contains { $0 == .irregular(verb, $0.tense) } }
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Unregelmäßige Verben")
+            VStack(spacing: 0) {
+                ForEach(irregular, id: \.self) { verb in
+                    row(.verb(verb), detail: VerbLibrary.verb(verb).meaning)
                 }
             }
         }
     }
 
-    private func verbRow(_ verb: String) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(verb).font(Theme.display(17))
-                FlowLayout {
-                    ForEach(store.unlockedTenses(of: verb)) { tense in
-                        HStack(spacing: 5) {
-                            VerbRing(level: store.level(of: verb, tense: tense))
-                            Text(tense.shortLabel)
-                                .font(.system(size: 12.5))
-                                .foregroundStyle(Theme.inkSoft)
+    private func row(_ subject: ProgressSubject, detail: String) -> some View {
+        NavigationLink {
+            UnitProgressView(subject: subject)
+        } label: {
+            HStack(alignment: .center, spacing: 10) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(subject.title).font(Theme.display(17))
+                        Text(detail).font(.system(size: 12.5)).foregroundStyle(Theme.inkSoft)
+                    }
+                    FlowLayout {
+                        ForEach(subject.tenses.map(subject.unit).filter(store.pool.contains), id: \.self) { unit in
+                            HStack(spacing: 5) {
+                                ProgressRing(progress: store.progress(of: unit))
+                                Text(unit.tense.shortLabel)
+                                    .font(.system(size: 12.5))
+                                    .foregroundStyle(Theme.inkSoft)
+                            }
+                            .padding(.trailing, 6)
                         }
-                        .padding(.trailing, 6)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("\(tense.label): Stufe \(store.level(of: verb, tense: tense))")
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.inkSoft)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(Theme.inkSoft)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+            .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
         }
-        .padding(.vertical, 12)
-        .contentShape(Rectangle())
-        .overlay(alignment: .bottom) { Rectangle().fill(Theme.line).frame(height: 1) }
+        .buttonStyle(.plain)
     }
 
+    /// The three units closest to performing well, with what they would bring.
     @ViewBuilder
-    private var nextStep: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let readiness = store.readiness {
-                let family = VerbFamily(verb: readiness.next.verb)
-                Text("**\(readiness.next.verb)** · \(readiness.next.tense.label)")
-                Text(reason(readiness, family: family))
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.inkSoft)
-                if readiness.fastTrack {
-                    Text("Schnellspur: \(family.label) im \(readiness.next.tense.label) sitzt – kommt nach der nächsten Lektion.")
-                        .font(.system(size: 13))
-                } else {
-                    VStack(alignment: .leading, spacing: 3) {
-                        check(readiness.lessonsOK, readiness.goodShare.map {
-                            "Letzte Lektion \(DaysText.percent($0)) gut (nötig \(DaysText.percent(Curriculum.goodBar)) über zwei Lektionen)"
-                        } ?? "Noch keine Lektion bewertet")
-                        check(readiness.poolOK, "\(readiness.settledCells) von \(store.pool.cells.count) Einheiten sitzen (nötig \(readiness.settledNeeded))")
-                    }
-                    .font(.system(size: 13))
-                }
-            } else {
-                Text("Alle Verben und Zeiten sind im Pool.")
+    private var nextSteps: some View {
+        let open = store.pool.units
+            .filter { !store.progress(of: $0).passed && !store.pool.unlocks(of: $0).filter { !store.pool.contains($0) }.isEmpty }
+            .sorted { store.progress(of: $0).fraction > store.progress(of: $1).fraction }
+            .prefix(3)
+        VStack(alignment: .leading, spacing: 12) {
+            if open.isEmpty {
+                Text("Alles im Pool läuft schon – übe weiter, um es zu festigen.")
             }
-            Text("Tippe ein Verb an, um seine Werte zu sehen.")
+            ForEach(Array(open), id: \.self) { unit in
+                let progress = store.progress(of: unit)
+                let brings = store.pool.unlocks(of: unit).filter { !store.pool.contains($0) }
+                HStack(alignment: .top, spacing: 10) {
+                    ProgressRing(progress: progress)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("**\(unit.label)**")
+                        Text(status(progress))
+                            .font(.system(size: 13))
+                            .foregroundStyle(Theme.inkSoft)
+                        let blockers = store.pool.blockers(of: unit)
+                        if !blockers.isEmpty {
+                            Text("Wartet auf: " + blockers.map { "\($0.label) (\(store.progress(of: $0).share.map(DaysText.percent) ?? "–"))" }
+                                .joined(separator: ", "))
+                                .font(.system(size: 13))
+                                .foregroundStyle(Theme.brick)
+                        }
+                        Text("Bringt: " + brings.map(\.label).joined(separator: ", "))
+                            .font(.system(size: 13))
+                    }
+                }
+            }
+            Text("Neues kommt, wenn von den letzten \(Curriculum.windowSize) Antworten einer Gruppe oder eines unregelmäßigen Verbs mindestens \(DaysText.percent(Curriculum.goodBar)) gut sind – in späteren Zeiten nur, solange auch die früheren Zeiten so gut laufen. Tippe eine Zeile an für Details.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.inkSoft)
         }
     }
 
-    private func reason(_ readiness: LearningPool.Readiness, family: VerbFamily) -> String {
-        if !store.pool.openTenses.contains(readiness.next.tense) { return "Neue Zeit" }
-        if !store.pool.verbs(in: readiness.next.tense).map(VerbFamily.init).contains(family) {
-            return "Neue Gruppe im \(readiness.next.tense.label): \(family.label)"
+    private func status(_ progress: LearningPool.Progress) -> String {
+        var parts = ["\(progress.answers) von \(Curriculum.windowSize) Antworten"]
+        if let share = progress.share { parts.append("\(DaysText.percent(share)) gut") }
+        if !progress.missingPersons.isEmpty, progress.answers >= Curriculum.windowSize / 2 {
+            parts.append("mehr nötig: " + progress.missingPersons.map { Pronoun.italian[$0] }.joined(separator: ", "))
         }
-        return family == .irregular ? "Unregelmäßiges Verb" : "Weiteres Verb (\(family.label))"
-    }
-
-    private func check(_ ok: Bool, _ text: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Image(systemName: ok ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(ok ? Theme.olive : Theme.inkSoft)
-            Text(text)
-        }
+        return parts.joined(separator: " · ")
     }
 }
 
@@ -236,8 +250,8 @@ struct VerbPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !coachSeen {
-                CoachMark(text: "Der Ring zeigt das Level des Verbs"
-                              + (preview.isBasic ? "." : " in den gewählten Zeiten.")
+                CoachMark(text: preview.isBasic ? "Der Ring zeigt das Level des Verbs."
+                              : "Der Ring zeigt den Fortschritt der Verbgruppe (bei unregelmäßigen Verben: des Verbs) in den gewählten Zeiten."
                               + (onDetails == nil ? "" : " Lange drücken für Details."),
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)

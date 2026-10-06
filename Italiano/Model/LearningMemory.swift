@@ -9,7 +9,7 @@ enum Rating: String, Codable {
     /// Right without any help.
     case good
 
-    /// For lesson readiness: a looked-up answer counts half.
+    /// For progress toward performing well: a looked-up answer counts half.
     var goodPoints: Double {
         switch self {
         case .again: 0
@@ -92,6 +92,9 @@ struct FormKey: Hashable, Codable {
 enum VerbFamily: String, Codable, CaseIterable {
     case are, ere, ire, isc, irregular
 
+    /// The regular groups in the order they join the pool.
+    static let regular: [VerbFamily] = [.are, .ere, .ire, .isc]
+
     init(verb: String) {
         let entry = VerbLibrary.verb(verb)
         if entry.isIrregular {
@@ -115,46 +118,125 @@ enum VerbFamily: String, Codable, CaseIterable {
         case .irregular: "unregelmäßig"
         }
     }
+
+    /// The family's verbs in path order.
+    var verbs: [String] { Curriculum.verbOrder.filter { VerbFamily(verb: $0) == self } }
 }
 
-/// A regular group's ending pattern for one tense and person ("-are · Presente · tu"), shared by all
-/// its verbs. In the Passato prossimo the auxiliary matters as well.
+/// What the pool is made of: a whole regular group in one tense, or one irregular verb in one tense.
+enum PoolUnit: Hashable, Codable {
+    case group(VerbFamily, Tense)
+    case irregular(String, Tense)
+
+    init(verb: String, tense: Tense) {
+        let family = VerbFamily(verb: verb)
+        self = family == .irregular ? .irregular(verb, tense) : .group(family, tense)
+    }
+
+    var tense: Tense {
+        switch self {
+        case .group(_, let tense), .irregular(_, let tense): tense
+        }
+    }
+
+    /// "-are" or the irregular verb.
+    var name: String {
+        switch self {
+        case .group(let family, _): family.label
+        case .irregular(let verb, _): verb
+        }
+    }
+
+    var label: String { "\(name) · \(tense.label)" }
+
+    /// The verbs this unit asks about.
+    var verbs: [String] {
+        switch self {
+        case .group(let family, let tense): family.verbs.filter { VerbLibrary.verb($0).hasTense(tense) }
+        case .irregular(let verb, _): [verb]
+        }
+    }
+
+    /// The persons that exist in this tense (for an irregular verb: that the verb has).
+    var persons: [Int] {
+        switch self {
+        case .group(_, let tense): Array(tense.persons)
+        case .irregular(let verb, let tense): tense.persons.filter { VerbLibrary.verb(verb).hasForm(tense, $0) }
+        }
+    }
+
+    /// Everything that is measured for picking: one key per person.
+    var keys: [MemoryKey] {
+        switch self {
+        case .group(let family, let tense): persons.map { .pattern(PatternKey(family: family, tense: tense, person: $0)) }
+        case .irregular(let verb, let tense): persons.map { .form(FormKey(verb: verb, tense: tense, person: $0)) }
+        }
+    }
+}
+
+/// A regular group's ending pattern for one tense and person ("-are · Presente · tu"), shared by all its verbs.
 struct PatternKey: Hashable, Codable {
     let family: VerbFamily
-    let auxiliary: Auxiliary?
     let tense: Tense
     let person: Int
+}
 
-    /// nil for irregular verbs, which share no pattern.
-    init?(_ form: FormKey) {
-        let family = VerbFamily(verb: form.verb)
-        guard family != .irregular else { return nil }
-        self.family = family
-        auxiliary = form.tense == .passatoprossimo ? VerbLibrary.verb(form.verb).auxiliary : nil
-        tense = form.tense
-        person = form.person
+/// What a single answer is measured on: the group pattern for regular verbs, the form itself for irregular ones.
+enum MemoryKey: Hashable {
+    case pattern(PatternKey)
+    case form(FormKey)
+
+    init(verb: String, tense: Tense, person: Int) {
+        let family = VerbFamily(verb: verb)
+        self = family == .irregular
+            ? .form(FormKey(verb: verb, tense: tense, person: person))
+            : .pattern(PatternKey(family: family, tense: tense, person: person))
+    }
+
+    var unit: PoolUnit {
+        switch self {
+        case .pattern(let key): .group(key.family, key.tense)
+        case .form(let key): .irregular(key.verb, key.tense)
+        }
+    }
+
+    var tense: Tense {
+        switch self {
+        case .pattern(let key): key.tense
+        case .form(let key): key.tense
+        }
+    }
+
+    var person: Int {
+        switch self {
+        case .pattern(let key): key.person
+        case .form(let key): key.person
+        }
     }
 }
 
-/// Memory on three levels: each form, each verb×tense, and each regular group pattern.
+/// Difficulty, stability and retrievability per regular group pattern and per irregular form.
+/// Single regular verbs are not tracked: what counts is whether the learner can conjugate the group.
 struct LearningMemory: Codable, Equatable {
-    var forms: [FormKey: MemoryState] = [:]
-    var cells: [Cell: MemoryState] = [:]
     var patterns: [PatternKey: MemoryState] = [:]
+    var irregularForms: [FormKey: MemoryState] = [:]
 
-    mutating func record(_ form: FormKey, _ rating: Rating, at now: Date) {
-        forms[form] = MemoryState.updated(forms[form], rating, at: now)
-        cells[form.cell] = MemoryState.updated(cells[form.cell], rating, at: now)
-        if let key = PatternKey(form) { patterns[key] = MemoryState.updated(patterns[key], rating, at: now) }
+    subscript(key: MemoryKey) -> MemoryState? {
+        get {
+            switch key {
+            case .pattern(let pattern): patterns[pattern]
+            case .form(let form): irregularForms[form]
+            }
+        }
+        set {
+            switch key {
+            case .pattern(let pattern): patterns[pattern] = newValue
+            case .form(let form): irregularForms[form] = newValue
+            }
+        }
     }
 
-    /// How well a form is known now, 0…1: half the form itself, a quarter its verb×tense and a quarter
-    /// its group pattern (for irregular verbs the verb×tense again). A new regular verb is thus partly
-    /// known through its group.
-    func known(_ form: FormKey, at now: Date) -> Double {
-        let own = forms[form]?.retrievability(at: now) ?? 0
-        let cell = cells[form.cell]?.retrievability(at: now) ?? 0
-        let pattern = PatternKey(form).flatMap { patterns[$0]?.retrievability(at: now) } ?? cell
-        return 0.5 * own + 0.25 * cell + 0.25 * pattern
+    mutating func record(_ key: MemoryKey, _ rating: Rating, at now: Date) {
+        self[key] = MemoryState.updated(self[key], rating, at: now)
     }
 }

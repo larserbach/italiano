@@ -61,38 +61,38 @@ final class MemoryStateTests: XCTestCase {
 final class LearningMemoryTests: XCTestCase {
     private let now = Date(timeIntervalSinceReferenceDate: 800_000_000)
 
-    func testAnswerUpdatesFormVerbAndGroupPattern() {
+    func testRegularVerbsCountForTheirGroupPattern() {
         var memory = LearningMemory()
-        let form = FormKey(verb: "parlare", tense: .presente, person: 1)
-        memory.record(form, .good, at: now)
-        XCTAssertNotNil(memory.forms[form])
-        XCTAssertNotNil(memory.cells[form.cell])
-        XCTAssertNotNil(memory.patterns[PatternKey(form)!])
-        // A new -are verb is partly known through the pattern; an irregular verb is not.
-        XCTAssertGreaterThan(memory.known(FormKey(verb: "abitare", tense: .presente, person: 1), at: now), 0)
-        XCTAssertEqual(memory.known(FormKey(verb: "essere", tense: .presente, person: 1), at: now), 0)
+        memory.record(MemoryKey(verb: "parlare", tense: .presente, person: 1), .good, at: now)
+        memory.record(MemoryKey(verb: "abitare", tense: .presente, person: 1), .again, at: now)
+        let pattern = PatternKey(family: .are, tense: .presente, person: 1)
+        XCTAssertEqual(memory.patterns.count, 1)
+        XCTAssertEqual(memory.patterns[pattern]?.answers, 2)
+        XCTAssertEqual(memory.patterns[pattern]?.lastRating, .again)
+        XCTAssertTrue(memory.irregularForms.isEmpty)
     }
 
-    func testIrregularVerbsHaveNoPattern() {
+    func testIrregularVerbsAreTrackedPerForm() {
         var memory = LearningMemory()
-        memory.record(FormKey(verb: "essere", tense: .presente, person: 0), .good, at: now)
+        memory.record(MemoryKey(verb: "essere", tense: .presente, person: 0), .good, at: now)
+        memory.record(MemoryKey(verb: "avere", tense: .presente, person: 0), .good, at: now)
         XCTAssertTrue(memory.patterns.isEmpty)
-        XCTAssertEqual(memory.cells.count, 1)
+        XCTAssertEqual(memory.irregularForms.count, 2)
     }
 
-    func testPassatoProssimoPatternsDependOnTheAuxiliary() {
-        let withAvere = PatternKey(FormKey(verb: "parlare", tense: .passatoprossimo, person: 0))
-        let withEssere = PatternKey(FormKey(verb: "arrivare", tense: .passatoprossimo, person: 0))
-        XCTAssertNotEqual(withAvere, withEssere)
-        XCTAssertEqual(PatternKey(FormKey(verb: "parlare", tense: .presente, person: 0)),
-                       PatternKey(FormKey(verb: "arrivare", tense: .presente, person: 0)))
+    func testKeysBelongToTheirUnit() {
+        XCTAssertEqual(MemoryKey(verb: "arrivare", tense: .passatoprossimo, person: 3).unit, .group(.are, .passatoprossimo))
+        XCTAssertEqual(MemoryKey(verb: "capire", tense: .futuro, person: 0).unit, .group(.isc, .futuro))
+        XCTAssertEqual(MemoryKey(verb: "fare", tense: .presente, person: 2).unit, .irregular("fare", .presente))
+        XCTAssertEqual(PoolUnit.irregular("potere", .imperativo).persons, [])
+        XCTAssertEqual(PoolUnit.group(.are, .imperativo).persons, [1, 2, 3, 4, 5])
     }
 
     func testMemoryRoundTripsThroughJSON() throws {
         var memory = LearningMemory()
-        memory.record(FormKey(verb: "parlare", tense: .passatoprossimo, person: 2), .again, at: now)
-        let decoded = try JSONDecoder().decode(LearningMemory.self, from: JSONEncoder().encode(memory))
-        XCTAssertEqual(decoded, memory)
+        memory.record(MemoryKey(verb: "parlare", tense: .passatoprossimo, person: 2), .again, at: now)
+        memory.record(MemoryKey(verb: "fare", tense: .presente, person: 2), .good, at: now)
+        XCTAssertEqual(try JSONDecoder().decode(LearningMemory.self, from: JSONEncoder().encode(memory)), memory)
     }
 }
 
@@ -105,14 +105,19 @@ final class LearningPoolTests: XCTestCase {
         defaults.removePersistentDomain(forName: "LearningPoolTests")
     }
 
-    private func cell(_ verb: String, _ tense: Tense = .presente) -> Cell { Cell(verb: verb, tense: tense) }
-
-    /// Memory in which every form of `cells` was just answered Good.
-    private func settled(_ cells: [Cell]) -> LearningMemory {
-        var memory = LearningMemory()
-        for form in cells.flatMap(Curriculum.forms) { memory.record(form, .good, at: now) }
-        return memory
+    /// Feeds `ratings` to a unit, going round its persons.
+    private func answer(_ pool: inout LearningPool, _ unit: PoolUnit, _ ratings: [Rating]) {
+        for (index, rating) in ratings.enumerated() {
+            let person = unit.persons[index % unit.persons.count]
+            let key: MemoryKey = switch unit {
+            case .group(let family, let tense): .pattern(PatternKey(family: family, tense: tense, person: person))
+            case .irregular(let verb, let tense): .form(FormKey(verb: verb, tense: tense, person: person))
+            }
+            pool.record(key, rating)
+        }
     }
+
+    private func good(_ count: Int) -> [Rating] { Array(repeating: .good, count: count) }
 
     func testVerbOrderCoversEveryVerbOnce() {
         XCTAssertEqual(Curriculum.verbOrder.count, Set(Curriculum.verbOrder).count)
@@ -120,139 +125,192 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertEqual(Set(Curriculum.tenseOrder), Set(Tense.allCases))
     }
 
-    func testFreshPoolStartsWithFourVerbs() {
+    func testStartsWithAllAreVerbsAndEssere() {
         let store = makeStore(defaults)
-        XCTAssertEqual(store.pool.cells, ["parlare", "avere", "essere", "dormire"].map { cell($0) })
+        XCTAssertEqual(store.pool.units, [.group(.are, .presente), .irregular("essere", .presente)])
+        XCTAssertEqual(Set(store.unlockedVerbs), Set(VerbFamily.are.verbs + ["essere"]))
+        XCTAssertEqual(store.unlockedVerbs.count, 21)
         XCTAssertEqual(store.unlockedTenses, [.presente])
     }
 
-    func testMissingFamiliesComeFirstThenIrregularAndRegularTakeTurns() {
+    func testTheWindowKeepsTheLastTwentyAnswers() {
         var pool = LearningPool.initial(at: now)
-        var order: [String] = []
-        for _ in 0..<5 {
-            let next = pool.nextCell()!
-            order.append(next.verb)
-            pool = LearningPool(cells: pool.cells + [next], at: now)
-        }
-        // -ere and -ire (isc) are missing at the start; then an irregular verb, then a regular one.
-        XCTAssertEqual(order, ["credere", "capire", "fare", "abitare", "andare"])
+        let are = PoolUnit.group(.are, .presente)
+        answer(&pool, are, Array(repeating: .again, count: 10) + good(20))
+        XCTAssertEqual(pool.progress(of: are).answers, 20)
+        XCTAssertEqual(pool.progress(of: are).share, 1)
     }
 
-    func testNextTenseOpensWithTenPresenteVerbs() {
-        let nine = ["parlare", "avere", "essere", "dormire", "credere", "capire", "fare", "abitare", "andare"].map { cell($0) }
-        XCTAssertEqual(LearningPool(cells: nine, at: now).nextCell()?.tense, .presente)
-        let ten = LearningPool(cells: nine + [cell("lavorare")], at: now)
-        XCTAssertEqual(ten.nextCell(), cell("parlare", .passatoprossimo))
+    func testAWindowSavedWithFortyAnswersCountsOnlyTheLastTwenty() throws {
+        var window = LearningPool.Window()
+        for index in 0..<40 { window.append(index < 20 ? .again : .good, person: index % 6) }
+        var saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(window)) as? [String: Any])
+        saved["ratings"] = Array(repeating: "again", count: 20) + Array(repeating: "good", count: 20)
+        saved["persons"] = (0..<40).map { $0 % 6 }
+        var old = try JSONDecoder().decode(LearningPool.Window.self, from: JSONSerialization.data(withJSONObject: saved))
+        XCTAssertEqual(old.share, 1)
+        XCTAssertEqual(old.recentRatings.count, 20)
+        old.append(.again, person: 0)
+        XCTAssertEqual(old.ratings.count, 20)
     }
 
-    func testFamiliesAreCoveredInANewTenseBeforeMoreVerbs() {
-        let presente = ["parlare", "avere", "essere", "dormire", "credere", "capire", "fare", "abitare", "andare", "lavorare"]
-        let pool = LearningPool(cells: presente.map { cell($0) } + [cell("parlare", .passatoprossimo)], at: now)
-        // Only -are is in the Passato prossimo yet, so the next family comes first: -ere with credere.
-        XCTAssertEqual(pool.nextCell(), cell("credere", .passatoprossimo))
-    }
-
-    func testTwoGoodLessonsAndASettledPoolAddACell() {
+    func testAGroupThatPerformsWellBringsTheNextGroupAndItsNextTense() {
         var pool = LearningPool.initial(at: now)
-        let memory = settled(pool.cells)
-        let good = Array(repeating: Rating.good, count: 10)
-        XCTAssertEqual(pool.finishLesson(ratings: good, memory: memory, at: now), .init(cell: cell("credere"), reason: .ready))
-        XCTAssertEqual(pool.cells.last, cell("credere"))
+        let are = PoolUnit.group(.are, .presente)
+        answer(&pool, are, good(16) + Array(repeating: .again, count: 4)) // exactly 80 %
+        let additions = pool.finishLesson(at: now)
+        XCTAssertEqual(additions.map(\.unit), [.group(.ere, .presente), .group(.are, .passatoprossimo)])
+        XCTAssertTrue(additions.allSatisfy { $0.cause == are })
+        XCTAssertTrue(pool.progress(of: are).passed)
+        // Only once.
+        answer(&pool, are, good(20))
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
     }
 
-    func testTheLastTwoLessonsNeedNinetyPercent() {
-        let memory = settled(LearningPool.startCells)
-        let eightOfTen = Array(repeating: Rating.good, count: 8) + [.again, .again]
-        // 8 + 10 of 20 is enough …
+    func testBelowEightyPercentIsNotEnough() {
         var pool = LearningPool.initial(at: now)
-        XCTAssertNil(pool.finishLesson(ratings: eightOfTen, memory: memory, at: now))
-        XCTAssertNotNil(pool.finishLesson(ratings: Array(repeating: .good, count: 10), memory: memory, at: now))
-        // … 8 + 9 of 20 is not.
-        var other = LearningPool.initial(at: now)
-        XCTAssertNil(other.finishLesson(ratings: eightOfTen, memory: memory, at: now))
-        XCTAssertNil(other.finishLesson(ratings: Array(repeating: .good, count: 9) + [.again], memory: memory, at: now))
+        answer(&pool, .group(.are, .presente), good(15) + Array(repeating: .again, count: 5))
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
     }
 
     func testLookedUpAnswersCountHalf() {
-        let memory = settled(LearningPool.startCells)
         var pool = LearningPool.initial(at: now)
-        // 8 Good + 2 looked up = 9 of 10 points.
-        XCTAssertNotNil(pool.finishLesson(ratings: Array(repeating: .good, count: 8) + [.correct, .correct], memory: memory, at: now))
+        // 12 Good + 8 looked up = 16 of 20 points.
+        answer(&pool, .group(.are, .presente), good(12) + Array(repeating: .correct, count: 8))
+        XCTAssertFalse(pool.finishLesson(at: now).isEmpty)
         var other = LearningPool.initial(at: now)
-        // 7 Good + 3 looked up = 8.5 of 10.
-        XCTAssertNil(other.finishLesson(ratings: Array(repeating: .good, count: 7) + [.correct, .correct, .correct], memory: memory, at: now))
+        // 11 Good + 9 looked up = 15.5 of 20.
+        answer(&other, .group(.are, .presente), good(11) + Array(repeating: .correct, count: 9))
+        XCTAssertTrue(other.finishLesson(at: now).isEmpty)
     }
 
-    func testAWeakPoolBlocksEvenAfterGoodLessons() {
+    func testEveryPersonNeedsTwoAnswers() {
         var pool = LearningPool.initial(at: now)
-        var memory = settled(pool.cells)
-        memory.record(FormKey(verb: "essere", tense: .presente, person: 0), .again, at: now)
-        memory.record(FormKey(verb: "dormire", tense: .presente, person: 0), .again, at: now)
-        // credere is a new family (eager): 80 % of the pool must be settled; 2 of 4 is not enough.
-        XCTAssertNil(pool.finishLesson(ratings: Array(repeating: .good, count: 10), memory: memory, at: now))
+        for _ in 0..<20 { pool.record(.pattern(PatternKey(family: .are, tense: .presente, person: 0)), .good) }
+        XCTAssertEqual(pool.progress(of: .group(.are, .presente)).missingPersons, [1, 2, 3, 4, 5])
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
     }
 
-    func testFastTrackForAProvenFamily() {
-        let cells = ["parlare", "avere", "essere", "dormire", "credere", "capire", "fare"].map { cell($0) }
-        var pool = LearningPool(cells: cells, at: now)
-        XCTAssertEqual(pool.nextCell(), cell("abitare")) // a regular -are verb is next
-        for person in 0..<6 { pool.record(FormKey(verb: "parlare", tense: .presente, person: person), .good) }
-        // A bad lesson elsewhere does not matter: -are · Presente is proven.
-        let addition = pool.finishLesson(ratings: Array(repeating: .again, count: 10), memory: LearningMemory(), at: now)
-        XCTAssertEqual(addition, .init(cell: cell("abitare"), reason: .fastTrack))
-    }
-
-    func testAnAgainEndsTheFastTrackStreak() {
+    func testFewerThanTwentyAnswersAreNotEnough() {
         var pool = LearningPool.initial(at: now)
-        for person in 0..<5 { pool.record(FormKey(verb: "parlare", tense: .presente, person: person), .good) }
-        pool.record(FormKey(verb: "parlare", tense: .presente, person: 5), .again)
-        pool.record(FormKey(verb: "parlare", tense: .presente, person: 0), .good)
-        XCTAssertEqual(pool.streaks[.init(family: .are, tense: .presente)]?.count, 1)
-        // Looked-up answers neither count nor break it; irregular verbs have no streak.
-        pool.record(FormKey(verb: "parlare", tense: .presente, person: 1), .correct)
-        pool.record(FormKey(verb: "essere", tense: .presente, person: 1), .good)
-        XCTAssertEqual(pool.streaks.count, 1)
-        XCTAssertEqual(pool.streaks[.init(family: .are, tense: .presente)]?.count, 1)
+        answer(&pool, .group(.are, .presente), good(19))
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
     }
 
-    func testLessonPickingFillsTheLessonAndMixes() {
+    func testTheLastGroupOnlyBringsItsNextTense() {
+        var pool = LearningPool(units: [.group(.isc, .presente)], at: now)
+        answer(&pool, .group(.isc, .presente), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.isc, .passatoprossimo)])
+    }
+
+    func testAnIrregularVerbBringsTheNextOneAndLaterItsNextTense() {
+        var pool = LearningPool.initial(at: now)
+        answer(&pool, .irregular("essere", .presente), good(20))
+        // No regular group has the Passato prossimo yet, so only the next irregular verb comes.
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.irregular("avere", .presente)])
+        // Once -are reaches the Passato prossimo, essere follows.
+        answer(&pool, .group(.are, .presente), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit),
+                       [.group(.ere, .presente), .group(.are, .passatoprossimo), .irregular("essere", .passatoprossimo)])
+    }
+
+    func testALaterTenseWaitsForEarlierTensesToPerformWellAgain() {
+        // -are · Presente passed once, then slipped to 75 %; -are · Passato prossimo is at 85 %.
+        var pool = LearningPool.initial(at: now)
+        answer(&pool, .group(.are, .presente), good(20))
+        _ = pool.finishLesson(at: now)
+        answer(&pool, .group(.are, .presente), good(15) + Array(repeating: .again, count: 5))
+        let passato = PoolUnit.group(.are, .passatoprossimo)
+        answer(&pool, passato, good(17) + Array(repeating: .again, count: 3))
+        XCTAssertTrue(pool.progress(of: passato).performsWell)
+        XCTAssertEqual(pool.blockers(of: passato), [.group(.are, .presente)])
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
+        XCTAssertFalse(pool.progress(of: passato).passed)
+
+        // 15 Good answers leave all 5 mistakes in the last 20: still below 80 %.
+        answer(&pool, .group(.are, .presente), good(15))
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
+        // One more and the Presente is back at 80 %: the Passato prossimo unlocks its next steps.
+        answer(&pool, .group(.are, .presente), good(1))
+        XCTAssertTrue(pool.blockers(of: passato).isEmpty)
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ere, .passatoprossimo), .group(.are, .imperfetto)])
+    }
+
+    func testOnlyTheSameGroupOrVerbHoldsBack() {
+        var pool = LearningPool(units: [.group(.are, .presente), .group(.ere, .presente), .group(.ere, .passatoprossimo),
+                                        .irregular("essere", .presente)], at: now)
+        answer(&pool, .group(.are, .presente), good(20))
+        answer(&pool, .irregular("essere", .presente), Array(repeating: .again, count: 20))
+        // -ere · Passato prossimo waits for -ere · Presente, not for -are or essere.
+        XCTAssertEqual(pool.blockers(of: .group(.ere, .passatoprossimo)), [.group(.ere, .presente)])
+        // A first tense is never held back.
+        XCTAssertTrue(pool.blockers(of: .group(.ere, .presente)).isEmpty)
+    }
+
+    func testAnIrregularVerbWaitsForItsOwnEarlierTenses() {
+        var pool = LearningPool(units: [.irregular("essere", .presente), .irregular("essere", .passatoprossimo),
+                                        .group(.are, .presente)], at: now)
+        answer(&pool, .irregular("essere", .presente), good(10) + Array(repeating: .again, count: 10))
+        answer(&pool, .irregular("essere", .passatoprossimo), good(20))
+        XCTAssertEqual(pool.blockers(of: .irregular("essere", .passatoprossimo)), [.irregular("essere", .presente)])
+        XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
+    }
+
+    func testIrregularVerbsFollowThePathOrder() {
+        let irregular = VerbFamily.irregular.verbs
+        XCTAssertEqual(Array(irregular.prefix(5)), ["essere", "avere", "fare", "andare", "stare"])
+        var pool = LearningPool(units: [.irregular("essere", .presente), .irregular("avere", .presente)], at: now)
+        answer(&pool, .irregular("essere", .presente), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.irregular("fare", .presente)])
+    }
+
+    func testLessonFillsWithDifferentVerbsAndMixes() {
         var rng = SeededGenerator(state: 7)
-        let one = LearningPool(cells: [cell("parlare")], at: now - 2 * 86_400)
-        let single = Curriculum.pickLesson(from: Curriculum.forms(cell("parlare")), pool: one, memory: LearningMemory(),
-                                           length: 10, at: now, using: &rng)
-        XCTAssertEqual(single.count, 6) // only six forms exist
-
         let pool = LearningPool.initial(at: now - 2 * 86_400)
         for _ in 0..<20 {
-            let picked = Curriculum.pickLesson(from: pool.cells.flatMap(Curriculum.forms), pool: pool, memory: LearningMemory(),
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
                                                length: 10, at: now, using: &rng)
             XCTAssertEqual(picked.count, 10)
             XCTAssertEqual(Set(picked).count, 10)
-            XCTAssertTrue(Dictionary(grouping: picked, by: \.cell).values.allSatisfy { $0.count <= 4 })
+            let regular = picked.filter { $0.verb != "essere" }
+            XCTAssertEqual(Set(regular.map(\.verb)).count, regular.count) // a different -are verb each time
+            XCTAssertLessThanOrEqual(regular.count, 5)
         }
+        // A long lesson repeats -are patterns with other verbs to fill up.
+        let long = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
+                                         length: 20, at: now, using: &rng)
+        XCTAssertEqual(long.count, 20)
+        XCTAssertEqual(Set(long).count, 20)
     }
 
     func testAWeakPersonIsTrainedMore() {
         var rng = SeededGenerator(state: 3)
         let pool = LearningPool.initial(at: now - 2 * 86_400)
         var memory = LearningMemory()
-        for form in pool.cells.flatMap(Curriculum.forms) {
-            memory.record(form, form.person == 3 ? .again : .good, at: now) // noi is weak
+        for unit in pool.units {
+            for key in unit.keys { memory.record(key, key.person == 3 ? .again : .good, at: now) } // noi is weak
         }
         var noi = 0, total = 0
         for _ in 0..<50 {
-            let picked = Curriculum.pickLesson(from: pool.cells.flatMap(Curriculum.forms), pool: pool, memory: memory,
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: memory,
                                                length: 10, at: now, using: &rng)
             noi += picked.filter { $0.person == 3 }.count
             total += picked.count
         }
-        XCTAssertGreaterThan(Double(noi) / Double(total), 0.3) // a sixth would be even
+        XCTAssertGreaterThan(Double(noi) / Double(total), 0.18) // a sixth would be even
+    }
+
+    func testFreePracticeKeepsToTheChosenVerbsAndTenses() {
+        let store = makeStore(defaults)
+        let picked = store.pickLesson(length: 10, verbs: ["parlare", "abitare"], tenses: [.presente])
+        XCTAssertFalse(picked.isEmpty)
+        XCTAssertTrue(picked.allSatisfy { ["parlare", "abitare"].contains($0.verb) && $0.tense == .presente })
     }
 
     func testPoolRoundTripsThroughJSON() throws {
         var pool = LearningPool.initial(at: now)
-        pool.record(FormKey(verb: "parlare", tense: .presente, person: 0), .good)
-        _ = pool.finishLesson(ratings: [.good], memory: settled(pool.cells), at: now)
+        answer(&pool, .group(.are, .presente), good(20))
+        _ = pool.finishLesson(at: now)
         XCTAssertEqual(try JSONDecoder().decode(LearningPool.self, from: JSONEncoder().encode(pool)), pool)
     }
 }
@@ -265,32 +323,27 @@ final class MigrationTests: XCTestCase {
         defaults.removePersistentDomain(forName: "MigrationTests")
     }
 
-    func testPerLessonLevelsAndTheOldPathCarryOver() throws {
-        defaults.set(try JSONEncoder().encode(["capire": ["presente": 3, "futuro": 0]]), forKey: "coniugazione-tense-levels")
+    func testEarlierCellsBecomeGroupsAndIrregularVerbs() throws {
         defaults.set(try JSONSerialization.data(withJSONObject: [
-            "unlocked": [["verb": "parlare", "tense": "presente"], ["verb": "capire", "tense": "presente"],
-                         ["verb": "capire", "tense": "passatoprossimo"]],
-            "frontier": "capire",
-        ]), forKey: "coniugazione-curriculum")
+            "cells": [["verb": "parlare", "tense": "presente"], ["verb": "abitare", "tense": "presente"],
+                      ["verb": "capire", "tense": "passatoprossimo"], ["verb": "fare", "tense": "presente"]],
+        ]), forKey: "coniugazione-pool")
+        defaults.set(Data("{}".utf8), forKey: "coniugazione-dsr-memory")
         let store = makeStore(defaults)
-        XCTAssertEqual(store.pool.cells, LearningPool.startCells + [Cell(verb: "capire", tense: .presente),
-                                                                  Cell(verb: "capire", tense: .passatoprossimo)])
-        XCTAssertEqual(store.stability(of: Cell(verb: "capire", tense: .presente)), 0.5 * pow(2, 0.96), accuracy: 1e-9)
-        XCTAssertNil(store.state(of: Cell(verb: "capire", tense: .futuro)))
-        XCTAssertNil(defaults.data(forKey: "coniugazione-tense-levels"))
-        XCTAssertNil(defaults.data(forKey: "coniugazione-curriculum"))
-        XCTAssertEqual(makeStore(defaults).pool.cells, store.pool.cells)
+        XCTAssertEqual(store.pool.units, [.group(.are, .presente), .irregular("essere", .presente),
+                                          .group(.isc, .passatoprossimo), .irregular("fare", .presente)])
+        XCTAssertNil(defaults.data(forKey: "coniugazione-pool"))
+        XCTAssertNil(defaults.data(forKey: "coniugazione-dsr-memory"))
+        XCTAssertEqual(makeStore(defaults).pool.units, store.pool.units)
     }
 
-    func testHalfLivesBecomeStabilities() throws {
-        let last = Date(timeIntervalSinceReferenceDate: 799_000_000)
-        let old = ["parlare": ["presente": ["halfLife": 2.5, "last": last.timeIntervalSinceReferenceDate, "answers": 4, "correct": 3]]]
-        defaults.set(try JSONSerialization.data(withJSONObject: old), forKey: "coniugazione-memory")
-        let store = makeStore(defaults)
-        let state = try XCTUnwrap(store.state(of: Cell(verb: "parlare", tense: .presente)))
-        XCTAssertEqual(state.stability, 2.5)
-        XCTAssertEqual(state.last, last)
-        XCTAssertNil(defaults.data(forKey: "coniugazione-memory"))
+    func testTheFirstLearningPathCarriesOverToo() throws {
+        defaults.set(try JSONSerialization.data(withJSONObject: [
+            "unlocked": [["verb": "parlare", "tense": "presente"], ["verb": "credere", "tense": "presente"]],
+            "frontier": "credere",
+        ]), forKey: "coniugazione-curriculum")
+        XCTAssertEqual(makeStore(defaults).pool.units, [.group(.are, .presente), .irregular("essere", .presente),
+                                                        .group(.ere, .presente)])
     }
 }
 
@@ -304,15 +357,16 @@ final class AnswerLogTests: XCTestCase {
         let store = makeStore(defaults, clock: clock, logURL: url)
         store.record(ConjugationItem(verb: "parlare", tense: .presente, person: 1), .again)
         clock.advance(days: 1)
-        store.record(ConjugationItem(verb: "parlare", tense: .presente, person: 1), .correct)
+        // Another -are verb, same pattern: it continues where parlare left off.
+        store.record(ConjugationItem(verb: "abitare", tense: .presente, person: 1), .correct)
 
         let entries = AnswerLog(fileURL: url).entries
         XCTAssertEqual(entries.map(\.rating), [.again, .correct])
+        XCTAssertEqual(entries.map(\.verb), ["parlare", "abitare"])
         XCTAssertNil(entries[0].stabilityBefore)
         XCTAssertEqual(entries[1].stabilityBefore, entries[0].stabilityAfter)
         XCTAssertEqual(entries[1].stabilityAfter, entries[0].stabilityAfter) // Correct changes nothing
-        XCTAssertEqual(store.log.entries(for: "parlare").count, 2)
-        XCTAssertTrue(store.log.entries(for: "abitare").isEmpty)
+        XCTAssertEqual(store.log.entries(for: "parlare").count, 1)
 
         // Over the cap, the oldest lines are dropped on load.
         let line = String(data: try JSONEncoder().encode(entries[1]), encoding: .utf8)! + "\n"

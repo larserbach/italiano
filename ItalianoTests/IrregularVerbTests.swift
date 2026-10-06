@@ -95,9 +95,9 @@ final class IrregularVerbTests: XCTestCase {
 
         let defaults = UserDefaults(suiteName: "IrregularVerbTests2")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests2")
-        let clock = TestClock()
-        let store = makeStore(defaults, clock: clock)
-        store.practiseDaily("potere", .presente, days: 6, clock: clock)
+        seedPool([("potere", .presente)], in: defaults)
+        let store = makeStore(defaults)
+        store.practise("potere", .presente, answers: 20)
         XCTAssertGreaterThan(store.level(of: "potere", tense: .presente), 0)
         // potere has no imperative, so it does not pull the average down.
         XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]),

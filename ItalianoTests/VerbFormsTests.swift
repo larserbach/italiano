@@ -102,24 +102,24 @@ final class LessonTests: XCTestCase {
     func testEveryFirstAnswerUpdatesMemoryRightAway() {
         let store = makeStore(defaults)
         let lesson = ConjugationLesson(store: store)
-        // Nothing has been answered yet, so every verb×tense in the lesson is new.
-        XCTAssertTrue(lesson.newCells.contains(lesson.current!.cell))
+        // Nothing has been answered yet, so every group and irregular verb in the lesson is new.
+        XCTAssertTrue(lesson.newUnits.contains(lesson.current!.unit))
         let first = lesson.current!
         lesson.submit("sbagliato")
-        XCTAssertEqual(store.state(of: first.form)?.lastRating, .again)
-        XCTAssertEqual(store.state(of: first.cell)?.answers, 1)
+        XCTAssertEqual(store.state(of: MemoryKey(verb: first.verb, tense: first.tense, person: first.person))?.lastRating, .again)
+        XCTAssertEqual(store.progress(of: first.unit).answers, 1)
         XCTAssertEqual(store.log.entries.count, 1)
         XCTAssertNil(lesson.outcome)
         lesson.submit("") // Verstanden
         for _ in 0..<4 { lesson.reveal(); lesson.submit("") }
 
-        // Round 1 is over: every practised verb×tense is new and reported with its stability now.
+        // Round 1 is over: every practised unit is new and reported with its share now.
         XCTAssertEqual(lesson.phase, .roundComplete)
         let outcome = try! XCTUnwrap(lesson.outcome)
         XCTAssertFalse(outcome.changes.isEmpty)
-        XCTAssertTrue(outcome.changes.allSatisfy { $0.from == nil })
-        XCTAssertNil(outcome.addition)
-        let answers = { store.pool.cells.compactMap { store.state(of: $0)?.answers }.reduce(0, +) }
+        XCTAssertTrue(outcome.changes.allSatisfy { $0.from == nil && $0.to == 0 })
+        XCTAssertTrue(outcome.additions.isEmpty)
+        let answers = { store.pool.units.map { store.progress(of: $0).answers }.reduce(0, +) }
         XCTAssertEqual(answers(), 5)
 
         // Retry rounds do not count.
@@ -135,7 +135,7 @@ final class LessonTests: XCTestCase {
         lesson.noteLookup()
         XCTAssertTrue(lesson.lookedUp)
         lesson.submit(first.answer)
-        XCTAssertEqual(store.state(of: first.form)?.lastRating, .correct)
+        XCTAssertEqual(store.state(of: MemoryKey(verb: first.verb, tense: first.tense, person: first.person))?.lastRating, .correct)
         XCTAssertEqual(store.log.entries.last?.rating, .correct)
     }
 
@@ -144,27 +144,28 @@ final class LessonTests: XCTestCase {
         let lesson = ConjugationLesson(store: store)
         let first = lesson.current!
         lesson.submit(first.answer)
-        XCTAssertEqual(store.state(of: first.form)?.lastRating, .good)
+        XCTAssertEqual(store.state(of: MemoryKey(verb: first.verb, tense: first.tense, person: first.person))?.lastRating, .good)
     }
 
-    func testChipLevelIsAverageRoundedDown() {
-        let clock = TestClock()
-        let store = makeStore(defaults, clock: clock)
-        store.practiseDaily("parlare", .presente, days: 8, clock: clock)
-        let presente = store.level(of: "parlare", tense: .presente)
-        XCTAssertGreaterThan(presente, 2)
-        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente]), presente)
-        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), presente / 2)
-    }
-
-    func testLegacyVerbLevelsMoveToPresente() throws {
-        defaults.set(try JSONEncoder().encode(["parlare": 7]), forKey: "coniugazione-levels")
+    func testRingsShowProgressTowardPerformingWell() {
         let store = makeStore(defaults)
-        let expected = 0.5 * pow(2, 0.32 * 7)
-        XCTAssertEqual(store.stability(of: Cell(verb: "parlare", tense: .presente)), expected, accuracy: 1e-9)
-        XCTAssertNil(store.state(of: Cell(verb: "parlare", tense: .imperfetto)))
+        XCTAssertEqual(store.level(of: "parlare", tense: .presente), 0)
+        store.practise("parlare", .presente, answers: 10) // half the window, all Good
+        XCTAssertEqual(store.level(of: "parlare", tense: .presente), 5)
+        XCTAssertEqual(store.level(of: "abitare", tense: .presente), 5) // same group
+        XCTAssertEqual(store.level(of: "credere", tense: .presente), 0) // not in the pool
+        store.practise("parlare", .presente, answers: 10)
+        XCTAssertEqual(store.level(of: "parlare", tense: .presente), 10)
+        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), 5)
+    }
+
+    func testOlderProgressKeysAreRemoved() throws {
+        defaults.set(try JSONEncoder().encode(["parlare": 7]), forKey: "coniugazione-levels")
+        defaults.set(try JSONEncoder().encode(["parlare": ["presente": 3]]), forKey: "coniugazione-tense-levels")
+        let store = makeStore(defaults)
+        XCTAssertEqual(store.pool.units, LearningPool.startUnits)
         XCTAssertNil(defaults.data(forKey: "coniugazione-levels"))
-        XCTAssertEqual(makeStore(defaults).stability(of: Cell(verb: "parlare", tense: .presente)), expected, accuracy: 1e-9)
+        XCTAssertNil(defaults.data(forKey: "coniugazione-tense-levels"))
     }
 
     func testGenderIsSetOnlyWhereItMatters() {
@@ -243,7 +244,7 @@ final class LessonTests: XCTestCase {
         store.practise("parlare", .presente)
         store.record(ConjugationItem(verb: "capire", tense: .futuro, person: 0), .again)
         store.recordAuxAnswer(verb: "arrivare", correct: true)
-        XCTAssertNotNil(store.state(of: Cell(verb: "parlare", tense: .presente)))
+        XCTAssertNotNil(store.state(of: MemoryKey(verb: "parlare", tense: .presente, person: 0)))
         XCTAssertFalse(store.log.entries.isEmpty)
         XCTAssertTrue(store.isRecentMistake(verb: "capire", tenses: [.futuro]))
         XCTAssertFalse(store.history.isEmpty)
@@ -251,12 +252,12 @@ final class LessonTests: XCTestCase {
         store.resetProgress()
 
         for reloaded in [store, makeStore(defaults, historyURL: historyURL, logURL: logURL)] {
-            XCTAssertNil(reloaded.state(of: Cell(verb: "parlare", tense: .presente)))
+            XCTAssertNil(reloaded.state(of: MemoryKey(verb: "parlare", tense: .presente, person: 0)))
             XCTAssertTrue(reloaded.log.entries.isEmpty)
             XCTAssertEqual(reloaded.auxLevel(of: "arrivare"), 0)
             XCTAssertFalse(reloaded.isRecentMistake(verb: "capire", tenses: [.futuro]))
             XCTAssertTrue(reloaded.history.isEmpty)
-            XCTAssertEqual(reloaded.pool.cells, LearningPool.startCells)
+            XCTAssertEqual(reloaded.pool.units, LearningPool.startUnits)
             // Free practice falls back to what is in the pool again; the rest stays.
             XCTAssertEqual(reloaded.conjugation.verbs, ["parlare"])
             XCTAssertEqual(reloaded.conjugation.tenses, [.presente])
@@ -271,7 +272,7 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(store.conjugation.tenses, [.presente])
         XCTAssertEqual(store.conjugation.length, .count(5))
         XCTAssertEqual(store.conjugation.mode, .path)
-        XCTAssertEqual(store.pool.cells, LearningPool.startCells)
+        XCTAssertEqual(store.pool.units, LearningPool.startUnits)
     }
 
     func testSavedSelectionWithoutKnownVerbsFallsBackToTheFirstVerb() throws {
