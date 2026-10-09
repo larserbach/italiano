@@ -9,7 +9,7 @@ final class VerbFormsTests: XCTestCase {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "verb-forms", withExtension: "json"))
         let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: url))
 
-        XCTAssertEqual(Set(fixture.keys), Set(VerbLibrary.orderedKeys.filter { !VerbLibrary.verb($0).isIrregular }))
+        XCTAssertEqual(Set(fixture.keys), Set(VerbCatalog.seeds.map(\.infinitive)))
         for (key, languages) in fixture {
             let verb = VerbLibrary.verb(key)
             for tense in Tense.allCases {
@@ -43,9 +43,7 @@ final class VerbFormsTests: XCTestCase {
         XCTAssertEqual(VerbLibrary.verb("parlare").italian(.passatoprossimo, 2, gender: .feminine), "ha parlato")
         XCTAssertEqual(arrivare.italian(.presente, 0, gender: .feminine), "arrivo")
 
-        let gendered = VerbLibrary.orderedKeys.filter {
-            !VerbLibrary.verb($0).isIrregular && VerbLibrary.verb($0).isGendered(.passatoprossimo)
-        }
+        let gendered = VerbCatalog.seeds.map(\.infinitive).filter { VerbLibrary.verb($0).isGendered(.passatoprossimo) }
         XCTAssertEqual(Set(gendered), ["arrivare", "diventare", "durare", "entrare", "mancare", "restare",
                                        "sembrare", "tornare", "bastare", "partire", "scendere", "fuggire"])
         XCTAssertFalse(Tense.allCases.filter { $0 != .passatoprossimo }.contains { arrivare.isGendered($0) })

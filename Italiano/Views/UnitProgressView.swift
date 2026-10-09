@@ -15,7 +15,7 @@ enum DaysText {
     static func percent(_ share: Double) -> String { "\(Int((share * 100).rounded()))\u{00A0}%" }
 }
 
-/// A regular group or an irregular verb: what the progress rings are about.
+/// A regular group or a verb in the tenses it is irregular in: what the progress rings are about.
 enum ProgressSubject: Hashable {
     case family(VerbFamily)
     case verb(String)
@@ -31,7 +31,7 @@ enum ProgressSubject: Hashable {
     var tenses: [Tense] {
         switch self {
         case .family: Curriculum.tenseOrder
-        case .verb(let verb): Curriculum.tenseOrder.filter(VerbLibrary.verb(verb).hasTense)
+        case .verb(let verb): Curriculum.tenseOrder.filter(VerbLibrary.verb(verb).isIrregular)
         }
     }
 
@@ -42,11 +42,9 @@ enum ProgressSubject: Hashable {
         }
     }
 
-    func includes(_ verb: String) -> Bool {
-        switch self {
-        case .family(let family): VerbFamily(verb: verb) == family
-        case .verb(let own): verb == own
-        }
+    /// Whether an answer on this verb in this tense counts here.
+    func includes(_ verb: String, _ tense: Tense) -> Bool {
+        PoolUnit(verb: verb, tense: tense) == unit(tense)
     }
 }
 
@@ -77,7 +75,7 @@ struct UnitProgressView: View {
                         }
                     }
 
-                    AnswerLogList(entries: store.log.entries.filter { subject.includes($0.verb) })
+                    AnswerLogList(entries: store.log.entries.filter { subject.includes($0.verb, $0.tense) })
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 8)
@@ -95,7 +93,7 @@ struct UnitProgressView: View {
             let verbs = family.verbs
             return "\(verbs.count) Verben: " + verbs.prefix(6).joined(separator: ", ") + (verbs.count > 6 ? ", …" : "")
         case .verb(let verb):
-            return "„\(VerbLibrary.verb(verb).meaning)“ · unregelmäßig"
+            return "„\(VerbLibrary.verb(verb).meaning)“ · \(VerbLibrary.verb(verb).groupLabel)"
         }
     }
 
@@ -103,7 +101,8 @@ struct UnitProgressView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("So funktioniert's").font(.system(size: 14, weight: .semibold))
             Text("""
-                Regelmäßige Verben zählen für ihre Gruppe, unregelmäßige jedes für sich. Jede erste Antwort \
+                Regelmäßige Formen zählen für ihre Gruppe, unregelmäßige für das Verb allein – je Zeit: \
+                scrivere zählt im Presente für -ere, im Passato prossimo (scritto) für sich. Jede erste Antwort \
                 ist **Gut** (ohne Hilfe), **Richtig** (Verb oder Zeit nachgeschaut, zählt halb) oder **Nochmal** \
                 (falsch oder „?“). Sind von den letzten \(Curriculum.windowSize) Antworten mindestens \
                 \(DaysText.percent(Curriculum.goodBar)) gut und jede Person mindestens \(Curriculum.answersPerPerson)-mal \

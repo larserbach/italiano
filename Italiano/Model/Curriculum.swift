@@ -1,11 +1,14 @@
 import Foundation
 
-/// What the learner is working on: whole regular groups and single irregular verbs, each in a tense.
+/// What the learner is working on: whole regular groups and single irregular verbs, each in a tense. Whether a
+/// verb is irregular is decided per tense: scrivere counts for -ere in the Presente and on its own in the
+/// Passato prossimo.
 ///
 /// It starts with all -are verbs and essere in the Presente. A unit that performs well (≥ 80 % Good in its
 /// last 20 answers, a looked-up answer counting half, every person answered at least twice) unlocks:
 /// a regular group the next group in the same tense and itself in the next tense; an irregular verb the
-/// next irregular verb in the same tense, and itself in the next tense once a regular group has that tense.
+/// next verb irregular in the same tense, and itself in the next tense it is irregular in once a regular group
+/// has that tense.
 /// A unit in a later tense only unlocks while the same group or verb still performs well in every earlier
 /// tense in the pool.
 struct LearningPool: Codable, Equatable {
@@ -74,12 +77,19 @@ struct LearningPool: Codable, Equatable {
     /// Drops units of verbs or tenses that no longer exist; starts over when nothing is left.
     init(units: [PoolUnit], at now: Date) {
         var seen = Set<PoolUnit>()
-        let valid = units.filter { unit in
-            if case .irregular(let verb, let tense) = unit, VerbLibrary.all[verb]?.hasTense(tense) != true { return false }
-            return seen.insert(unit).inserted
-        }
+        let valid = units.filter { $0.isValid && seen.insert($0).inserted }
         self.units = valid.isEmpty ? Self.startUnits : valid
         addedAt = Dictionary(uniqueKeysWithValues: self.units.map { ($0, now) })
+    }
+
+    /// Drops a verb's unit in a tense it no longer counts as irregular in (pools saved when irregularity
+    /// was decided per verb): there it now belongs to its group, which comes into the pool on its own.
+    mutating func dropInvalidUnits() {
+        units.removeAll { !$0.isValid }
+        if units.isEmpty { units = Self.startUnits }
+        addedAt = addedAt.filter { $0.key.isValid }
+        windows = windows.filter { $0.key.isValid }
+        passed = passed.filter(\.isValid)
     }
 
     func contains(_ unit: PoolUnit) -> Bool { units.contains(unit) }
@@ -124,9 +134,9 @@ struct LearningPool: Codable, Equatable {
                 additions.append(Addition(unit: next, cause: unit))
             }
         }
-        // An irregular verb that did well waits for its next tense until a regular group has it.
+        // An irregular verb that did well waits for its next irregular tense until a regular group has it.
         for unit in units where passed.contains(unit) {
-            guard case .irregular(let verb, let tense) = unit, let next = Self.nextTense(after: tense, for: verb),
+            guard case .irregular(let verb, let tense) = unit, let next = Self.nextIrregularTense(after: tense, for: verb),
                   isOpenForRegular(next), !contains(.irregular(verb, next)), blockers(of: unit).isEmpty else { continue }
             add(.irregular(verb, next), at: now)
             additions.append(Addition(unit: .irregular(verb, next), cause: unit))
@@ -142,15 +152,16 @@ struct LearningPool: Codable, Equatable {
             if let index = VerbFamily.regular.firstIndex(of: family), index + 1 < VerbFamily.regular.count {
                 result.append(.group(VerbFamily.regular[index + 1], tense))
             }
-            if let next = Self.nextTense(after: tense, for: nil) { result.append(.group(family, next)) }
+            if let next = Self.nextTense(after: tense) { result.append(.group(family, next)) }
             return result
         case .irregular(let verb, let tense):
             var result: [PoolUnit] = []
-            if let next = VerbFamily.irregular.verbs.first(where: { $0 != verb && VerbLibrary.verb($0).hasTense(tense)
-                                                                    && !contains(.irregular($0, tense)) }) {
+            if let next = Curriculum.irregularVerbs(in: tense).first(where: { $0 != verb && !contains(.irregular($0, tense)) }) {
                 result.append(.irregular(next, tense))
             }
-            if let next = Self.nextTense(after: tense, for: verb), isOpenForRegular(next) { result.append(.irregular(verb, next)) }
+            if let next = Self.nextIrregularTense(after: tense, for: verb), isOpenForRegular(next) {
+                result.append(.irregular(verb, next))
+            }
             return result
         }
     }
@@ -159,10 +170,13 @@ struct LearningPool: Codable, Equatable {
         units.contains { if case .group(_, let open) = $0 { open == tense } else { false } }
     }
 
-    /// The next tense in path order that the verb has (any tense for regular groups).
-    static func nextTense(after tense: Tense, for verb: String?) -> Tense? {
-        let later = Curriculum.tenseOrder.drop { $0 != tense }.dropFirst()
-        return later.first { tense in verb.map { VerbLibrary.verb($0).hasTense(tense) } ?? true }
+    static func nextTense(after tense: Tense) -> Tense? {
+        Curriculum.tenseOrder.drop { $0 != tense }.dropFirst().first
+    }
+
+    /// The next tense in path order that the verb is irregular in; in the others it counts for its group.
+    static func nextIrregularTense(after tense: Tense, for verb: String) -> Tense? {
+        Curriculum.tenseOrder.drop { $0 != tense }.dropFirst().first(where: VerbLibrary.verb(verb).isIrregular)
     }
 
     private mutating func add(_ unit: PoolUnit, at now: Date) {
@@ -188,6 +202,11 @@ enum Curriculum {
         "premere", "bollire", "guarire", "correre", "mentire", "suggerire", "scendere", "offrire", "reagire",
         "perdere", "soffrire", "unire", "vincere", "scoprire", "restituire",
     ]
+
+    /// The verbs irregular in this tense, in path order.
+    static func irregularVerbs(in tense: Tense) -> [String] {
+        verbOrder.filter { VerbLibrary.verb($0).isIrregular(in: tense) }
+    }
 
     /// A unit performs well with this share of Good points in its last `windowSize` answers …
     static let goodBar = 0.8

@@ -167,7 +167,7 @@ final class AnswerHistory {
 
     /// A verb's row in `byGroup`, with a rank that orders rows like the verb picker.
     private static func statsGroup(_ verb: Verb, tense: Tense) -> (rank: Int, label: String) {
-        if verb.isIrregular { return (Int.max, "Unregelmäßig") }
+        if verb.isIrregular(in: tense) { return (Int.max, "Unregelmäßig") }
         let rank = 2 * VerbGroup.allCases.firstIndex(of: verb.group)!
         if tense == .passatoprossimo, verb.group == .are {
             return (verb.auxiliary == .avere ? rank : rank + 1, "-are mit \(verb.auxiliary.rawValue)")

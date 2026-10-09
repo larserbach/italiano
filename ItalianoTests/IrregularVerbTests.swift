@@ -17,7 +17,6 @@ final class IrregularVerbTests: XCTestCase {
         XCTAssertEqual(VerbLibrary.irregularKeys, VerbLibrary.irregularKeys.sorted())
         for key in VerbLibrary.irregularKeys {
             let verb = VerbLibrary.verb(key)
-            XCTAssertTrue(verb.isIrregular)
             for tense in Tense.allCases {
                 if tense == .imperativo && withoutImperative.contains(key) {
                     XCTAssertFalse(verb.hasTense(tense), key)
@@ -115,9 +114,39 @@ final class IrregularVerbTests: XCTestCase {
         XCTAssertEqual(VerbLibrary.verb("parlare").tableForm(.presente, 0), "parlo")
     }
 
-    func testIrregularVerbsHaveTheirOwnGroup() {
+    func testIrregularityIsDecidedPerTense() {
+        let all = Set(Tense.allCases)
+        let expected: [String: Set<Tense>] = [
+            "essere": all, "avere": [.presente, .futuro, .condizionale, .congiuntivo, .imperativo],
+            "scrivere": [.passatoprossimo], "aprire": [.passatoprossimo], "conoscere": [],
+            "cadere": [.futuro, .condizionale], "vedere": [.passatoprossimo, .futuro, .condizionale],
+            "uscire": [.presente, .congiuntivo, .imperativo],
+            "correre": [.passatoprossimo], "offrire": [.passatoprossimo], "parlare": [],
+            "viaggiare": [], "mancare": [], "sciare": [],
+        ]
+        for (verb, tenses) in expected {
+            XCTAssertEqual(VerbLibrary.verb(verb).irregularTenses, tenses, verb)
+        }
+        // Verbs whose forms are derived only leave their group with the participle.
+        let participleOnly = VerbCatalog.seeds.map(\.infinitive).filter { !VerbLibrary.verb($0).irregularTenses.isEmpty }
+        XCTAssertEqual(participleOnly, ["correre", "scendere", "perdere", "vincere", "offrire", "soffrire", "scoprire"])
+        XCTAssertTrue(participleOnly.allSatisfy { VerbLibrary.verb($0).irregularTenses == [.passatoprossimo] })
+
+        XCTAssertEqual(PoolUnit(verb: "scrivere", tense: .presente), .group(.ere, .presente))
+        XCTAssertEqual(PoolUnit(verb: "scrivere", tense: .passatoprossimo), .irregular("scrivere", .passatoprossimo))
+        XCTAssertEqual(PoolUnit(verb: "correre", tense: .passatoprossimo), .irregular("correre", .passatoprossimo))
+        XCTAssertTrue(PoolUnit.group(.ere, .presente).verbs.contains("scrivere"))
+        XCTAssertFalse(PoolUnit.group(.ere, .passatoprossimo).verbs.contains("correre"))
+        XCTAssertEqual(VerbLibrary.verb("scrivere").groupLabel, "-ere · unregelmäßig: Pass. pr.")
+        XCTAssertEqual(VerbLibrary.verb("essere").groupLabel, "unregelmäßig")
+    }
+
+    func testVerbsIrregularInThePresenteHaveTheirOwnGroup() {
         XCTAssertEqual(VerbLibrary.groups.last?.label, "Unregelmäßig")
-        XCTAssertEqual(VerbLibrary.groups.last?.verbs.count, 30)
+        XCTAssertEqual(VerbLibrary.groups.last?.verbs, ["andare", "avere", "bere", "dare", "dire", "dovere", "essere", "fare",
+                                                        "piacere", "potere", "rimanere", "sapere", "scegliere", "stare",
+                                                        "tenere", "uscire", "venire", "volere"])
+        XCTAssertEqual(VerbLibrary.groups.first { $0.label == "-ere" }?.verbs.suffix(3), ["scrivere", "vedere", "vivere"])
         XCTAssertNil(VerbLibrary.verb("dare").spellingNote)
 
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("irr-\(UUID().uuidString).json")

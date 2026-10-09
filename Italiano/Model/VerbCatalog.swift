@@ -673,12 +673,4 @@ enum VerbCatalog {
             deImperative: "gib zurück"
         ),
     ]
-
-    static let groups: [VerbGroupSection] = [
-        VerbGroupSection(label: "-are · mit avere im Passato prossimo", verbs: ["parlare", "guardare", "lavorare", "abitare", "camminare", "viaggiare", "passeggiare", "guidare", "nuotare", "sciare", "ballare"]),
-        VerbGroupSection(label: "-are · mit essere im Passato prossimo", verbs: ["arrivare", "diventare", "durare", "entrare", "mancare", "restare", "sembrare", "tornare", "bastare"]),
-        VerbGroupSection(label: "-ere", verbs: ["credere", "vendere", "ricevere", "temere", "ripetere", "battere", "cedere", "premere", "correre", "scendere", "perdere", "vincere"]),
-        VerbGroupSection(label: "-ire · regelmäßig", verbs: ["dormire", "seguire", "sentire", "partire", "servire", "vestire", "fuggire", "bollire", "mentire", "offrire", "soffrire", "scoprire"]),
-        VerbGroupSection(label: "-ire · mit -isc-", verbs: ["capire", "finire", "preferire", "pulire", "spedire", "costruire", "obbedire", "guarire", "suggerire", "reagire", "unire", "restituire"]),
-    ]
 }

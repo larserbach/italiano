@@ -120,7 +120,7 @@ private struct LearningPathSection: View {
             }
         }
 
-        let irregular = VerbFamily.irregular.verbs.filter { verb in store.pool.units.contains { $0 == .irregular(verb, $0.tense) } }
+        let irregular = Curriculum.verbOrder.filter { verb in store.pool.units.contains { $0 == .irregular(verb, $0.tense) } }
         VStack(alignment: .leading, spacing: 7) {
             ControlLabel("Unregelmäßige Verben")
             VStack(spacing: 0) {
@@ -251,7 +251,7 @@ struct VerbPicker: View {
         VStack(alignment: .leading, spacing: 12) {
             if !coachSeen {
                 CoachMark(text: preview.isBasic ? "Der Ring zeigt das Level des Verbs."
-                              : "Der Ring zeigt den Fortschritt der Verbgruppe (bei unregelmäßigen Verben: des Verbs) in den gewählten Zeiten."
+                              : "Der Ring zeigt den Fortschritt der Verbgruppe (in Zeiten, in denen das Verb unregelmäßig ist: des Verbs) in den gewählten Zeiten."
                               + (onDetails == nil ? "" : " Lange drücken für Details."),
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)

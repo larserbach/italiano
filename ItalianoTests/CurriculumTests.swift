@@ -128,9 +128,26 @@ final class LearningPoolTests: XCTestCase {
     func testStartsWithAllAreVerbsAndEssere() {
         let store = makeStore(defaults)
         XCTAssertEqual(store.pool.units, [.group(.are, .presente), .irregular("essere", .presente)])
-        XCTAssertEqual(Set(store.unlockedVerbs), Set(VerbFamily.are.verbs + ["essere"]))
+        XCTAssertEqual(Set(store.unlockedVerbs), Set(PoolUnit.group(.are, .presente).verbs + ["essere"]))
+        // andare counts for -are where it is regular (andavo), essere nowhere.
+        XCTAssertFalse(store.unlockedVerbs.contains("andare"))
+        XCTAssertTrue(VerbFamily.are.verbs.contains("andare"))
+        XCTAssertFalse(VerbFamily.ere.verbs.contains("essere"))
         XCTAssertEqual(store.unlockedVerbs.count, 21)
         XCTAssertEqual(store.unlockedTenses, [.presente])
+    }
+
+    func testDropsUnitsOfVerbsInTensesTheyAreRegularIn() throws {
+        // Saved when scrivere counted as irregular in every tense.
+        let old = LearningPool(units: [.group(.are, .presente), .irregular("essere", .presente), .irregular("avere", .presente)], at: now)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let json = try XCTUnwrap(String(data: encoder.encode(old), encoding: .utf8)).replacingOccurrences(of: "avere", with: "scrivere")
+        defaults.set(Data(json.utf8), forKey: "coniugazione-group-pool")
+
+        XCTAssertEqual(makeStore(defaults).pool.units, [.group(.are, .presente), .irregular("essere", .presente)])
+        let saved = try JSONDecoder().decode(LearningPool.self, from: XCTUnwrap(defaults.data(forKey: "coniugazione-group-pool")))
+        XCTAssertEqual(saved.units, [.group(.are, .presente), .irregular("essere", .presente)])
     }
 
     func testTheWindowKeepsTheLastTwentyAnswers() {
@@ -257,7 +274,7 @@ final class LearningPoolTests: XCTestCase {
     }
 
     func testIrregularVerbsFollowThePathOrder() {
-        let irregular = VerbFamily.irregular.verbs
+        let irregular = Curriculum.irregularVerbs(in: .presente)
         XCTAssertEqual(Array(irregular.prefix(5)), ["essere", "avere", "fare", "andare", "stare"])
         var pool = LearningPool(units: [.irregular("essere", .presente), .irregular("avere", .presente)], at: now)
         answer(&pool, .irregular("essere", .presente), good(20))

@@ -88,20 +88,15 @@ struct FormKey: Hashable, Codable {
     var cell: Cell { Cell(verb: verb, tense: tense) }
 }
 
-/// Verb families for the learning path: the regular ending groups, and the irregular verbs.
+/// The regular ending groups of the learning path.
 enum VerbFamily: String, Codable, CaseIterable {
-    case are, ere, ire, isc, irregular
+    case are, ere, ire, isc
 
-    /// The regular groups in the order they join the pool.
+    /// The groups in the order they join the pool.
     static let regular: [VerbFamily] = [.are, .ere, .ire, .isc]
 
-    init(verb: String) {
-        let entry = VerbLibrary.verb(verb)
-        if entry.isIrregular {
-            self = .irregular
-            return
-        }
-        switch entry.group {
+    init(group: VerbGroup) {
+        switch group {
         case .are: self = .are
         case .ere: self = .ere
         case .ire: self = .ire
@@ -115,22 +110,33 @@ enum VerbFamily: String, Codable, CaseIterable {
         case .ere: "-ere"
         case .ire: "-ire"
         case .isc: "-ire (isc)"
-        case .irregular: "unregelmäßig"
         }
     }
 
-    /// The family's verbs in path order.
-    var verbs: [String] { Curriculum.verbOrder.filter { VerbFamily(verb: $0) == self } }
+    /// The verbs with this ending that are regular in at least one tense, in path order; in a given tense
+    /// only those regular in it count for the group.
+    var verbs: [String] {
+        Curriculum.verbOrder.filter {
+            let verb = VerbLibrary.verb($0)
+            return VerbFamily(group: verb.group) == self && !verb.isFullyIrregular
+        }
+    }
 }
 
-/// What the pool is made of: a whole regular group in one tense, or one irregular verb in one tense.
+/// What the pool is made of: a whole regular group in one tense, or one verb in a tense it is irregular in.
 enum PoolUnit: Hashable, Codable {
     case group(VerbFamily, Tense)
     case irregular(String, Tense)
 
     init(verb: String, tense: Tense) {
-        let family = VerbFamily(verb: verb)
-        self = family == .irregular ? .irregular(verb, tense) : .group(family, tense)
+        let entry = VerbLibrary.verb(verb)
+        self = entry.isIrregular(in: tense) ? .irregular(verb, tense) : .group(VerbFamily(group: entry.group), tense)
+    }
+
+    /// False for a verb in a tense it is regular in (or has no forms in): it counts for its group there.
+    var isValid: Bool {
+        guard case .irregular(let verb, let tense) = self else { return true }
+        return VerbLibrary.all[verb]?.isIrregular(in: tense) == true
     }
 
     var tense: Tense {
@@ -152,7 +158,8 @@ enum PoolUnit: Hashable, Codable {
     /// The verbs this unit asks about.
     var verbs: [String] {
         switch self {
-        case .group(let family, let tense): family.verbs.filter { VerbLibrary.verb($0).hasTense(tense) }
+        case .group(let family, let tense):
+            family.verbs.filter { VerbLibrary.verb($0).hasTense(tense) && !VerbLibrary.verb($0).isIrregular(in: tense) }
         case .irregular(let verb, _): [verb]
         }
     }
@@ -181,16 +188,16 @@ struct PatternKey: Hashable, Codable {
     let person: Int
 }
 
-/// What a single answer is measured on: the group pattern for regular verbs, the form itself for irregular ones.
+/// What a single answer is measured on: the group pattern for regular forms, the form itself for irregular ones.
 enum MemoryKey: Hashable {
     case pattern(PatternKey)
     case form(FormKey)
 
     init(verb: String, tense: Tense, person: Int) {
-        let family = VerbFamily(verb: verb)
-        self = family == .irregular
-            ? .form(FormKey(verb: verb, tense: tense, person: person))
-            : .pattern(PatternKey(family: family, tense: tense, person: person))
+        self = switch PoolUnit(verb: verb, tense: tense) {
+        case .group(let family, _): .pattern(PatternKey(family: family, tense: tense, person: person))
+        case .irregular: .form(FormKey(verb: verb, tense: tense, person: person))
+        }
     }
 
     var unit: PoolUnit {
@@ -216,7 +223,7 @@ enum MemoryKey: Hashable {
 }
 
 /// Difficulty, stability and retrievability per regular group pattern and per irregular form.
-/// Single regular verbs are not tracked: what counts is whether the learner can conjugate the group.
+/// Single verbs in a tense they are regular in are not tracked: what counts is whether the learner can conjugate the group.
 struct LearningMemory: Codable, Equatable {
     var patterns: [PatternKey: MemoryState] = [:]
     var irregularForms: [FormKey: MemoryState] = [:]
