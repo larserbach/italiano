@@ -143,7 +143,9 @@ struct ConjugationLessonView: View {
         case .correct(let answer):
             Text(lesson.lookedUp ? "Giusto! \(answer) · nachgeschaut, zählt halb" : "Giusto! \(answer)")
                 .foregroundStyle(Theme.olive)
-        case .wrong(let answer): Text("Fast — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
+        case .almost(let answer):
+            Text("Fast richtig! Geschrieben wird: \(answer) · zählt halb").foregroundStyle(Theme.gold)
+        case .wrong(let answer): Text("Nicht ganz — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
         case .wrongGender(let answer):
             Text("Fast — das Partizip passt sich an (\(genderHint)): \(answer)").foregroundStyle(Theme.brick)
         case .revealed(let answer): Text(answer)
@@ -153,6 +155,7 @@ struct ConjugationLessonView: View {
     private var fieldBackground: Color {
         switch lesson.feedback {
         case .correct: Theme.oliveBackground
+        case .almost: Theme.goldSoft.opacity(0.5)
         case .wrong, .wrongGender: Theme.brickBackground
         default: Theme.paper
         }
