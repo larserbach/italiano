@@ -47,56 +47,47 @@ struct ConjugationLessonView: View {
     private var question: some View {
         if let item = lesson.current {
             let verb = VerbLibrary.verb(item.verb)
-            VStack(spacing: 22) {
+            VStack(spacing: 0) {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
+                    .padding(.bottom, 22)
 
-                VStack(spacing: 0) {
-                    let isNew = lesson.newUnits.contains(item.unit)
-                    if lesson.rounds.round > 1 || isNew {
-                        CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
-                            .padding(.bottom, 10)
-                    }
-
-                    prompt(item: item, verb: verb)
-
-                    VStack(spacing: 8) {
-                        HStack(spacing: 0) {
-                            PronounLabel(pronoun: item.pronoun, gender: item.gender, marker: item.marker)
-                                .padding(.horizontal, 14)
-                                .frame(maxHeight: .infinity)
-                                .background(Theme.paperRaised)
-                                .overlay(alignment: .trailing) { Rectangle().fill(Theme.line).frame(width: 1) }
-                            AnswerField(text: $answer, isEditable: !lesson.isReviewing,
-                                        focusToken: focusToken, onSubmit: submit)
-                                .padding(.horizontal, 14)
-                        }
-                        .frame(height: 48)
-                        .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
-                        .clipShape(RoundedRectangle(cornerRadius: 9))
-                        .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
-
-                        HStack(spacing: 8) {
-                            Button(lesson.isReviewing ? "Verstanden" : "Prüfen", action: submit)
-                                .buttonStyle(PrimaryButtonStyle())
-                            if !lesson.isReviewing {
-                                Button(action: lesson.reveal) {
-                                    Text("?").frame(width: 20)
-                                }
-                                .buttonStyle(GhostButtonStyle(fullWidth: false))
-                                .accessibilityLabel("Ich weiß es nicht")
-                            }
-                        }
-                    }
-
-                    feedbackText
-                        .font(.system(size: 14))
-                        .frame(minHeight: 20)
-                        .padding(.top, 10)
+                let isNew = lesson.newUnits.contains(item.unit)
+                if lesson.rounds.round > 1 || isNew {
+                    CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
+                        .padding(.bottom, 10)
                 }
-                .card()
+
+                prompt(item: item, verb: verb)
+
+                AnswerField(text: $answer, isEditable: !lesson.isReviewing,
+                            focusToken: focusToken, onSubmit: submit)
+                    .padding(.horizontal, 14)
+                    .frame(height: 48)
+                    .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
+                    .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
+
+                feedbackText
+                    .font(.system(size: 14))
+                    .frame(minHeight: 20)
+                    .padding(.top, 10)
+
+                Spacer(minLength: 16)
+
+                HStack(spacing: 8) {
+                    Button(lesson.isReviewing ? "Verstanden" : "Prüfen", action: submit)
+                        .buttonStyle(PrimaryButtonStyle())
+                    if !lesson.isReviewing {
+                        Button(action: lesson.reveal) {
+                            Text("?").frame(width: 20)
+                        }
+                        .buttonStyle(GhostButtonStyle(fullWidth: false))
+                        .accessibilityLabel("Ich weiß es nicht")
+                    }
+                }
             }
             .padding(.horizontal, 18)
             .padding(.top, 12)
+            .padding(.bottom, 10)
         }
     }
 
@@ -104,12 +95,17 @@ struct ConjugationLessonView: View {
     /// tells apart verbs that share a German prompt (rimanere/restare = bleiben).
     private func prompt(item: ConjugationItem, verb: Verb) -> some View {
         VStack(spacing: 6) {
-            let pronoun = Text(Pronoun.german(item.person, gender: item.gender) + "  ")
+            let pronoun = Text(Pronoun.german(item.person, gender: item.gender))
                 .fontWeight(.regular)
                 .foregroundStyle(Theme.inkSoft)
-            Text("\(pronoun)\(verb.german(item.tense, item.person))")
+            // In the passato prossimo an italic m or f always follows the pronoun.
+            let marker = Text(item.marker.map { " \($0)" } ?? "")
+                .font(Theme.display(22, weight: .medium).italic())
+                .foregroundStyle(Theme.gold)
+            Text("\(pronoun)\(marker)  \(verb.german(item.tense, item.person))")
                 .font(Theme.display(30, weight: .semibold))
                 .multilineTextAlignment(.center)
+                .accessibilityLabel(spokenPrompt(item: item, verb: verb))
             HStack(spacing: 6) {
                 Button {
                     lesson.noteLookup()
@@ -132,6 +128,12 @@ struct ConjugationLessonView: View {
             .minimumScaleFactor(0.8)
         }
         .padding(.bottom, 16)
+    }
+
+    private func spokenPrompt(item: ConjugationItem, verb: Verb) -> String {
+        var pronoun = Pronoun.german(item.person, gender: item.gender)
+        if let gender = item.gender { pronoun += ", \(gender.spokenName)," }
+        return "\(pronoun) \(verb.german(item.tense, item.person))"
     }
 
     @ViewBuilder
@@ -165,8 +167,7 @@ struct ConjugationLessonView: View {
     }
 
     private var genderHint: String {
-        guard let item = lesson.current, let gender = item.gender else { return "" }
-        return item.marker == nil ? item.pronoun : gender.spokenName
+        lesson.current?.gender?.spokenName ?? ""
     }
 
     private var summarySections: [SummarySection] {

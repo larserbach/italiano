@@ -38,68 +38,67 @@ struct AuxQuizView: View {
     @ViewBuilder
     private var question: some View {
         if let item = quiz.current {
-            VStack(spacing: 22) {
+            VStack(spacing: 0) {
                 LessonTopBar(answered: quiz.rounds.roundAnswered, total: quiz.rounds.roundTotal) { dismiss() }
+                    .padding(.bottom, 22)
 
-                VStack(spacing: 0) {
-                    CardMeta(tag: "Passato prossimo", round: quiz.rounds.round)
-                        .padding(.bottom, 10)
+                CardMeta(tag: "Passato prossimo", round: quiz.rounds.round)
+                    .padding(.bottom, 10)
 
-                    Button { sheet = .auxVerb(item.verb) } label: {
-                        Text(item.verb)
-                            .font(.system(size: 13))
-                            .foregroundStyle(Theme.inkSoft)
-                            .underline(color: Theme.goldSoft)
+                Button { sheet = .auxVerb(item.verb) } label: {
+                    Text(item.verb)
+                        .font(.system(size: 13))
+                        .foregroundStyle(Theme.inkSoft)
+                        .underline(color: Theme.goldSoft)
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 4)
+
+                HStack(alignment: .lastTextBaseline, spacing: 10) {
+                    Text(Pronoun.italian[item.person])
+                    Rectangle().fill(Theme.inkSoft).frame(width: 44, height: 2)
+                    Text(VerbLibrary.verb(item.verb).participle)
+                }
+                .font(Theme.display(30, weight: .semibold))
+                .padding(.bottom, 10)
+
+                Group {
+                    if quiz.isAnswered && !quiz.answeredWrong {
+                        Text("Giusto! \(item.fullForm)").foregroundStyle(Theme.olive)
+                    } else if quiz.answeredWrong {
+                        Text("Richtig: \(item.fullForm)").foregroundStyle(Theme.brick)
+                    } else {
+                        Text(" ")
                     }
-                    .buttonStyle(.plain)
-                    .padding(.bottom, 4)
+                }
+                .font(.system(size: 14))
 
-                    HStack(alignment: .lastTextBaseline, spacing: 10) {
-                        Text(Pronoun.italian[item.person])
-                        Rectangle().fill(Theme.inkSoft).frame(width: 44, height: 2)
-                        Text(VerbLibrary.verb(item.verb).participle)
-                    }
-                    .font(Theme.display(30, weight: .semibold))
-                    .padding(.bottom, 16)
+                Spacer(minLength: 16)
 
-                    VStack(spacing: 10) {
-                        ForEach(item.options, id: \.self) { option in
-                            Button { quiz.choose(option) } label: {
-                                Text(option)
-                                    .font(Theme.display(20))
-                                    .frame(maxWidth: .infinity)
-                                    .padding(14)
-                                    .background(optionBackground(option, item: item), in: RoundedRectangle(cornerRadius: 10))
-                                    .overlay(RoundedRectangle(cornerRadius: 10)
-                                        .stroke(optionBorder(option, item: item), lineWidth: 1.5))
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                VStack(spacing: 10) {
+                    ForEach(item.options, id: \.self) { option in
+                        Button { quiz.choose(option) } label: {
+                            Text(option)
+                                .font(Theme.display(20))
+                                .frame(maxWidth: .infinity)
+                                .padding(14)
+                                .background(optionBackground(option, item: item), in: RoundedRectangle(cornerRadius: 10))
+                                .overlay(RoundedRectangle(cornerRadius: 10)
+                                    .stroke(optionBorder(option, item: item), lineWidth: 1.5))
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
-
-                    Group {
-                        if quiz.isAnswered && !quiz.answeredWrong {
-                            Text("Giusto! \(item.fullForm)").foregroundStyle(Theme.olive)
-                        } else if quiz.answeredWrong {
-                            Text("Richtig: \(item.fullForm)").foregroundStyle(Theme.brick)
-                        } else {
-                            Text(" ")
-                        }
-                    }
-                    .font(.system(size: 14))
-                    .padding(.top, 10)
 
                     if quiz.answeredWrong {
                         Button("Weiter", action: quiz.next)
                             .buttonStyle(PrimaryButtonStyle())
-                            .padding(.top, 8)
                     }
                 }
-                .card()
             }
             .padding(.horizontal, 18)
             .padding(.top, 12)
+            .padding(.bottom, 10)
         }
     }
 
