@@ -322,9 +322,10 @@ enum Conjugator {
 
     /// Stem + ending with the spelling rules regular verbs follow: an h keeps c and g hard before e and i
     /// (manchi, mancherò), the stem's i merges with an ending's i (viaggi, but scii where the i is
-    /// stressed) and only softens c and g, so it drops before e (viaggerò).
-    static func join(_ stem: String, _ ending: String, group: VerbGroup, infinitive: String) -> String {
-        guard group == .are else { return stem + ending }
+    /// stressed) and only softens c and g, so it drops before e (viaggerò). Without `spellingRules` the
+    /// parts are just put together, which gives the traps learners fall into (pagerò, viaggierò).
+    static func join(_ stem: String, _ ending: String, group: VerbGroup, infinitive: String, spellingRules: Bool = true) -> String {
+        guard group == .are, spellingRules else { return stem + ending }
         let stressed = stressedIVerbs.contains(infinitive)
         if stem.hasSuffix("c") || stem.hasSuffix("g"), ending.hasPrefix("e") || ending.hasPrefix("i") {
             return stem + "h" + ending
@@ -339,11 +340,13 @@ enum Conjugator {
     }
 
     /// Every form as the ending group's rules build it from the infinitive.
-    static func regularForms(infinitive: String, group: VerbGroup) -> [Tense: [String?]] {
+    static func regularForms(infinitive: String, group: VerbGroup, spellingRules: Bool = true) -> [Tense: [String?]] {
         let stem = String(infinitive.dropLast(3))
-        func forms(_ endings: [String]) -> [String] { endings.map { join(stem, $0, group: group, infinitive: infinitive) } }
+        func forms(_ endings: [String]) -> [String] {
+            endings.map { join(stem, $0, group: group, infinitive: infinitive, spellingRules: spellingRules) }
+        }
         let presente = forms(presenteEndings[group]!)
-        let congiuntivo = congiuntivo(infinitive: infinitive, group: group)
+        let congiuntivo = congiuntivo(infinitive: infinitive, group: group, spellingRules: spellingRules)
         let futuro = forms(futuroEndings.map { (group == .are ? "e" : vowel(group)) + $0 })
         return [
             .presente: presente,
@@ -397,9 +400,9 @@ enum Conjugator {
         return condizionaleEndings.map { stem + $0 }
     }
 
-    static func congiuntivo(infinitive: String, group: VerbGroup) -> [String] {
+    static func congiuntivo(infinitive: String, group: VerbGroup, spellingRules: Bool = true) -> [String] {
         let stem = String(infinitive.dropLast(3))
-        return congiuntivoEndings[group]!.map { join(stem, $0, group: group, infinitive: infinitive) }
+        return congiuntivoEndings[group]!.map { join(stem, $0, group: group, infinitive: infinitive, spellingRules: spellingRules) }
     }
 
     /// lui/lei and loro stand for the formal address (Lei/Loro) and borrow the congiuntivo form.

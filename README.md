@@ -7,7 +7,9 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
 - **Coniugazione**: type the conjugated form of a verb in one of 7 tenses (Presente,
   Passato prossimo, Imperfetto, Futuro, Condizionale, Congiuntivo, Imperativo). Prompts
   show the German form, with the Italian infinitive and the tense underneath. Wrong answers come back in
-  repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
+  repeat rounds. A missing accent or one wrong letter (parlero, parlaimo) counts half and isn't repeated,
+  unless it gives another form of the verb (parli for parlo) or a spelling trap (pagerò, viaggierò).
+  Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
   In the Passato prossimo an italic *m* or *f* next to the German pronoun says which form is wanted
   (sono arrivato / arrivata). It is picked at random and shown for avere verbs too, so it doesn't give

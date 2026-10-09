@@ -33,6 +33,8 @@ final class ConjugationLesson {
     enum Feedback: Equatable {
         case none
         case correct(String)
+        /// An accent or one letter off: counts half and is not repeated.
+        case almost(String)
         case wrong(String)
         /// Right verb form, but for the other gender.
         case wrongGender(String)
@@ -126,17 +128,26 @@ final class ConjugationLesson {
             return
         }
         busy = true
-        let ok = !normalize(guess).isEmpty && item.accepted.contains { normalize($0) == normalize(guess) }
-        if item.firstAttempt { recordFirstAttempt(item, ok ? (lookedUp ? .correct : .good) : .again) }
+        let check = AnswerCheck(guess, for: item)
+        if item.firstAttempt {
+            let rating: Rating = switch check {
+            case .right: lookedUp ? .correct : .good
+            case .almost: .correct
+            case .wrong, .wrongGender: .again
+            }
+            recordFirstAttempt(item, rating)
+        }
 
-        if ok {
+        switch check {
+        case .right, .almost:
             rounds.recordCorrect()
-            feedback = .correct(item.answer)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.nextCard() }
-        } else {
+            feedback = check == .right ? .correct(item.answer) : .almost(item.answer)
+            // A slip stays up longer, so the right spelling can be read.
+            let delay = check == .right ? 0.6 : 1.8
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in self?.nextCard() }
+        case .wrong, .wrongGender:
             recordMiss(item)
-            let genderSlip = item.otherGenderAnswer.map { normalize($0) == normalize(guess) } ?? false
-            feedback = genderSlip ? .wrongGender(item.answer) : .wrong(item.answer)
+            feedback = check == .wrongGender ? .wrongGender(item.answer) : .wrong(item.answer)
             busy = false
         }
     }
