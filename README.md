@@ -9,13 +9,17 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
   show the German form, with the Italian infinitive and the tense underneath. Wrong answers come back in
   repeat rounds. Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
   selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
-  Where the answer depends on the subject's gender (Passato prossimo with essere: sono arrivato /
-  arrivata), an italic *m* or *f* next to the pronoun says which form is wanted.
+  In the Passato prossimo an italic *m* or *f* next to the German pronoun says which form is wanted
+  (sono arrivato / arrivata). It is picked at random and shown for avere verbs too, so it doesn't give
+  away the auxiliary.
 - **Essere o avere?**: pick the right auxiliary form for the Passato prossimo. Mistakes
   come back in repeat rounds too, and mastery per verb counts first attempts only.
-- **Irregular verbs**: the 30 most frequent ones (essere, avere, fare, andare, …) form their own
-  "Unregelmäßig" group in the verb pickers. Their forms are spelled out in
-  `Italiano/Model/IrregularVerbCatalog.swift`; only Condizionale and Passato prossimo are derived.
+- **Irregular verbs**: whether a verb is irregular is worked out per tense, by comparing its forms
+  with what its ending group's rules give. scrivere counts for the -ere group in the Presente and on its
+  own in the Passato prossimo (scritto); so does correre (corso). Verbs already irregular in the Presente
+  (essere, avere, fare, andare, …) form the "Unregelmäßig" group in the verb pickers. The forms of the 30
+  most frequent irregular verbs are spelled out in `Italiano/Model/IrregularVerbCatalog.swift`; only
+  Condizionale and Passato prossimo are derived.
   potere, dovere, volere and piacere have no imperative cards, and fa'/fai, va'/vai, da'/dai and
   sta'/stai are both accepted.
 - **Statistik** (chart button on the Coniugazione page): an overview across all tenses, then correct answers vs. mistakes per tense
@@ -51,6 +55,6 @@ app through TestFlight.
 | `Italiano/Views` | SwiftUI screens |
 | `ItalianoTests` | Unit tests, including a check that every derived form matches the fixture `verb-forms.json` |
 
-To add regular verbs, add a `VerbSeed` to `Italiano/Model/VerbCatalog.swift` and list it in the matching group, then add its expected forms to `ItalianoTests/verb-forms.json`.
+To add regular verbs, add a `VerbSeed` to `Italiano/Model/VerbCatalog.swift`, then add its expected forms to `ItalianoTests/verb-forms.json`.
 The Passato prossimo, Condizionale, Congiuntivo and Imperativo forms are derived automatically.
 Irregular verbs are added by hand in `Italiano/Model/IrregularVerbCatalog.swift`.

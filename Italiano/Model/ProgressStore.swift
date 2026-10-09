@@ -132,10 +132,12 @@ final class ProgressStore {
         let start = now()
         memory = Self.load(LearningMemory.self, key: Keys.memory, from: defaults) ?? LearningMemory()
         let storedPool = Self.load(LearningPool.self, key: Keys.pool, from: defaults)
-        pool = storedPool ?? Self.migratedPool(from: defaults, at: start)
+        var pool = storedPool ?? Self.migratedPool(from: defaults, at: start)
+        pool.dropInvalidUnits()
+        self.pool = pool
         keepFreeSelectionUnlocked()
 
-        if storedPool == nil { save(pool, key: Keys.pool) }
+        if storedPool != pool { save(pool, key: Keys.pool) }
         for key in [Keys.cellPool, Keys.cellMemory, Keys.halfLives, Keys.tenseLevels, Keys.curriculum,
                     Keys.legacyLevels, Keys.legacyLastMistakes] {
             defaults.removeObject(forKey: key)
@@ -163,7 +165,7 @@ final class ProgressStore {
 
     func progress(of unit: PoolUnit) -> LearningPool.Progress { pool.progress(of: unit) }
 
-    /// The ring: progress of the verb's group (or the irregular verb) in that tense toward performing well,
+    /// The ring: progress of the verb's group (or the verb, where it is irregular) in that tense toward performing well,
     /// 0…10. 0 when it is not in the pool yet.
     func level(of verb: String, tense: Tense) -> Int {
         let unit = PoolUnit(verb: verb, tense: tense)
@@ -190,7 +192,7 @@ final class ProgressStore {
         tenses.contains { lastMistakes.contains(Self.mistakeKey(verb, $0)) }
     }
 
-    /// Records a first answer: on the group pattern (regular verbs) or the form (irregular verbs), in the
+    /// Records a first answer: on the group pattern (regular forms) or the form (irregular ones), in the
     /// unit's recent answers, and for the statistics, the answer log and the red markers.
     func record(_ item: ConjugationItem, _ rating: Rating) {
         let time = now()

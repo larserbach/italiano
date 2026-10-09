@@ -132,7 +132,9 @@ struct Verb: Identifiable {
     let meaning: String
     /// The German verb used in prompts; `meaning` may list several ("machen, tun").
     let germanInfinitive: String
-    let isIrregular: Bool
+    /// Tenses whose forms do not follow the verb's ending group, worked out from the forms themselves:
+    /// scrivere is regular in the Presente (counts for -ere) but not in the Passato prossimo (scritto).
+    let irregularTenses: Set<Tense>
     /// Further accepted answers besides the main form, by tense and person.
     let alternatives: [Tense: [Int: [String]]]
     let participle: String
@@ -149,8 +151,18 @@ struct Verb: Identifiable {
     func hasForm(_ tense: Tense, _ person: Int) -> Bool { (italian[tense]?[person] ?? nil) != nil }
     func hasTense(_ tense: Tense) -> Bool { tense.persons.contains { hasForm(tense, $0) } }
 
-    /// "-are", "-ere", … or "unregelmäßig".
-    var groupLabel: String { isIrregular ? "unregelmäßig" : group.rawValue }
+    func isIrregular(in tense: Tense) -> Bool { irregularTenses.contains(tense) }
+
+    /// Regular in no tense it has.
+    var isFullyIrregular: Bool { Tense.allCases.filter(hasTense).allSatisfy(irregularTenses.contains) }
+
+    /// "-are", "unregelmäßig", or the group with the tenses that leave it ("-ere · unregelmäßig: Pass. pr.").
+    var groupLabel: String {
+        if isFullyIrregular { return "unregelmäßig" }
+        let tenses = Curriculum.tenseOrder.filter(irregularTenses.contains)
+        guard !tenses.isEmpty else { return group.rawValue }
+        return "\(group.rawValue) · unregelmäßig: " + tenses.map(\.shortLabel).joined(separator: ", ")
+    }
 
     /// A form as shown in the conjugation table: both genders where the participle agrees
     /// ("sono andato/a", "siamo andati/e"), and accepted variants ("fa' / fai").
@@ -183,7 +195,7 @@ struct Verb: Identifiable {
 
     /// The spelling trap of this verb, if it has one, illustrated with its own forms.
     var spellingNote: String? {
-        guard !isIrregular else { return nil }
+        guard !isIrregular(in: .presente) else { return nil }
         let tu = italian(.presente, 1), noi = italian(.presente, 3), futuro = italian(.futuro, 0)
         if Conjugator.stressedIVerbs.contains(infinitive) {
             return "Das i ist betont (io \(italian(.presente, 0))) und bleibt deshalb erhalten: tu \(tu), \(futuro), che loro \(italian(.congiuntivo, 5)). Nur bei noi verschmelzen die beiden i: \(noi)."
@@ -205,13 +217,11 @@ struct Verb: Identifiable {
         group = seed.group
         meaning = seed.meaning
         germanInfinitive = seed.meaning
-        isIrregular = false
         alternatives = [:]
         participle = seed.participle
         auxiliary = seed.auxiliary
 
-        let congiuntivo = Conjugator.congiuntivoOverrides[seed.infinitive]
-            ?? Conjugator.congiuntivo(infinitive: seed.infinitive, group: seed.group)
+        let congiuntivo = Conjugator.congiuntivo(infinitive: seed.infinitive, group: seed.group)
         italian = [
             .presente: seed.presente,
             .passatoprossimo: Conjugator.passatoProssimo(participle: seed.participle, auxiliary: seed.auxiliary),
@@ -222,6 +232,8 @@ struct Verb: Identifiable {
             .imperativo: Conjugator.imperativo(infinitive: seed.infinitive, group: seed.group,
                                                presente: seed.presente, congiuntivo: congiuntivo),
         ]
+        irregularTenses = Conjugator.irregularTenses(infinitive: seed.infinitive, group: seed.group,
+                                                     participle: seed.participle, forms: italian)
         german = [
             .presente: seed.dePresente,
             .passatoprossimo: Conjugator.perfekt(participle: seed.deParticiple, auxiliary: seed.deAuxiliary),
@@ -240,7 +252,6 @@ struct Verb: Identifiable {
         group = seed.ending
         meaning = seed.meaning
         germanInfinitive = seed.germanInfinitive
-        isIrregular = true
         alternatives = seed.imperativoAlternatives.isEmpty ? [:] : [.imperativo: seed.imperativoAlternatives]
         participle = seed.participle
         auxiliary = seed.auxiliary
@@ -254,6 +265,9 @@ struct Verb: Identifiable {
             .congiuntivo: seed.congiuntivo,
             .imperativo: seed.imperativo ?? Array(repeating: nil, count: 6),
         ]
+        irregularTenses = Conjugator.irregularTenses(infinitive: seed.infinitive, group: seed.ending,
+                                                     participle: seed.participle, forms: italian)
+                          .union(seed.imperativoAlternatives.isEmpty ? [] : [.imperativo])
         let deInfinitive = seed.germanInfinitive
         german = [
             .presente: seed.dePresente,
@@ -282,13 +296,86 @@ enum Conjugator {
     /// -iare verbs whose i is stressed (io scìo) and therefore kept before i and e.
     static let stressedIVerbs: Set<String> = ["sciare", "inviare", "spiare", "avviare"]
 
-    /// Spellings the stem + ending rule gets wrong (soft -gi-, -c(h)- before e/i).
-    static let congiuntivoOverrides: [String: [String]] = [
-        "viaggiare": ["viaggi", "viaggi", "viaggi", "viaggiamo", "viaggiate", "viaggino"],
-        "passeggiare": ["passeggi", "passeggi", "passeggi", "passeggiamo", "passeggiate", "passeggino"],
-        "mancare": ["manchi", "manchi", "manchi", "manchiamo", "manchiate", "manchino"],
-        "sciare": ["scii", "scii", "scii", "sciamo", "sciate", "sciino"],
+    private static let presenteEndings: [VerbGroup: [String]] = [
+        .are: ["o", "i", "a", "iamo", "ate", "ano"],
+        .ere: ["o", "i", "e", "iamo", "ete", "ono"],
+        .ire: ["o", "i", "e", "iamo", "ite", "ono"],
+        .ireIsc: ["isco", "isci", "isce", "iamo", "ite", "iscono"],
     ]
+    private static let congiuntivoEndings: [VerbGroup: [String]] = [
+        .are: ["i", "i", "i", "iamo", "iate", "ino"],
+        .ere: ["a", "a", "a", "iamo", "iate", "ano"],
+        .ire: ["a", "a", "a", "iamo", "iate", "ano"],
+        .ireIsc: ["isca", "isca", "isca", "iamo", "iate", "iscano"],
+    ]
+    private static let imperfettoEndings = ["vo", "vi", "va", "vamo", "vate", "vano"]
+    private static let futuroEndings = ["rò", "rai", "rà", "remo", "rete", "ranno"]
+
+    /// The infinitive's vowel as used in the Imperfetto, Futuro and participle: a, e or i.
+    private static func vowel(_ group: VerbGroup) -> String {
+        switch group {
+        case .are: "a"
+        case .ere: "e"
+        case .ire, .ireIsc: "i"
+        }
+    }
+
+    /// Stem + ending with the spelling rules regular verbs follow: an h keeps c and g hard before e and i
+    /// (manchi, mancherò), the stem's i merges with an ending's i (viaggi, but scii where the i is
+    /// stressed) and only softens c and g, so it drops before e (viaggerò).
+    static func join(_ stem: String, _ ending: String, group: VerbGroup, infinitive: String) -> String {
+        guard group == .are else { return stem + ending }
+        let stressed = stressedIVerbs.contains(infinitive)
+        if stem.hasSuffix("c") || stem.hasSuffix("g"), ending.hasPrefix("e") || ending.hasPrefix("i") {
+            return stem + "h" + ending
+        }
+        if stem.hasSuffix("i"), ending.hasPrefix("i"), !stressed || ending.hasPrefix("iam") || ending.hasPrefix("iat") {
+            return stem + ending.dropFirst()
+        }
+        if stem.hasSuffix("ci") || stem.hasSuffix("gi"), ending.hasPrefix("e"), !stressed {
+            return stem.dropLast() + ending
+        }
+        return stem + ending
+    }
+
+    /// Every form as the ending group's rules build it from the infinitive.
+    static func regularForms(infinitive: String, group: VerbGroup) -> [Tense: [String?]] {
+        let stem = String(infinitive.dropLast(3))
+        func forms(_ endings: [String]) -> [String] { endings.map { join(stem, $0, group: group, infinitive: infinitive) } }
+        let presente = forms(presenteEndings[group]!)
+        let congiuntivo = congiuntivo(infinitive: infinitive, group: group)
+        let futuro = forms(futuroEndings.map { (group == .are ? "e" : vowel(group)) + $0 })
+        return [
+            .presente: presente,
+            .passatoprossimo: passatoProssimo(participle: regularParticiple(infinitive: infinitive, group: group), auxiliary: .avere),
+            .imperfetto: forms(imperfettoEndings.map { vowel(group) + $0 }),
+            .futuro: futuro,
+            .condizionale: condizionale(futuro: futuro),
+            .congiuntivo: congiuntivo,
+            .imperativo: imperativo(infinitive: infinitive, group: group, presente: presente, congiuntivo: congiuntivo),
+        ]
+    }
+
+    /// parlato, creduto, dormito; -cere keeps the c soft: conosciuto, piaciuto.
+    static func regularParticiple(infinitive: String, group: VerbGroup) -> String {
+        let stem = String(infinitive.dropLast(3))
+        switch group {
+        case .are: return stem + "ato"
+        case .ere: return stem + (stem.hasSuffix("c") ? "iuto" : "uto")
+        case .ire, .ireIsc: return stem + "ito"
+        }
+    }
+
+    /// The tenses in which `forms` differ from what the group's rules give. In the Passato prossimo only
+    /// the participle counts; essere or avere is a question of its own.
+    static func irregularTenses(infinitive: String, group: VerbGroup, participle: String, forms: [Tense: [String?]]) -> Set<Tense> {
+        let regular = regularForms(infinitive: infinitive, group: group)
+        return Set(Tense.allCases.filter { tense in
+            if tense == .passatoprossimo { return participle != regularParticiple(infinitive: infinitive, group: group) }
+            let own = forms[tense] ?? []
+            return own.indices.contains { person in own[person].map { $0 != regular[tense]?[person] } ?? false }
+        })
+    }
 
     static func auxiliaryForm(_ auxiliary: Auxiliary, person: Int) -> String {
         (auxiliary == .essere ? esserePresente : averePresente)[person]
@@ -312,14 +399,7 @@ enum Conjugator {
 
     static func congiuntivo(infinitive: String, group: VerbGroup) -> [String] {
         let stem = String(infinitive.dropLast(3))
-        switch group {
-        case .are:
-            return ["i", "i", "i", "iamo", "iate", "ino"].map { stem + $0 }
-        case .ireIsc:
-            return ["isca", "isca", "isca", "iamo", "iate", "iscano"].map { stem + $0 }
-        case .ere, .ire:
-            return ["a", "a", "a", "iamo", "iate", "ano"].map { stem + $0 }
-        }
+        return congiuntivoEndings[group]!.map { join(stem, $0, group: group, infinitive: infinitive) }
     }
 
     /// lui/lei and loro stand for the formal address (Lei/Loro) and borrow the congiuntivo form.
@@ -361,9 +441,22 @@ enum VerbLibrary {
     static let irregularKeys: [String] = IrregularVerbCatalog.seeds.map(\.infinitive).sorted()
     static let orderedKeys: [String] = VerbCatalog.seeds.map(\.infinitive) + irregularKeys
 
-    /// The verb picker's sections: the regular groups, then all irregular verbs alphabetically.
-    static let groups: [VerbGroupSection] =
-        VerbCatalog.groups + [VerbGroupSection(label: "Unregelmäßig", verbs: irregularKeys)]
+    /// The verb picker's sections: each verb with its ending group (-are split by auxiliary), unless it is
+    /// already irregular in the Presente; those come last.
+    static let groups: [VerbGroupSection] = {
+        let verbs = orderedKeys.map(verb)
+        func section(_ label: String, _ belongs: (Verb) -> Bool) -> VerbGroupSection {
+            VerbGroupSection(label: label, verbs: verbs.filter { !$0.isIrregular(in: .presente) && belongs($0) }.map(\.infinitive))
+        }
+        return [
+            section("-are · mit avere im Passato prossimo") { $0.group == .are && $0.auxiliary == .avere },
+            section("-are · mit essere im Passato prossimo") { $0.group == .are && $0.auxiliary == .essere },
+            section("-ere") { $0.group == .ere },
+            section("-ire") { $0.group == .ire },
+            section("-ire · mit -isc-") { $0.group == .ireIsc },
+            VerbGroupSection(label: "Unregelmäßig", verbs: verbs.filter { $0.isIrregular(in: .presente) }.map(\.infinitive)),
+        ].filter { !$0.verbs.isEmpty }
+    }()
 
     static func verb(_ key: String) -> Verb { all[key]! }
 }
