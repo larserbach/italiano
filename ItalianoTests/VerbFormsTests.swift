@@ -54,9 +54,6 @@ final class VerbFormsTests: XCTestCase {
     func testPronounShowsGender() {
         XCTAssertEqual(Pronoun.italian(2, gender: .feminine), "lei")
         XCTAssertEqual(Pronoun.german(2, gender: .masculine), "er")
-        XCTAssertNil(Pronoun.marker(2, gender: .feminine))
-        XCTAssertEqual(Pronoun.marker(0, gender: .feminine), "f")
-        XCTAssertNil(Pronoun.marker(0, gender: nil))
         XCTAssertEqual(Pronoun.italian(2, gender: nil), "lui/lei")
     }
 
@@ -168,7 +165,7 @@ final class LessonTests: XCTestCase {
         XCTAssertNil(defaults.data(forKey: "coniugazione-tense-levels"))
     }
 
-    func testGenderIsSetOnlyWhereItMatters() {
+    func testGenderIsSetForEveryPassatoProssimo() {
         seedPool([("parlare", .presente), ("parlare", .passatoprossimo),
                         ("arrivare", .presente), ("arrivare", .passatoprossimo)], in: defaults)
         let store = makeStore(defaults)
@@ -184,9 +181,11 @@ final class LessonTests: XCTestCase {
         }
         XCTAssertEqual(seen.count, 20)
         for item in seen {
-            let expectsGender = item.verb == "arrivare" && item.tense == .passatoprossimo
-            XCTAssertEqual(item.gender != nil, expectsGender, "\(item.key)")
+            // Also for parlare (avere), so the m/f hint doesn't give away the auxiliary.
+            XCTAssertEqual(item.gender != nil, item.tense == .passatoprossimo, "\(item.key)")
         }
+        let parlare = seen.first { $0.verb == "parlare" && $0.tense == .passatoprossimo && $0.person == 0 }
+        if let parlare { XCTAssertEqual(parlare.answer, "ho parlato") }
     }
 
     func testOtherGenderAnswerGetsSpecificFeedback() throws {

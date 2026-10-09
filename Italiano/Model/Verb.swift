@@ -72,12 +72,6 @@ enum Pronoun {
         guard person == 2, let gender else { return german[person] }
         return gender == .masculine ? "er" : "sie"
     }
-
-    /// The m/f hint shown next to a pronoun. lui and lei already say it themselves.
-    static func marker(_ person: Int, gender: Gender?) -> String? {
-        guard let gender, person != 2 else { return nil }
-        return gender.marker
-    }
 }
 
 /// The hand-maintained part of a verb; everything else is derived in `Verb.init`.

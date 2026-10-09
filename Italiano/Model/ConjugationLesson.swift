@@ -5,7 +5,8 @@ struct ConjugationItem: Hashable {
     let verb: String
     let tense: Tense
     let person: Int
-    /// Set only when the answer depends on the subject's gender.
+    /// Set for every passato prossimo question, also for verbs with avere where it doesn't
+    /// change the answer: showing it only for essere verbs would give away the auxiliary.
     var gender: Gender?
     var firstAttempt = true
 
@@ -18,11 +19,11 @@ struct ConjugationItem: Hashable {
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
     var pronoun: String { Pronoun.italian(person, gender: gender) }
-    var marker: String? { Pronoun.marker(person, gender: gender) }
+    var marker: String? { gender?.marker }
 
     /// The same form for the other gender, to recognise answers that only miss the agreement.
     var otherGenderAnswer: String? {
-        guard let gender else { return nil }
+        guard let gender, VerbLibrary.verb(verb).isGendered(tense) else { return nil }
         return VerbLibrary.verb(verb).italian(tense, person, gender: gender == .masculine ? .feminine : .masculine)
     }
 }
@@ -111,7 +112,7 @@ final class ConjugationLesson {
         sharesBefore = Dictionary(uniqueKeysWithValues: units.compactMap { unit in store.progress(of: unit).share.map { (unit, $0) } })
         let chosen = selected.shuffled().map { form -> ConjugationItem in
             var item = ConjugationItem(verb: form.verb, tense: form.tense, person: form.person)
-            if VerbLibrary.verb(item.verb).isGendered(item.tense) { item.gender = Gender.allCases.randomElement() }
+            if item.tense == .passatoprossimo { item.gender = Gender.allCases.randomElement() }
             return item
         }
         rounds = LessonRounds(chosen)
