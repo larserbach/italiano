@@ -1,27 +1,50 @@
 import AVFoundation
+import SwiftUI
 
-/// Reads an Italian form aloud. Tests replace it with a silent fake.
-protocol AnswerSpeaking: AnyObject {
-    /// Calls `completion` on the main queue once the text is spoken or speaking was stopped.
+/// Reads Italian text aloud. Any screen can get one from the environment (`\.speech`); tests use a fake.
+protocol Speaking: AnyObject {
+    /// Calls `completion` on the main queue once the text is spoken, speaking was stopped, or speech is off.
     func speak(_ text: String, completion: @escaping () -> Void)
     func stop()
 }
 
+extension Speaking {
+    func speak(_ text: String) { speak(text) {} }
+}
+
+/// Says nothing; the default when no speech was set up.
+final class SilentSpeech: Speaking {
+    func speak(_ text: String, completion: @escaping () -> Void) { completion() }
+    func stop() {}
+}
+
+extension EnvironmentValues {
+    @Entry var speech: any Speaking = SilentSpeech()
+}
+
 /// The system's on-device speech with the best Italian voice installed. Enhanced and premium voices can be
 /// downloaded under Settings › Accessibility › Spoken Content › Voices › Italian.
-final class AnswerSpeaker: NSObject, AnswerSpeaking, AVSpeechSynthesizerDelegate {
-    static let shared = AnswerSpeaker()
-
-    private let synthesizer = AVSpeechSynthesizer()
+final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
+    /// Checked on every call, so the setting applies everywhere at once.
+    private let isEnabled: () -> Bool
+    private lazy var synthesizer: AVSpeechSynthesizer = {
+        let synthesizer = AVSpeechSynthesizer()
+        synthesizer.delegate = self
+        return synthesizer
+    }()
     private var completions: [ObjectIdentifier: () -> Void] = [:]
     private var sessionReady = false
 
-    override init() {
+    init(isEnabled: @escaping () -> Bool = { true }) {
+        self.isEnabled = isEnabled
         super.init()
-        synthesizer.delegate = self
     }
 
     func speak(_ text: String, completion: @escaping () -> Void) {
+        guard isEnabled() else {
+            DispatchQueue.main.async(execute: completion)
+            return
+        }
         prepareSession()
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = Self.bestItalianVoice()
@@ -32,6 +55,7 @@ final class AnswerSpeaker: NSObject, AnswerSpeaking, AVSpeechSynthesizerDelegate
     }
 
     func stop() {
+        guard !completions.isEmpty else { return }
         synthesizer.stopSpeaking(at: .immediate)
     }
 

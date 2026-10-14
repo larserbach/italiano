@@ -15,12 +15,12 @@ struct SettingsView: View {
                     ControlLabel("Aussprache")
                     VStack(alignment: .leading, spacing: 12) {
                         Toggle("Antworten vorlesen", isOn: Binding(
-                            get: { store.conjugation.speakAnswers },
-                            set: { store.conjugation.speakAnswers = $0 }))
+                            get: { store.readAloud },
+                            set: { store.readAloud = $0 }))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(Theme.ink)
                             .tint(Theme.olive)
-                        Text("Bei Coniugazione wird die richtige Form nach jeder Antwort vorgelesen, außer im Stummmodus. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
+                        Text("Italienische Formen werden vorgelesen, etwa die richtige Antwort bei Coniugazione. Im Stummmodus bleibt es still. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
                             .font(.system(size: 13.5))
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ConjugationSettingsView: View {
     @Environment(ProgressStore.self) private var store
+    @Environment(\.speech) private var speech
     @State private var sheet: InfoSheet?
     @State private var lessonRunning = false
 
@@ -60,7 +61,7 @@ struct ConjugationSettingsView: View {
         }
         .infoSheet($sheet)
         .fullScreenCover(isPresented: $lessonRunning) {
-            ConjugationLessonView(store: store)
+            ConjugationLessonView(store: store, speech: speech)
         }
     }
 
