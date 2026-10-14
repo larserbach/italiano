@@ -64,8 +64,6 @@ final class ProgressStore {
         var verbs: Set<String> = [Curriculum.verbOrder[0]]
         var tenses: Set<Tense> = [.presente]
         var length: LessonLength = .count(5)
-        /// Read the right form aloud after each answer.
-        var speakAnswers = true
     }
 
     struct AuxSettings: Codable {
@@ -75,6 +73,8 @@ final class ProgressStore {
 
     var conjugation: ConjugationSettings { didSet { save(conjugation, key: Keys.settings) } }
     var aux: AuxSettings { didSet { save(aux, key: Keys.auxSettings) } }
+    /// Whether Italian forms are read aloud, in every exercise.
+    var readAloud: Bool { didSet { save(readAloud, key: Keys.readAloud) } }
     /// Difficulty, stability and retrievability per group pattern and irregular form. Updated after every first answer.
     private(set) var memory: LearningMemory { didSet { save(memory, key: Keys.memory) } }
     /// The groups and irregular verbs in play, per tense.
@@ -110,6 +110,7 @@ final class ProgressStore {
         static let legacyLastMistakes = "coniugazione-last-mistakes"
         static let auxSettings = "coniugazione-aux-settings"
         static let auxLevels = "coniugazione-aux-levels"
+        static let readAloud = "read-aloud"
     }
 
     init(defaults: UserDefaults = .standard, historyURL: URL? = AnswerHistory.defaultURL,
@@ -128,6 +129,7 @@ final class ProgressStore {
         aux.verbs.formIntersection(VerbLibrary.orderedKeys)
         if aux.verbs.isEmpty { aux.verbs = Set(VerbLibrary.orderedKeys) }
         self.aux = aux
+        readAloud = Self.load(Bool.self, key: Keys.readAloud, from: defaults) ?? true
 
         lastMistakes = Self.load(Set<String>.self, key: Keys.lastMistakes, from: defaults) ?? []
         auxLevels = Self.load([String: Int].self, key: Keys.auxLevels, from: defaults) ?? [:]
@@ -310,7 +312,6 @@ extension ProgressStore.ConjugationSettings {
         verbs = try container.decodeIfPresent(Set<String>.self, forKey: .verbs) ?? verbs
         tenses = try container.decodeIfPresent(Set<Tense>.self, forKey: .tenses) ?? tenses
         length = try container.decodeIfPresent(LessonLength.self, forKey: .length) ?? length
-        speakAnswers = try container.decodeIfPresent(Bool.self, forKey: .speakAnswers) ?? speakAnswers
     }
 }
 

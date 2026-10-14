@@ -28,7 +28,7 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
   over 3 or 14 days, 3, 6 or 12 months, or everything, broken down by verb type, with each tense's
   most frequent mistakes. Only first attempts count.
 
-After each answer in Coniugazione the right form is read aloud (without the pronoun) by iOS's built-in Italian voice. The next card waits until it has been spoken. It stays quiet in silent mode, and the settings screen can switch it off. The best Italian voice installed is used; Enhanced and Premium voices can be downloaded under Settings › Accessibility › Spoken Content › Voices › Italian.
+After each answer in Coniugazione the right form is read aloud (without the pronoun) by iOS's built-in Italian voice. The next card waits until it has been spoken. It stays quiet in silent mode, and the settings screen switches it off for the whole app. Any screen can read Italian aloud through the `speech` environment value (`Italiano/Model/Speech.swift`). The best Italian voice installed is used; Enhanced and Premium voices can be downloaded under Settings › Accessibility › Spoken Content › Voices › Italian.
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 A one-time hint explains the verb rings; the settings screen (gear on the home screen) shows such hints again.

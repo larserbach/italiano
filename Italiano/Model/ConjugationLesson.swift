@@ -42,7 +42,7 @@ final class ConjugationLesson {
     }
 
     private let store: ProgressStore
-    private let speaker: AnswerSpeaking?
+    private let speech: Speaking
     private var busy = false
 
     private(set) var rounds = LessonRounds<ConjugationItem>([])
@@ -74,9 +74,9 @@ final class ConjugationLesson {
         }
     }
 
-    init(store: ProgressStore, speaker: AnswerSpeaking? = nil) {
+    init(store: ProgressStore, speech: Speaking = SilentSpeech()) {
         self.store = store
-        self.speaker = speaker
+        self.speech = speech
         start()
     }
 
@@ -151,10 +151,8 @@ final class ConjugationLesson {
             let wait = DispatchGroup()
             wait.enter()
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) { wait.leave() }
-            if let speaker = activeSpeaker {
-                wait.enter()
-                speaker.speak(item.answer) { wait.leave() }
-            }
+            wait.enter()
+            speech.speak(item.answer) { wait.leave() }
             wait.notify(queue: .main) { [weak self] in
                 guard let self, self.cardNumber == card else { return }
                 self.nextCard()
@@ -163,7 +161,7 @@ final class ConjugationLesson {
             recordMiss(item)
             feedback = check == .wrongGender ? .wrongGender(item.answer) : .wrong(item.answer)
             busy = false
-            speak(item.answer)
+            speech.speak(item.answer)
         }
     }
 
@@ -172,7 +170,7 @@ final class ConjugationLesson {
         if item.firstAttempt { recordFirstAttempt(item, .again) }
         recordMiss(item)
         feedback = .revealed(item.answer)
-        speak(item.answer)
+        speech.speak(item.answer)
     }
 
     /// The learner opened the verb or tense description while answering.
@@ -188,15 +186,6 @@ final class ConjugationLesson {
 
     // MARK: Private
 
-    /// The speaker, unless reading aloud is switched off.
-    private var activeSpeaker: AnswerSpeaking? {
-        store.conjugation.speakAnswers ? speaker : nil
-    }
-
-    private func speak(_ text: String) {
-        activeSpeaker?.speak(text) {}
-    }
-
     private func nextCard() {
         rounds.advance()
         startCard()
@@ -204,7 +193,7 @@ final class ConjugationLesson {
 
     /// Resets the per-card state for whatever `rounds` shows now.
     private func startCard() {
-        speaker?.stop()
+        speech.stop()
         busy = false
         feedback = .none
         lookedUp = false
