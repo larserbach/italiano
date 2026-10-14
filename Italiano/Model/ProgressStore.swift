@@ -64,6 +64,8 @@ final class ProgressStore {
         var verbs: Set<String> = [Curriculum.verbOrder[0]]
         var tenses: Set<Tense> = [.presente]
         var length: LessonLength = .count(5)
+        /// Read the right form aloud after each answer.
+        var speakAnswers = true
     }
 
     struct AuxSettings: Codable {
@@ -308,6 +310,7 @@ extension ProgressStore.ConjugationSettings {
         verbs = try container.decodeIfPresent(Set<String>.self, forKey: .verbs) ?? verbs
         tenses = try container.decodeIfPresent(Set<Tense>.self, forKey: .tenses) ?? tenses
         length = try container.decodeIfPresent(LessonLength.self, forKey: .length) ?? length
+        speakAnswers = try container.decodeIfPresent(Bool.self, forKey: .speakAnswers) ?? speakAnswers
     }
 }
 

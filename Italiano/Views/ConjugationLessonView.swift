@@ -8,7 +8,7 @@ struct ConjugationLessonView: View {
     @Environment(\.dismiss) private var dismiss
 
     init(store: ProgressStore) {
-        _lesson = State(initialValue: ConjugationLesson(store: store))
+        _lesson = State(initialValue: ConjugationLesson(store: store, speaker: AnswerSpeaker.shared))
     }
 
     var body: some View {
