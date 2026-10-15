@@ -4,7 +4,7 @@ struct ConjugationSettingsView: View {
     @Environment(ProgressStore.self) private var store
     @Environment(\.speech) private var speech
     @State private var sheet: InfoSheet?
-    @State private var lessonRunning = false
+    @State private var lesson: ConjugationLesson?
 
     private let lengths: [LessonLength] = [.count(5), .count(10), .count(20)]
 
@@ -45,7 +45,9 @@ struct ConjugationSettingsView: View {
         }
         .safeAreaInset(edge: .bottom) {
             StartBar(title: "Lektion starten",
-                     disabled: mode == .free && ConjugationLesson.freePool(store).isEmpty) { lessonRunning = true }
+                     disabled: mode == .free && ConjugationLesson.freePool(store).isEmpty) {
+                lesson = ConjugationLesson(store: store, speech: speech)
+            }
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
@@ -60,8 +62,8 @@ struct ConjugationSettingsView: View {
             }
         }
         .infoSheet($sheet)
-        .fullScreenCover(isPresented: $lessonRunning) {
-            ConjugationLessonView(store: store, speech: speech)
+        .fullScreenCover(item: $lesson) { lesson in
+            ConjugationLessonView(lesson: lesson)
         }
     }
 

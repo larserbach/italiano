@@ -29,7 +29,7 @@ struct ConjugationItem: Hashable {
 }
 
 @Observable
-final class ConjugationLesson {
+final class ConjugationLesson: Identifiable {
     enum Feedback: Equatable {
         case none
         case correct(String)

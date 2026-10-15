@@ -1,14 +1,16 @@
 import SwiftUI
 
 struct ConjugationLessonView: View {
-    @State private var lesson: ConjugationLesson
+    /// Created by the caller, once per lesson. Building it here would start a new lesson on every redraw
+    /// of the screen behind, and each new lesson stops whatever is being read aloud.
+    private let lesson: ConjugationLesson
     @State private var answer = ""
     @State private var focusToken = 0
     @State private var sheet: InfoSheet?
     @Environment(\.dismiss) private var dismiss
 
-    init(store: ProgressStore, speech: Speaking) {
-        _lesson = State(initialValue: ConjugationLesson(store: store, speech: speech))
+    init(lesson: ConjugationLesson) {
+        self.lesson = lesson
     }
 
     var body: some View {
