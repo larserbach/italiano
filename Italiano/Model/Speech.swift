@@ -74,10 +74,11 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         }
     }
 
-    /// Ambient: silent when the ring switch is off, and mixed with music instead of stopping it.
+    /// Playback: heard in silent mode too, since the setting is the way to switch it off. Mixed with music
+    /// instead of stopping it.
     private func prepareSession() {
         guard !sessionReady else { return }
-        try? AVAudioSession.sharedInstance().setCategory(.ambient, mode: .spokenAudio)
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: .mixWithOthers)
         sessionReady = true
     }
 
