@@ -20,7 +20,7 @@ struct SettingsView: View {
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(Theme.ink)
                             .tint(Theme.olive)
-                        Text("Italienische Formen werden vorgelesen, etwa die richtige Antwort bei Coniugazione. Im Stummmodus bleibt es still. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
+                        Text("Italienische Formen werden vorgelesen, etwa die richtige Antwort bei Coniugazione, auch im Stummmodus. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
                             .font(.system(size: 13.5))
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
