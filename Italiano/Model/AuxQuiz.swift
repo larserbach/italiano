@@ -5,8 +5,6 @@ import Observation
 struct AuxItem: Hashable {
     let verb: String
     let person: Int
-    /// False for the repeat in a later round; only first attempts count for the level.
-    var firstAttempt = true
 
     /// Identifies the question in the summary's list of missed forms.
     var key: String { "\(verb)|\(person)" }
@@ -59,20 +57,18 @@ final class AuxQuiz: Identifiable {
         guard let item = current, chosen == nil else { return }
         chosen = option
         let ok = option == item.correctForm
-        if item.firstAttempt { store.recordAuxAnswer(verb: item.verb, correct: ok) }
+        // Only first attempts count for the level.
+        if rounds.isFirstAttempt { store.recordAuxAnswer(verb: item.verb, correct: ok) }
         if ok {
             rounds.recordCorrect()
             // The next question waits a moment, so the green answer can be seen, and for the spoken form too.
             let question = questionNumber
-            speech.speak(item.fullForm, atLeast: 0.6) { [weak self] in
+            speech.speak(item.fullForm, atLeast: rounds.pauseAfterRight) { [weak self] in
                 guard let self, self.questionNumber == question else { return }
                 self.next()
             }
         } else {
-            var retry = item
-            retry.firstAttempt = false
-            rounds.recordMiss(retry: retry, key: item.key,
-                              label: "\(Pronoun.italian[item.person]) · \(item.verb)", answer: item.fullForm)
+            rounds.recordMiss(key: item.key, label: "\(Pronoun.italian[item.person]) · \(item.verb)", answer: item.fullForm)
             // A wrong answer waits for "Weiter".
             speech.speak(item.fullForm)
         }
