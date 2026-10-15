@@ -32,6 +32,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         synthesizer.delegate = self
         return synthesizer
     }()
+    /// One per utterance not finished yet, keyed by the utterance.
     private var completions: [ObjectIdentifier: () -> Void] = [:]
     private var sessionReady = false
 
@@ -55,6 +56,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     }
 
     func stop() {
+        // Every new card stops speech; with nothing pending this keeps the synthesizer from being created.
         guard !completions.isEmpty else { return }
         synthesizer.stopSpeaking(at: .immediate)
     }
@@ -67,6 +69,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         finish(utterance)
     }
 
+    /// The delegate may be called off the main queue; `Speaking` promises completions on it.
     private func finish(_ utterance: AVSpeechUtterance) {
         let id = ObjectIdentifier(utterance)
         DispatchQueue.main.async { [weak self] in

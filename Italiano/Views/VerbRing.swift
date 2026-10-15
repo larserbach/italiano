@@ -1,11 +1,12 @@
 import SwiftUI
 
-/// Ten arc segments showing a verb's mastery level, with the level number in the middle.
+/// Ten arc segments showing a verb chip's level (0…10), with the number in the middle.
 struct VerbRing: View {
     let level: Int
     var mistake = false
 
     private let segments = ProgressStore.maxLevel
+    /// Degrees left open between two segments.
     private let gap = 8.0
 
     var body: some View {
@@ -26,6 +27,7 @@ struct VerbRing: View {
 
     private func segment(_ index: Int) -> Path {
         let step = 360.0 / Double(segments)
+        // −90° puts the first segment at 12 o'clock.
         let start = Double(index) * step + gap / 2 - 90
         let end = Double(index + 1) * step - gap / 2 - 90
         var path = Path()

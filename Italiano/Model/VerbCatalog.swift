@@ -1,3 +1,7 @@
+// Verbs whose Presente, Imperfetto and Futuro follow their ending group. Those three are spelled out;
+// the other tenses are derived (`Verb.init(seed:)`). A few still leave the group with their participle
+// (corso, sceso), which makes them irregular in the Passato prossimo.
+
 enum VerbCatalog {
     static let seeds: [VerbSeed] = [
         VerbSeed(

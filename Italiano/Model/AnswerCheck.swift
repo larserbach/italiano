@@ -20,6 +20,7 @@ enum AnswerCheck: Equatable {
         } else if accepted.contains(typed) {
             self = .right
         } else if item.otherGenderAnswer.map(normalize) == typed {
+            // Checked before slips: the other gender is one letter off (arrivato, arrivata) but a real mistake.
             self = .wrongGender
         } else if Self.isSlip(typed, of: accepted, item: item) {
             self = .almost
@@ -56,7 +57,8 @@ enum AnswerCheck: Equatable {
         return forms
     }
 
-    /// The form without the spelling rules, where they change it.
+    /// The form with stem and ending just put together, without the spelling rules (pagerò for pagherò);
+    /// nil in a tense the verb is irregular in. Equals the right form where the rules change nothing.
     private static func trap(_ verb: Verb, _ tense: Tense, _ person: Int) -> String? {
         guard !verb.isIrregular(in: tense) else { return nil }
         let plain = Conjugator.regularForms(infinitive: verb.infinitive, group: verb.group, spellingRules: false)[tense]?[person] ?? nil
@@ -80,4 +82,14 @@ enum AnswerCheck: Equatable {
         }
         return a.count > b.count ? restA.dropFirst() == restB : restA == restB.dropFirst()
     }
+}
+
+/// Lowercased, without outer spaces and with single inner ones; curly apostrophes (fa’) count as straight.
+func normalize(_ text: String) -> String {
+    text.trimmingCharacters(in: .whitespacesAndNewlines)
+        .lowercased()
+        .replacingOccurrences(of: "’", with: "'")
+        .replacingOccurrences(of: "‘", with: "'")
+        .split(whereSeparator: \.isWhitespace)
+        .joined(separator: " ")
 }

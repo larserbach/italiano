@@ -1,5 +1,6 @@
 import Foundation
 
+/// A form missed at least once in a lesson (wrong, slipped or revealed), for the summary.
 struct MissedForm: Identifiable {
     let id: String
     let label: String
@@ -7,6 +8,7 @@ struct MissedForm: Identifiable {
     var misses: Int
 }
 
+/// What a lesson screen shows: a card, the break before a repeat round, or the summary.
 enum LessonPhase { case question, roundComplete, summary }
 
 /// Round bookkeeping shared by both exercises. Mistakes are
@@ -25,6 +27,7 @@ struct LessonRounds<Item> {
     let totalPlanned: Int
 
     var roundMissedCount: Int { roundMissed.count }
+    /// Every planned item is a different form, so each missed form is one item not right the first time.
     var firstTryCorrect: Int { totalPlanned - missed.count }
     var accuracy: Int { AnswerCounts(correct: firstTryCorrect, mistakes: missed.count).accuracy ?? 0 }
     var missedForms: [MissedForm] { missed.values.sorted { $0.misses > $1.misses } }

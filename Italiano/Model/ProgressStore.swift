@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+/// How many questions a lesson asks.
 enum LessonLength: Codable, Hashable, Identifiable {
     case count(Int)
     case all
@@ -14,6 +15,7 @@ enum LessonLength: Codable, Hashable, Identifiable {
         }
     }
 
+    /// The number of questions out of a pool of `poolSize`.
     func resolve(poolSize: Int) -> Int {
         switch self {
         case .count(let n): min(n, poolSize)
@@ -56,6 +58,7 @@ struct LessonOutcome {
 /// and the answer history.
 @Observable
 final class ProgressStore {
+    /// The full ring, for the learning-path levels and the essere/avere levels alike.
     static let maxLevel = 10
 
     struct ConjugationSettings: Codable {
@@ -73,7 +76,8 @@ final class ProgressStore {
 
     var conjugation: ConjugationSettings { didSet { save(conjugation, key: Keys.settings) } }
     var aux: AuxSettings { didSet { save(aux, key: Keys.auxSettings) } }
-    /// Whether Italian forms are read aloud, in every exercise.
+    /// Whether Italian forms are read aloud. One switch for the whole app; so far only the conjugation
+    /// lesson speaks.
     var readAloud: Bool { didSet { save(readAloud, key: Keys.readAloud) } }
     /// Difficulty, stability and retrievability per group pattern and irregular form. Updated after every first answer.
     private(set) var memory: LearningMemory { didSet { save(memory, key: Keys.memory) } }
@@ -81,12 +85,13 @@ final class ProgressStore {
     private(set) var pool: LearningPool { didSet { save(pool, key: Keys.pool) } }
     /// "verb|tense" pairs answered wrong in round 1 of the most recently started lesson (shown in red).
     private(set) var lastMistakes: Set<String> { didSet { save(lastMistakes, key: Keys.lastMistakes) } }
-    /// Separate mastery for essere/avere — it measures a different skill. Only first attempts count.
+    /// Separate mastery for essere/avere — it measures a different skill. Only first attempts count, each
+    /// moving the verb's level one step up or down.
     private(set) var auxLevels: [String: Int] { didSet { save(auxLevels, key: Keys.auxLevels) } }
 
     /// Every first answer, aggregated per day for the statistics.
     let history: AnswerHistory
-    /// Every first answer with its effect on memory, for the verb details.
+    /// Every first answer with its effect on memory, for the progress screens of groups and irregular verbs.
     let log: AnswerLog
     /// The clock for everything time-based; tests replace it.
     let now: () -> Date
@@ -98,6 +103,9 @@ final class ProgressStore {
         static let memory = "coniugazione-group-memory"
         static let pool = "coniugazione-group-pool"
         static let lastMistakes = "coniugazione-tense-mistakes"
+        static let auxSettings = "coniugazione-aux-settings"
+        static let auxLevels = "coniugazione-aux-levels"
+        static let readAloud = "read-aloud"
         // Earlier schemes, newest first: verb×tense cells with memory per verb, a half-life per verb×tense,
         // per-lesson levels per verb×tense, and the unlocked verb×tense of the first learning path.
         static let cellPool = "coniugazione-pool"
@@ -108,9 +116,6 @@ final class ProgressStore {
         // Per-verb data from before mastery was tracked per tense.
         static let legacyLevels = "coniugazione-levels"
         static let legacyLastMistakes = "coniugazione-last-mistakes"
-        static let auxSettings = "coniugazione-aux-settings"
-        static let auxLevels = "coniugazione-aux-levels"
-        static let readAloud = "read-aloud"
     }
 
     init(defaults: UserDefaults = .standard, historyURL: URL? = AnswerHistory.defaultURL,
@@ -141,6 +146,7 @@ final class ProgressStore {
         self.pool = pool
         keepFreeSelectionUnlocked()
 
+        // `didSet` doesn't run for assignments in init, so a migrated or cleaned-up pool is saved here.
         if storedPool != pool { save(pool, key: Keys.pool) }
         for key in [Keys.cellPool, Keys.cellMemory, Keys.halfLives, Keys.tenseLevels, Keys.curriculum,
                     Keys.legacyLevels, Keys.legacyLastMistakes] {
@@ -151,6 +157,12 @@ final class ProgressStore {
     // MARK: Migration
 
     private struct OldCells: Decodable {
+        /// One verb in one tense.
+        struct Cell: Decodable {
+            let verb: String
+            let tense: Tense
+        }
+
         let cells: [Cell]?
         let unlocked: [Cell]?
     }
@@ -242,11 +254,6 @@ final class ProgressStore {
         return Curriculum.verbOrder.filter(verbs.contains)
     }
 
-    /// A verb's tenses in the pool, in path order.
-    func unlockedTenses(of verb: String) -> [Tense] {
-        Curriculum.tenseOrder.filter { isUnlocked(verb: verb, tense: $0) }
-    }
-
     /// Tenses in the pool for at least one group or verb, in path order.
     var unlockedTenses: [Tense] {
         let tenses = Set(pool.units.map(\.tense))
@@ -312,16 +319,5 @@ extension ProgressStore.ConjugationSettings {
         verbs = try container.decodeIfPresent(Set<String>.self, forKey: .verbs) ?? verbs
         tenses = try container.decodeIfPresent(Set<Tense>.self, forKey: .tenses) ?? tenses
         length = try container.decodeIfPresent(LessonLength.self, forKey: .length) ?? length
-    }
-}
-
-extension Set {
-    /// Toggles membership but never removes the last element.
-    mutating func toggleKeepingOne(_ element: Element) {
-        if contains(element) {
-            if count > 1 { remove(element) }
-        } else {
-            insert(element)
-        }
     }
 }

@@ -64,10 +64,11 @@ struct LearningPool: Codable, Equatable {
         let cause: PoolUnit
     }
 
-    /// In the order they were added. Units are never removed.
+    /// In the order they were added. Units stay, unless a catalog change makes them invalid (`dropInvalidUnits`).
     private(set) var units: [PoolUnit]
     private(set) var addedAt: [PoolUnit: Date]
     private(set) var windows: [PoolUnit: Window] = [:]
+    /// Units that performed well once and unlocked what comes after them. They stay passed if they slip later.
     private(set) var passed: Set<PoolUnit> = []
 
     static let startUnits: [PoolUnit] = [.group(.are, .presente), .irregular("essere", .presente)]
@@ -94,6 +95,7 @@ struct LearningPool: Codable, Equatable {
 
     func contains(_ unit: PoolUnit) -> Bool { units.contains(unit) }
 
+    /// Added less than a day ago; lessons then ask about it more often.
     func isFresh(_ unit: PoolUnit, at now: Date) -> Bool {
         addedAt[unit].map { MemoryState.days(from: $0, to: now) < 1 } ?? false
     }
@@ -166,6 +168,8 @@ struct LearningPool: Codable, Equatable {
         }
     }
 
+    /// Whether some regular group is in this tense yet. An irregular verb's later tense waits for that,
+    /// so tenses still open in path order.
     private func isOpenForRegular(_ tense: Tense) -> Bool {
         units.contains { if case .group(_, let open) = $0 { open == tense } else { false } }
     }
@@ -187,6 +191,7 @@ struct LearningPool: Codable, Equatable {
 
 /// The fixed parts of the learning path: orders, thresholds and how a lesson is put together.
 enum Curriculum {
+    /// The order tenses come into the path. `Tense.allCases` is the display order and differs.
     static let tenseOrder: [Tense] = [.presente, .passatoprossimo, .imperfetto, .futuro, .imperativo, .condizionale, .congiuntivo]
 
     /// Regular groups take turns, and the most frequent irregular verbs come early.
@@ -234,8 +239,11 @@ enum Curriculum {
         }
         let personBoost = sums.mapValues { max(0, mean - $0.total / Double($0.count)) * 1.5 }
 
+        // A weighted shuffle: each key draws u^(1/need²), so the more a key is needed, the likelier it
+        // comes early, while every key keeps a chance.
         func ranked() -> [MemoryKey] {
             keys.map { key -> (MemoryKey, Double) in
+                // The default difficulty of 5 leaves the need as it is.
                 var need = (1 - known[key]!) * (0.7 + 0.06 * (memory[key]?.difficulty ?? 5))
                 need += personBoost[PersonTense(key)] ?? 0
                 if pool.isFresh(key.unit, at: now) { need += 0.3 }
@@ -250,6 +258,7 @@ enum Curriculum {
         var usedVerbs: Set<String> = []
         var picked: [FormKey] = []
         // A regular pattern may come again (with another verb) when there are too few patterns for the lesson.
+        // An irregular form has no other verb, so later passes skip it.
         for pass in 0..<4 where picked.count < length {
             for key in ranked() where picked.count < length && perUnit[key.unit, default: 0] < (pass == 0 ? cap : length) {
                 let form: FormKey
@@ -276,6 +285,7 @@ enum Curriculum {
     }
 }
 
+/// A person in a tense, across all groups and verbs.
 private struct PersonTense: Hashable {
     let tense: Tense
     let person: Int

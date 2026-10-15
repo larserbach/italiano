@@ -1,11 +1,14 @@
 import Foundation
 import Observation
 
+/// One question of the Essere o avere? quiz: a verb and a person.
 struct AuxItem: Hashable {
     let verb: String
     let person: Int
+    /// False for the repeat in a later round; only first attempts count for the level.
     var firstAttempt = true
 
+    /// Identifies the question in the summary's list of missed forms.
     var key: String { "\(verb)|\(person)" }
     var correctAuxiliary: Auxiliary { VerbLibrary.verb(verb).auxiliary }
     var correctForm: String { Conjugator.auxiliaryForm(correctAuxiliary, person: person) }
@@ -16,6 +19,7 @@ struct AuxItem: Hashable {
     var fullForm: String { VerbLibrary.verb(verb).italian(.passatoprossimo, person) }
 }
 
+/// The Essere o avere? quiz: for each verb and person, pick the auxiliary's form in the Passato prossimo.
 @Observable
 final class AuxQuiz {
     private let store: ProgressStore
@@ -53,6 +57,7 @@ final class AuxQuiz {
         if item.firstAttempt { store.recordAuxAnswer(verb: item.verb, correct: ok) }
         if ok {
             rounds.recordCorrect()
+            // A moment to see the green answer; a wrong one waits for "Weiter".
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in self?.next() }
         } else {
             var retry = item

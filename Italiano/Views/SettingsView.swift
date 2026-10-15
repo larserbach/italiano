@@ -67,6 +67,7 @@ struct SettingsView: View {
             .padding(.horizontal, 18)
             .padding(.top, 8)
             .padding(.bottom, 24)
+            // A readable width on iPad, centred.
             .frame(maxWidth: 560)
             .frame(maxWidth: .infinity)
         }

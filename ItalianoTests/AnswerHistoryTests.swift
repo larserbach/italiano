@@ -4,7 +4,7 @@ import XCTest
 final class AnswerHistoryTests: XCTestCase {
     private var url: URL!
     private var calendar: Calendar!
-    /// Wednesday, 24 September 2026, noon in Berlin.
+    /// Thursday, 24 September 2026, noon in Berlin.
     private let now = ISO8601DateFormatter().date(from: "2026-09-24T10:00:00Z")!
 
     override func setUp() {

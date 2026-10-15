@@ -1,20 +1,5 @@
 import SwiftUI
 
-/// Days in German notation: "2,4 Tage".
-enum DaysText {
-    static func number(_ days: Double) -> String {
-        days.formatted(.number.precision(.fractionLength(1)).locale(Locale(identifier: "de_DE")))
-    }
-
-    static func of(_ days: Double) -> String { "\(number(days)) Tage" }
-
-    /// After "ab": "ab 1,2 Tagen".
-    static func dative(_ days: Double) -> String { "\(number(days)) Tagen" }
-
-    /// A share as "71 %", with a space that does not break.
-    static func percent(_ share: Double) -> String { "\(Int((share * 100).rounded()))\u{00A0}%" }
-}
-
 /// A regular group or a verb in the tenses it is irregular in: what the progress rings are about.
 enum ProgressSubject: Hashable {
     case family(VerbFamily)

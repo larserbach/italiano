@@ -95,6 +95,7 @@ private struct StatsCard: View {
 
                 chart(buckets)
 
+                // A single row would only repeat the total.
                 if groups.count >= 2 {
                     VStack(alignment: .leading, spacing: 8) {
                         ControlLabel(tense == nil ? "Nach Zeit" : "Nach Verbtyp")
@@ -196,7 +197,8 @@ private struct StatsCard: View {
     }
 }
 
-/// A verb group's correct answers and mistakes as one thin stacked bar, scaled to the largest group.
+/// A breakdown row (a verb type, or a tense in the overview): its correct answers and mistakes as one
+/// thin stacked bar, scaled to the largest row.
 private struct GroupRow: View {
     let group: GroupStats
     let maxTotal: Int

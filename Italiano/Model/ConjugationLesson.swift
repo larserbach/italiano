@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+/// One card of a conjugation lesson: a verb in a tense and person, and in the Passato prossimo a gender.
 struct ConjugationItem: Hashable {
     let verb: String
     let tense: Tense
@@ -8,13 +9,13 @@ struct ConjugationItem: Hashable {
     /// Set for every passato prossimo question, also for verbs with avere where it doesn't
     /// change the answer: showing it only for essere verbs would give away the auxiliary.
     var gender: Gender?
+    /// False for the repeat in a later round; only first attempts are recorded.
     var firstAttempt = true
 
+    /// Identifies the form in the summary's list of missed forms.
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
-    var cell: Cell { Cell(verb: verb, tense: tense) }
     /// The group (or irregular verb) in that tense this question belongs to.
     var unit: PoolUnit { PoolUnit(verb: verb, tense: tense) }
-    var form: FormKey { FormKey(verb: verb, tense: tense, person: person) }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
@@ -28,6 +29,8 @@ struct ConjugationItem: Hashable {
     }
 }
 
+/// One conjugation lesson: picks the cards, checks the answers, records first attempts and reads the
+/// right form aloud.
 @Observable
 final class ConjugationLesson: Identifiable {
     enum Feedback: Equatable {
@@ -38,11 +41,13 @@ final class ConjugationLesson: Identifiable {
         case wrong(String)
         /// Right verb form, but for the other gender.
         case wrongGender(String)
+        /// The learner asked for the answer ("?"); counts as wrong.
         case revealed(String)
     }
 
     private let store: ProgressStore
     private let speech: Speaking
+    /// Set while a right answer waits for the next card, so pressing Return again does nothing.
     private var busy = false
 
     private(set) var rounds = LessonRounds<ConjugationItem>([])
@@ -106,6 +111,7 @@ final class ConjugationLesson: Identifiable {
         let selected: [FormKey]
         switch settings.mode {
         case .path:
+            // The path's pool has no fixed size; `pickLesson` stops when it runs out.
             selected = store.pickLesson(length: settings.length.resolve(poolSize: .max))
         case .free:
             selected = store.pickLesson(length: settings.length.resolve(poolSize: Self.freePool(store).count),
@@ -125,6 +131,7 @@ final class ConjugationLesson: Identifiable {
 
     func submit(_ guess: String) {
         guard let item = current, !busy else { return }
+        // On a card held for review, Return confirms like "Verstanden".
         if isReviewing {
             nextCard()
             return
@@ -144,7 +151,7 @@ final class ConjugationLesson: Identifiable {
         case .right:
             rounds.recordCorrect()
             feedback = .correct(item.answer)
-            // The next card waits for the spoken form too.
+            // The next card waits a moment, so the green answer can be seen, and for the spoken form too.
             let card = cardNumber
             let wait = DispatchGroup()
             wait.enter()
@@ -200,6 +207,7 @@ final class ConjugationLesson: Identifiable {
         feedback = .none
         lookedUp = false
         if current != nil { cardNumber += 1 }
+        // Only round 1 counts for the pool, so what it unlocks is settled as soon as round 1 is through.
         if rounds.round == 1, phase != .question, outcome == nil {
             outcome = store.finishLesson(practised: answeredUnits, before: sharesBefore)
         }
@@ -217,13 +225,4 @@ final class ConjugationLesson: Identifiable {
         rounds.recordMiss(retry: retry, key: item.key,
                           label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
-}
-
-func normalize(_ text: String) -> String {
-    text.trimmingCharacters(in: .whitespacesAndNewlines)
-        .lowercased()
-        .replacingOccurrences(of: "’", with: "'")
-        .replacingOccurrences(of: "‘", with: "'")
-        .split(whereSeparator: \.isWhitespace)
-        .joined(separator: " ")
 }

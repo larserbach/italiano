@@ -46,6 +46,7 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.vertical, 32)
+                // A readable width on iPad, centred.
                 .frame(maxWidth: 560)
                 .frame(maxWidth: .infinity)
             }
@@ -62,6 +63,7 @@ struct HomeView: View {
                 .padding(.trailing, 8)
             }
             .screenBackground()
+            // Not shown here, but it is the back button's title on the screens pushed from home.
             .navigationTitle("Übungen")
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Exercise.self) { exercise in
