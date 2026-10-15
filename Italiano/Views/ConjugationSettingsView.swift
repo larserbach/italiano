@@ -24,11 +24,6 @@ struct ConjugationSettingsView: View {
                 }
                 .pickerStyle(.segmented)
 
-                switch mode {
-                case .path: LearningPathSection()
-                case .free: freeSelection
-                }
-
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Lektionslänge")
                     FlowLayout {
@@ -37,6 +32,11 @@ struct ConjugationSettingsView: View {
                                 .buttonStyle(ChipStyle(active: store.conjugation.length == length))
                         }
                     }
+                }
+
+                switch mode {
+                case .path: LearningPathSection()
+                case .free: freeSelection
                 }
             }
             .padding(.horizontal, 18)
@@ -98,21 +98,12 @@ struct ConjugationSettingsView: View {
     }
 }
 
-/// The learning path at a glance: what is closest to bringing something new, and every group and
-/// irregular verb in the pool with its progress per tense. A row opens the details.
+/// The learning path at a glance: every group and irregular verb in the pool with its progress per
+/// tense, and what is closest to bringing something new. A row opens the details.
 private struct LearningPathSection: View {
     @Environment(ProgressStore.self) private var store
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            ControlLabel("Als Nächstes")
-            nextSteps
-                .font(.system(size: 14))
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .card()
-        }
-
         let families = VerbFamily.regular.filter { family in store.pool.units.contains { $0 == .group(family, $0.tense) } }
         VStack(alignment: .leading, spacing: 7) {
             ControlLabel("Verbgruppen")
@@ -131,6 +122,15 @@ private struct LearningPathSection: View {
                     row(.verb(verb), detail: VerbLibrary.verb(verb).meaning)
                 }
             }
+        }
+
+        VStack(alignment: .leading, spacing: 7) {
+            ControlLabel("Als Nächstes")
+            nextSteps
+                .font(.system(size: 14))
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .card()
         }
     }
 
