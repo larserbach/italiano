@@ -26,6 +26,12 @@ struct LessonRounds<Item> {
     private(set) var roundCorrect = 0
     let totalPlanned: Int
 
+    /// Round 1 asks every item once and later rounds only repeat missed ones, so only round 1 holds first
+    /// attempts. That stays true as long as a missed item comes back in a later round, never in the same one.
+    var isFirstAttempt: Bool { round == 1 }
+    /// How long a right answer stays on screen at least before the next item comes.
+    var pauseAfterRight: TimeInterval { 0.6 }
+
     var roundMissedCount: Int { roundMissed.count }
     /// Every planned item is a different form, so each missed form is one item not right the first time.
     var firstTryCorrect: Int { totalPlanned - missed.count }
@@ -44,10 +50,11 @@ struct LessonRounds<Item> {
         roundCorrect += 1
     }
 
-    /// `retry` comes back in the next round; the form is listed in the summary under `key`.
-    mutating func recordMiss(retry: Item, key: String, label: String, answer: String) {
+    /// The current item comes back in the next round; the form is listed in the summary under `key`.
+    mutating func recordMiss(key: String, label: String, answer: String) {
+        guard let current else { return }
         roundAnswered += 1
-        roundMissed.append(retry)
+        roundMissed.append(current)
         missed[key, default: MissedForm(id: key, label: label, answer: answer, misses: 0)].misses += 1
     }
 

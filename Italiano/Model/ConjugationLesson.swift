@@ -9,8 +9,6 @@ struct ConjugationItem: Hashable {
     /// Set for every passato prossimo question, also for verbs with avere where it doesn't
     /// change the answer: showing it only for essere verbs would give away the auxiliary.
     var gender: Gender?
-    /// False for the repeat in a later round; only first attempts are recorded.
-    var firstAttempt = true
 
     /// Identifies the form in the summary's list of missed forms.
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
@@ -138,7 +136,7 @@ final class ConjugationLesson: Identifiable {
         }
         busy = true
         let check = AnswerCheck(guess, for: item)
-        if item.firstAttempt {
+        if rounds.isFirstAttempt {
             let rating: Rating = switch check {
             case .right: lookedUp ? .correct : .good
             case .almost: .correct
@@ -153,7 +151,7 @@ final class ConjugationLesson: Identifiable {
             feedback = .correct(item.answer)
             // The next card waits a moment, so the green answer can be seen, and for the spoken form too.
             let card = cardNumber
-            speech.speak(item.answer, atLeast: 0.6) { [weak self] in
+            speech.speak(item.answer, atLeast: rounds.pauseAfterRight) { [weak self] in
                 guard let self, self.cardNumber == card else { return }
                 self.nextCard()
             }
@@ -171,7 +169,7 @@ final class ConjugationLesson: Identifiable {
 
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
-        if item.firstAttempt { recordFirstAttempt(item, .again) }
+        if rounds.isFirstAttempt { recordFirstAttempt(item, .again) }
         recordMiss(item)
         feedback = .revealed(item.answer)
         speech.speak(item.answer)
@@ -214,11 +212,8 @@ final class ConjugationLesson: Identifiable {
     }
 
     private func recordMiss(_ item: ConjugationItem) {
-        var retry = item
-        retry.firstAttempt = false
         let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
-        rounds.recordMiss(retry: retry, key: item.key,
-                          label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
+        rounds.recordMiss(key: item.key, label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
 }
 

@@ -32,7 +32,7 @@ final class LessonTests: XCTestCase {
 
         lesson.startNextRound()
         XCTAssertEqual(lesson.rounds.round, 2)
-        XCTAssertFalse(lesson.current!.firstAttempt)
+        XCTAssertFalse(lesson.rounds.isFirstAttempt)
     }
 
     func testEveryFirstAnswerUpdatesMemoryRightAway() {
