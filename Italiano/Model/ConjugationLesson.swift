@@ -33,7 +33,7 @@ final class ConjugationLesson: Identifiable {
     enum Feedback: Equatable {
         case none
         case correct(String)
-        /// An accent or one letter off: counts half and is not repeated.
+        /// An accent or one letter off: counts half and comes back in the next round.
         case almost(String)
         case wrong(String)
         /// Right verb form, but for the other gender.
@@ -66,10 +66,10 @@ final class ConjugationLesson: Identifiable {
     var phase: LessonPhase { rounds.phase }
     var current: ConjugationItem? { rounds.current }
 
-    /// After a wrong answer or a reveal the card stays until the learner confirms.
+    /// After a slip, a wrong answer or a reveal the card stays until the learner confirms.
     var isReviewing: Bool {
         switch feedback {
-        case .wrong, .wrongGender, .revealed: true
+        case .almost, .wrong, .wrongGender, .revealed: true
         default: false
         }
     }
@@ -141,25 +141,27 @@ final class ConjugationLesson: Identifiable {
         }
 
         switch check {
-        case .right, .almost:
+        case .right:
             rounds.recordCorrect()
-            feedback = check == .right ? .correct(item.answer) : .almost(item.answer)
-            // A slip stays up longer, so the right spelling can be read. The next card waits for the
-            // spoken form too.
-            let delay = check == .right ? 0.6 : 1.8
+            feedback = .correct(item.answer)
+            // The next card waits for the spoken form too.
             let card = cardNumber
             let wait = DispatchGroup()
             wait.enter()
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { wait.leave() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { wait.leave() }
             wait.enter()
             speech.speak(item.answer) { wait.leave() }
             wait.notify(queue: .main) { [weak self] in
                 guard let self, self.cardNumber == card else { return }
                 self.nextCard()
             }
-        case .wrong, .wrongGender:
+        case .almost, .wrong, .wrongGender:
             recordMiss(item)
-            feedback = check == .wrongGender ? .wrongGender(item.answer) : .wrong(item.answer)
+            feedback = switch check {
+            case .almost: .almost(item.answer)
+            case .wrongGender: .wrongGender(item.answer)
+            default: .wrong(item.answer)
+            }
             busy = false
             speech.speak(item.answer)
         }
