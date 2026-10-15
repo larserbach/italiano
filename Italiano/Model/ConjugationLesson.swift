@@ -221,3 +221,17 @@ final class ConjugationLesson: Identifiable {
                           label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
 }
+
+/// What round 1 of a conjugation lesson changed.
+struct LessonOutcome {
+    /// A unit's share of Good points in its last answers, before and after the lesson.
+    struct ProgressChange: Identifiable {
+        let unit: PoolUnit
+        let from: Double?
+        let to: Double?
+        var id: PoolUnit { unit }
+    }
+
+    let changes: [ProgressChange]
+    let additions: [LearningPool.Addition]
+}
