@@ -10,6 +10,17 @@ protocol Speaking: AnyObject {
 
 extension Speaking {
     func speak(_ text: String) { speak(text) {} }
+
+    /// Calls `completion` on the main queue once the text is spoken and at least `minimum` seconds have
+    /// passed, so a right answer stays on screen for a moment even with speech off.
+    func speak(_ text: String, atLeast minimum: TimeInterval, completion: @escaping () -> Void) {
+        let wait = DispatchGroup()
+        wait.enter()
+        DispatchQueue.main.asyncAfter(deadline: .now() + minimum) { wait.leave() }
+        wait.enter()
+        speak(text) { wait.leave() }
+        wait.notify(queue: .main, execute: completion)
+    }
 }
 
 /// Says nothing; the default when no speech was set up.

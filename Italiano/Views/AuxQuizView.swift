@@ -1,15 +1,14 @@
 import SwiftUI
 
 struct AuxQuizView: View {
-    @State private var quiz: AuxQuiz
+    /// Created by the caller, once per quiz. Building it here would start a new quiz on every redraw of the
+    /// screen behind, and each new quiz stops whatever is being read aloud.
+    private let quiz: AuxQuiz
     @State private var sheet: InfoSheet?
     @Environment(\.dismiss) private var dismiss
 
-    /// Whenever the settings screen behind redraws, this builds a new quiz that `State` throws away. That is
-    /// harmless only because `AuxQuiz.start()` has no side effects; `ConjugationLessonView` gets its lesson
-    /// from outside for that reason.
-    init(store: ProgressStore) {
-        _quiz = State(initialValue: AuxQuiz(store: store))
+    init(quiz: AuxQuiz) {
+        self.quiz = quiz
     }
 
     var body: some View {

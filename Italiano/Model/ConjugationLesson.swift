@@ -153,12 +153,7 @@ final class ConjugationLesson: Identifiable {
             feedback = .correct(item.answer)
             // The next card waits a moment, so the green answer can be seen, and for the spoken form too.
             let card = cardNumber
-            let wait = DispatchGroup()
-            wait.enter()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { wait.leave() }
-            wait.enter()
-            speech.speak(item.answer) { wait.leave() }
-            wait.notify(queue: .main) { [weak self] in
+            speech.speak(item.answer, atLeast: 0.6) { [weak self] in
                 guard let self, self.cardNumber == card else { return }
                 self.nextCard()
             }

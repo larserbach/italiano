@@ -2,8 +2,9 @@ import SwiftUI
 
 struct AuxSettingsView: View {
     @Environment(ProgressStore.self) private var store
-    @State private var quizRunning = false
+    @Environment(\.speech) private var speech
     @State private var sheet: InfoSheet?
+    @State private var quiz: AuxQuiz?
 
     private let lengths: [LessonLength] = [.count(10), .count(20), .all]
 
@@ -40,13 +41,13 @@ struct AuxSettingsView: View {
         }
         .safeAreaInset(edge: .bottom) {
             StartBar(title: "Start",
-                     disabled: poolSize == 0) { quizRunning = true }
+                     disabled: poolSize == 0) { quiz = AuxQuiz(store: store, speech: speech) }
         }
         .screenBackground()
         .navigationBarTitleDisplayMode(.inline)
         .infoSheet($sheet)
-        .fullScreenCover(isPresented: $quizRunning) {
-            AuxQuizView(store: store)
+        .fullScreenCover(item: $quiz) { quiz in
+            AuxQuizView(quiz: quiz)
         }
     }
 }
