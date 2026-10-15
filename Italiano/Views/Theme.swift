@@ -69,6 +69,40 @@ struct GhostButtonStyle: ButtonStyle {
     }
 }
 
+/// A small outlined square holding one system symbol. VoiceOver reads `label`.
+struct IconButton: View {
+    let symbol: String
+    let label: String
+    let action: () -> Void
+
+    init(_ symbol: String, label: String, action: @escaping () -> Void) {
+        self.symbol = symbol
+        self.label = label
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(Style())
+        .accessibilityLabel(label)
+    }
+
+    private struct Style: ButtonStyle {
+        func makeBody(configuration: Configuration) -> some View {
+            configuration.label
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Theme.inkSoft)
+                .frame(width: 36, height: 32)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
+                .contentShape(Rectangle())
+                .opacity(configuration.isPressed ? 0.6 : 1)
+        }
+    }
+}
+
 struct ChipStyle: ButtonStyle {
     var active: Bool
     var accent: Color? = nil

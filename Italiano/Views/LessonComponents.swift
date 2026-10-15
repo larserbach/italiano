@@ -4,15 +4,20 @@ struct LessonTopBar: View {
     let answered: Int
     let total: Int
     let quit: () -> Void
+    @Environment(ProgressStore.self) private var store
+    @Environment(\.speech) private var speech
 
     var body: some View {
         HStack(spacing: 12) {
-            Button("Abbrechen", action: quit)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.inkSoft)
-                .padding(.vertical, 7)
-                .padding(.horizontal, 12)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
+            HStack(spacing: 8) {
+                IconButton("xmark", label: "Abbrechen", action: quit)
+                // The same switch as in the settings, so muting here mutes every exercise.
+                IconButton(store.readAloud ? "speaker.wave.2" : "speaker.slash", label: "Vorlesen") {
+                    store.readAloud.toggle()
+                    if !store.readAloud { speech.stop() }
+                }
+                .accessibilityValue(store.readAloud ? "An" : "Aus")
+            }
             GeometryReader { geo in
                 Capsule().fill(Theme.line)
                     .overlay(alignment: .leading) {
