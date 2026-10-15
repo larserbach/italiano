@@ -76,8 +76,7 @@ final class ProgressStore {
 
     var conjugation: ConjugationSettings { didSet { save(conjugation, key: Keys.settings) } }
     var aux: AuxSettings { didSet { save(aux, key: Keys.auxSettings) } }
-    /// Whether Italian forms are read aloud. One switch for the whole app; so far only the conjugation
-    /// lesson speaks.
+    /// Whether Italian forms are read aloud, in both exercises.
     var readAloud: Bool { didSet { save(readAloud, key: Keys.readAloud) } }
     /// Difficulty, stability and retrievability per group pattern and irregular form. Updated after every first answer.
     private(set) var memory: LearningMemory { didSet { save(memory, key: Keys.memory) } }
