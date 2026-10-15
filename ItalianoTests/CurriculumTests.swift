@@ -383,7 +383,7 @@ final class AnswerLogTests: XCTestCase {
         XCTAssertNil(entries[0].stabilityBefore)
         XCTAssertEqual(entries[1].stabilityBefore, entries[0].stabilityAfter)
         XCTAssertEqual(entries[1].stabilityAfter, entries[0].stabilityAfter) // Correct changes nothing
-        XCTAssertEqual(store.log.entries(for: "parlare").count, 1)
+        XCTAssertEqual(store.log.entries, entries)
 
         // Over the cap, the oldest lines are dropped on load.
         let line = String(data: try JSONEncoder().encode(entries[1]), encoding: .utf8)! + "\n"

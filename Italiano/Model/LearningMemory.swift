@@ -27,8 +27,10 @@ struct MemoryState: Codable, Equatable {
     var stability: Double
     /// Chance of recalling it right after `last`; it fades with `stability`.
     var retrievability: Double
+    /// When stability and retrievability were last set; a Correct answer leaves all three alone.
     var last: Date
     var lastRating: Rating
+    /// First answers so far, and how many of them were Good.
     var answers: Int
     var good: Int
 
@@ -73,22 +75,15 @@ struct MemoryState: Codable, Equatable {
     }
 }
 
-/// One verb in one tense.
-struct Cell: Hashable, Codable {
-    let verb: String
-    let tense: Tense
-}
-
 /// One verb in one tense for one person.
 struct FormKey: Hashable, Codable {
     let verb: String
     let tense: Tense
     let person: Int
-
-    var cell: Cell { Cell(verb: verb, tense: tense) }
 }
 
-/// The regular ending groups of the learning path.
+/// The regular ending groups of the learning path. Kept apart from `VerbGroup` because it is saved
+/// (in the pool and the memory keys), so its raw values must stay as they are; `VerbGroup`'s are labels.
 enum VerbFamily: String, Codable, CaseIterable {
     case are, ere, ire, isc
 

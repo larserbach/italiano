@@ -1,6 +1,7 @@
-// The 30 most frequent irregular verbs. Hand-maintained: unlike VerbCatalog.swift their forms
-// cannot be derived, so every tense that cannot be built from other forms is spelled out.
-// Condizionale (from the Futuro stem) and Passato prossimo (participle + auxiliary) are still derived.
+// The 30 most frequent verbs usually taught as irregular. Hand-maintained: unlike VerbCatalog.swift,
+// every tense that cannot be built from other forms is spelled out. Condizionale (from the Futuro stem)
+// and Passato prossimo (participle + auxiliary) are still derived. Which tenses really leave the ending
+// group is worked out from these forms (`Verb.irregularTenses`); conoscere turns out regular in all.
 
 enum IrregularVerbCatalog {
     static let seeds: [IrregularVerbSeed] = [

@@ -5,6 +5,7 @@ struct ConjugationLessonView: View {
     /// of the screen behind, and each new lesson stops whatever is being read aloud.
     private let lesson: ConjugationLesson
     @State private var answer = ""
+    /// Bumped to focus the answer field again: on every new card and after a sheet closes.
     @State private var focusToken = 0
     @State private var sheet: InfoSheet?
     @Environment(\.dismiss) private var dismiss
@@ -138,6 +139,7 @@ struct ConjugationLessonView: View {
         .padding(.bottom, 40)
     }
 
+    /// For VoiceOver, with the m/f marker spelled out (männlich, weiblich).
     private func spokenPrompt(item: ConjugationItem, verb: Verb) -> String {
         var pronoun = Pronoun.german(item.person, gender: item.gender)
         if let gender = item.gender { pronoun += ", \(gender.spokenName)," }

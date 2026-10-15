@@ -5,6 +5,9 @@ struct AuxQuizView: View {
     @State private var sheet: InfoSheet?
     @Environment(\.dismiss) private var dismiss
 
+    /// Whenever the settings screen behind redraws, this builds a new quiz that `State` throws away. That is
+    /// harmless only because `AuxQuiz.start()` has no side effects; `ConjugationLessonView` gets its lesson
+    /// from outside for that reason.
     init(store: ProgressStore) {
         _quiz = State(initialValue: AuxQuiz(store: store))
     }
@@ -68,6 +71,7 @@ struct AuxQuizView: View {
                     } else if quiz.answeredWrong {
                         Text("Richtig: \(item.fullForm)").foregroundStyle(Theme.brick)
                     } else {
+                        // Keeps the line's height, so the options don't move when the feedback appears.
                         Text(" ")
                     }
                 }
