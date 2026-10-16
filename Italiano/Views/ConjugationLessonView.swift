@@ -61,35 +61,64 @@ struct ConjugationLessonView: View {
 
                 prompt(item: item, verb: verb)
 
-                AnswerField(text: $answer, isEditable: !lesson.isReviewing,
-                            focusToken: focusToken, onSubmit: submit)
-                    .padding(.horizontal, 14)
-                    .frame(height: 48)
-                    .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
-                    .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
-
                 feedbackText
                     .font(.system(size: 14))
+                    .multilineTextAlignment(.center)
                     .frame(minHeight: 20)
-                    .padding(.top, 10)
 
                 Spacer(minLength: 16)
 
-                HStack(spacing: 8) {
-                    Button(lesson.isReviewing ? "Verstanden" : "Prüfen", action: submit)
-                        .buttonStyle(PrimaryButtonStyle())
-                    if !lesson.isReviewing {
-                        Button(action: lesson.reveal) {
-                            Text("?").frame(width: 20)
-                        }
-                        .buttonStyle(GhostButtonStyle(fullWidth: false))
-                        .accessibilityLabel("Ich weiß es nicht")
-                    }
-                }
+                answerBox
             }
             .padding(.horizontal, 18)
             .padding(.top, 12)
             .padding(.bottom, 10)
+        }
+    }
+
+    /// The answer area: a text box in iOS glass, with the hint and submit buttons tucked into its corner.
+    private var answerBox: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            AnswerField(text: $answer, isEditable: !lesson.isReviewing,
+                        focusToken: focusToken, onSubmit: submit)
+                .frame(height: 30)
+
+            HStack(spacing: 8) {
+                Spacer()
+                if !lesson.isReviewing {
+                    Button(action: lesson.reveal) {
+                        Image(systemName: "questionmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(width: 20, height: 20)
+                    }
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
+                    .tint(Theme.ink)
+                    .accessibilityLabel("Ich weiß es nicht")
+                }
+                Button(action: submit) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 14, weight: .bold))
+                        .frame(width: 20, height: 20)
+                }
+                .buttonStyle(.glassProminent)
+                .buttonBorderShape(.circle)
+                .tint(Theme.gold)
+                .accessibilityLabel(lesson.isReviewing ? "Verstanden" : "Prüfen")
+            }
+        }
+        .padding(.leading, 16)
+        .padding(.trailing, 8)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .frame(minHeight: 96)
+        .contentShape(RoundedRectangle(cornerRadius: 24))
+        .onTapGesture { focusToken += 1 }
+        .glassEffect(.regular.tint(fieldTint), in: RoundedRectangle(cornerRadius: 24))
+        .overlay {
+            if let fieldBorder {
+                RoundedRectangle(cornerRadius: 24).strokeBorder(fieldBorder, lineWidth: 1.5)
+            }
         }
     }
 
@@ -154,20 +183,22 @@ struct ConjugationLessonView: View {
         }
     }
 
-    private var fieldBackground: Color {
+    /// Colours the glass after an answer; nil keeps the plain glass while typing.
+    private var fieldTint: Color? {
         switch lesson.feedback {
-        case .correct: Theme.oliveBackground
-        case .almost: Theme.goldSoft.opacity(0.5)
-        case .wrong, .wrongGender: Theme.brickBackground
-        default: Theme.paper
+        case .correct: Theme.olive.opacity(0.25)
+        case .almost: Theme.gold.opacity(0.25)
+        case .wrong, .wrongGender: Theme.brick.opacity(0.25)
+        default: nil
         }
     }
 
-    private var fieldBorder: Color {
+    private var fieldBorder: Color? {
         switch lesson.feedback {
         case .correct: Theme.olive
+        case .almost: Theme.gold
         case .wrong, .wrongGender: Theme.brick
-        default: Theme.gold
+        default: nil
         }
     }
 
