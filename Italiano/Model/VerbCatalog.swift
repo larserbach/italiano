@@ -1,3 +1,26 @@
+// Verbs whose Presente, Imperfetto and Futuro follow their ending group. Those three are spelled out;
+// the other tenses are derived (`Verb.init(seed:)`). A few still leave the group with their participle
+// (corso, sceso), which makes them irregular in the Passato prossimo.
+
+/// The hand-maintained part of a verb; everything else is derived in `Verb.init`.
+struct VerbSeed {
+    let infinitive: String
+    let group: VerbGroup
+    let meaning: String
+    let presente: [String]
+    let imperfetto: [String]
+    let futuro: [String]
+    let dePresente: [String]
+    let deImperfetto: [String]
+    let deFuturo: [String]
+    let participle: String
+    let auxiliary: Auxiliary
+    let deParticiple: String
+    let deAuxiliary: GermanAuxiliary
+    /// The German du-imperative cannot be derived mechanically (vowel changes etc.).
+    let deImperative: String
+}
+
 enum VerbCatalog {
     static let seeds: [VerbSeed] = [
         VerbSeed(

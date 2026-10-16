@@ -5,6 +5,7 @@ struct ConjugationLessonView: View {
     /// of the screen behind, and each new lesson stops whatever is being read aloud.
     private let lesson: ConjugationLesson
     @State private var answer = ""
+    /// Bumped to focus the answer field again: on every new card and after a sheet closes.
     @State private var focusToken = 0
     @State private var sheet: InfoSheet?
     @Environment(\.dismiss) private var dismiss
@@ -51,29 +52,35 @@ struct ConjugationLessonView: View {
             let verb = VerbLibrary.verb(item.verb)
             VStack(spacing: 0) {
                 LessonTopBar(answered: lesson.rounds.roundAnswered, total: lesson.rounds.roundTotal) { dismiss() }
-                    .padding(.bottom, 22)
 
-                let isNew = lesson.newUnits.contains(item.unit)
-                if lesson.rounds.round > 1 || isNew {
-                    CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
-                        .padding(.bottom, 10)
+                Spacer(minLength: 22)
+
+                VStack(spacing: 0) {
+                    let isNew = lesson.newUnits.contains(item.unit)
+                    if lesson.rounds.round > 1 || isNew {
+                        CardMeta(tag: isNew ? "Neu" : nil, round: lesson.rounds.round)
+                            .padding(.bottom, 10)
+                    }
+
+                    prompt(item: item, verb: verb)
+
+                    AnswerField(text: $answer, isEditable: !lesson.isReviewing,
+                                focusToken: focusToken, onSubmit: submit)
+                        .padding(.horizontal, 14)
+                        .frame(height: 48)
+                        .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
+                        .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
+                }
+                // The feedback hangs below the field, so the card stays centred when it appears.
+                .overlay(alignment: .bottom) {
+                    feedbackText
+                        .font(.system(size: 14))
+                        .padding(.top, 10)
+                        .alignmentGuide(.bottom) { $0[.top] }
                 }
 
-                prompt(item: item, verb: verb)
-
-                AnswerField(text: $answer, isEditable: !lesson.isReviewing,
-                            focusToken: focusToken, onSubmit: submit)
-                    .padding(.horizontal, 14)
-                    .frame(height: 48)
-                    .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
-                    .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
-
-                feedbackText
-                    .font(.system(size: 14))
-                    .frame(minHeight: 20)
-                    .padding(.top, 10)
-
-                Spacer(minLength: 16)
+                // Leaves room for two lines of feedback.
+                Spacer(minLength: 60)
 
                 HStack(spacing: 8) {
                     Button(lesson.isReviewing ? "Verstanden" : "Prüfen", action: submit)
@@ -129,9 +136,10 @@ struct ConjugationLessonView: View {
             .lineLimit(1)
             .minimumScaleFactor(0.8)
         }
-        .padding(.bottom, 16)
+        .padding(.bottom, 40)
     }
 
+    /// For VoiceOver, with the m/f marker spelled out (männlich, weiblich).
     private func spokenPrompt(item: ConjugationItem, verb: Verb) -> String {
         var pronoun = Pronoun.german(item.person, gender: item.gender)
         if let gender = item.gender { pronoun += ", \(gender.spokenName)," }

@@ -163,3 +163,21 @@ struct ScreenHeader: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+
+/// The start button pinned to the bottom of an exercise's settings screen.
+struct StartBar: View {
+    let title: String
+    let disabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(title, action: action)
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(disabled)
+            .padding(.horizontal, 18)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+            .background(Theme.paper.opacity(0.96).ignoresSafeArea(edges: .bottom))
+            .overlay(alignment: .top) { Rectangle().fill(Theme.line).frame(height: 1) }
+    }
+}

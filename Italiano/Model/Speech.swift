@@ -10,6 +10,17 @@ protocol Speaking: AnyObject {
 
 extension Speaking {
     func speak(_ text: String) { speak(text) {} }
+
+    /// Calls `completion` on the main queue once the text is spoken and at least `minimum` seconds have
+    /// passed, so a right answer stays on screen for a moment even with speech off.
+    func speak(_ text: String, atLeast minimum: TimeInterval, completion: @escaping () -> Void) {
+        let wait = DispatchGroup()
+        wait.enter()
+        DispatchQueue.main.asyncAfter(deadline: .now() + minimum) { wait.leave() }
+        wait.enter()
+        speak(text) { wait.leave() }
+        wait.notify(queue: .main, execute: completion)
+    }
 }
 
 /// Says nothing; the default when no speech was set up.
@@ -32,6 +43,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         synthesizer.delegate = self
         return synthesizer
     }()
+    /// One per utterance not finished yet, keyed by the utterance.
     private var completions: [ObjectIdentifier: () -> Void] = [:]
     private var sessionReady = false
 
@@ -55,6 +67,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     }
 
     func stop() {
+        // Every new card stops speech; with nothing pending this keeps the synthesizer from being created.
         guard !completions.isEmpty else { return }
         synthesizer.stopSpeaking(at: .immediate)
     }
@@ -67,6 +80,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         finish(utterance)
     }
 
+    /// The delegate may be called off the main queue; `Speaking` promises completions on it.
     private func finish(_ utterance: AVSpeechUtterance) {
         let id = ObjectIdentifier(utterance)
         DispatchQueue.main.async { [weak self] in

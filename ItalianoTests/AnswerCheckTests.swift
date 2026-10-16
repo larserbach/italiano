@@ -57,7 +57,7 @@ final class AnswerCheckTests: XCTestCase {
         XCTAssertEqual(check("viaggero", "viaggiare", .futuro, 0), .almost)
     }
 
-    func testAlmostCountsHalfAndIsNotRepeated() throws {
+    func testAlmostCountsHalfStaysAndIsRepeated() throws {
         let store = makeStore(defaults)
         store.conjugation.mode = .free
         store.conjugation.verbs = ["parlare"]
@@ -69,7 +69,15 @@ final class AnswerCheckTests: XCTestCase {
         lesson.submit(slip)
         XCTAssertEqual(lesson.feedback, .almost(first.answer))
         XCTAssertEqual(store.log.entries.last?.rating, .correct)
-        XCTAssertTrue(lesson.rounds.missedForms.isEmpty)
+        XCTAssertTrue(lesson.isReviewing)
+        XCTAssertEqual(lesson.current, first)
+        XCTAssertEqual(lesson.rounds.roundMissedCount, 1)
+        XCTAssertEqual(lesson.rounds.missedForms.map(\.id), [first.key])
+
+        let card = lesson.cardNumber
+        lesson.submit("")
+        XCTAssertEqual(lesson.cardNumber, card + 1)
+        XCTAssertFalse(lesson.isReviewing)
     }
 
     func testOneEditApart() {

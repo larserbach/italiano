@@ -20,7 +20,7 @@ struct SettingsView: View {
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(Theme.ink)
                             .tint(Theme.olive)
-                        Text("Italienische Formen werden vorgelesen, etwa die richtige Antwort bei Coniugazione, auch im Stummmodus. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
+                        Text("Nach jeder Antwort wird die richtige italienische Form vorgelesen, in Coniugazione und Essere o avere?, auch im Stummmodus. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
                             .font(.system(size: 13.5))
                             .foregroundStyle(Theme.inkSoft)
                             .fixedSize(horizontal: false, vertical: true)
@@ -67,6 +67,7 @@ struct SettingsView: View {
             .padding(.horizontal, 18)
             .padding(.top, 8)
             .padding(.bottom, 24)
+            // A readable width on iPad, centred.
             .frame(maxWidth: 560)
             .frame(maxWidth: .infinity)
         }
@@ -82,7 +83,7 @@ struct SettingsView: View {
             Text("""
                 Das passiert:
                 • Alle Level in Coniugazione und Essere o avere? springen auf 0.
-                • Der Lernpfad beginnt wieder mit parlare, avere, essere und dormire im Presente.
+                • Der Lernpfad beginnt wieder mit den Verben auf -are und essere im Presente.
                 • Die Statistik und das Antwortprotokoll werden gelöscht.
                 • Die rot markierten Fehler der letzten Lektion verschwinden.
 
