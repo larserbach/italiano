@@ -63,15 +63,8 @@ struct ConjugationLessonView: View {
                     }
 
                     prompt(item: item, verb: verb)
-
-                    AnswerField(text: $answer, isEditable: !lesson.isReviewing,
-                                focusToken: focusToken, onSubmit: submit)
-                        .padding(.horizontal, 14)
-                        .frame(height: 48)
-                        .background(fieldBackground, in: RoundedRectangle(cornerRadius: 9))
-                        .overlay(RoundedRectangle(cornerRadius: 9).stroke(fieldBorder, lineWidth: 1.5))
                 }
-                // The feedback hangs below the field, so the card stays centred when it appears.
+                // The feedback hangs below the prompt, so the card stays centred when it appears.
                 .overlay(alignment: .bottom) {
                     feedbackText
                         .font(.system(size: 14))
