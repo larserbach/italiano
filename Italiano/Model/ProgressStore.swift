@@ -171,19 +171,19 @@ final class ProgressStore {
     func pickLesson(length: Int, verbs: Set<String>? = nil, tenses: Set<Tense>? = nil) -> [FormKey] {
         var rng = SystemRandomNumberGenerator()
         let units = pool.units.filter { unit in
-            (tenses?.contains(unit.tense) ?? true) && (verbs.map { !Set(unit.verbs).isDisjoint(with: $0) } ?? true)
+            (tenses?.contains(unit.tense) ?? true) && (verbs.map { !Set(pool.verbs(of: unit)).isDisjoint(with: $0) } ?? true)
         }
-        return Curriculum.pickLesson(units: units, verbs: { unit in verbs.map { selected in unit.verbs.filter(selected.contains) } ?? unit.verbs },
+        return Curriculum.pickLesson(units: units, verbs: { unit in verbs.map { selected in pool.verbs(of: unit).filter(selected.contains) } ?? pool.verbs(of: unit) },
                                      pool: pool, memory: memory, length: length, at: now(), using: &rng)
     }
 
     // MARK: Learning path
 
-    func isUnlocked(verb: String, tense: Tense) -> Bool { pool.contains(PoolUnit(verb: verb, tense: tense)) }
+    func isUnlocked(verb: String, tense: Tense) -> Bool { pool.contains(PoolUnit(verb: verb, tense: tense)) && pool.hasMet(verb) }
 
     /// Verbs of the groups and irregular verbs in the pool, in path order.
     var unlockedVerbs: [String] {
-        let verbs = Set(pool.units.flatMap(\.verbs))
+        let verbs = Set(pool.units.flatMap(pool.verbs(of:)))
         return Curriculum.verbOrder.filter(verbs.contains)
     }
 
