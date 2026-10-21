@@ -7,9 +7,8 @@ import Foundation
 /// It starts with all -are verbs and essere in the Presente. A unit that performs well (≥ 80 % Good in its
 /// last 20 answers, a looked-up answer counting half, every person answered at least twice) unlocks:
 /// a regular group the next group in the same tense and itself in the next tense; an irregular verb the
-/// next verb that is first irregular in the same tense, and itself in the next tense it is irregular in once a
-/// regular group has that tense. So a verb always starts in its first irregular tense: venire comes in the
-/// Presente and reaches the Passato prossimo through itself, never through another verb's Passato prossimo.
+/// next verb irregular in the same tense, and itself in the next tense it is irregular in once a regular group
+/// has that tense.
 /// A unit in a later tense only unlocks while the same group or verb still performs well in every earlier
 /// tense in the pool.
 struct LearningPool: Codable, Equatable {
@@ -159,9 +158,7 @@ struct LearningPool: Codable, Equatable {
             return result
         case .irregular(let verb, let tense):
             var result: [PoolUnit] = []
-            if let next = Curriculum.irregularVerbs(in: tense).first(where: {
-                $0 != verb && !contains(.irregular($0, tense)) && Self.firstIrregularTense(of: $0) == tense
-            }) {
+            if let next = Curriculum.irregularVerbs(in: tense).first(where: { $0 != verb && !contains(.irregular($0, tense)) }) {
                 result.append(.irregular(next, tense))
             }
             if let next = Self.nextIrregularTense(after: tense, for: verb), isOpenForRegular(next) {
@@ -184,11 +181,6 @@ struct LearningPool: Codable, Equatable {
     /// The next tense in path order that the verb is irregular in; in the others it counts for its group.
     static func nextIrregularTense(after tense: Tense, for verb: String) -> Tense? {
         Curriculum.tenseOrder.drop { $0 != tense }.dropFirst().first(where: VerbLibrary.verb(verb).isIrregular)
-    }
-
-    /// The tense in path order a verb starts in.
-    static func firstIrregularTense(of verb: String) -> Tense? {
-        Curriculum.tenseOrder.first(where: VerbLibrary.verb(verb).isIrregular)
     }
 
     private mutating func add(_ unit: PoolUnit, at now: Date) {
