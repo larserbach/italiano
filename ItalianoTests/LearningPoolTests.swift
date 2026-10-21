@@ -186,6 +186,17 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.irregular("fare", .presente)])
     }
 
+    func testAVerbStartsInItsFirstIrregularTense() {
+        var pool = LearningPool(units: [.irregular("fare", .presente), .irregular("fare", .passatoprossimo)], at: now)
+        answer(&pool, .irregular("fare", .presente), good(20))
+        answer(&pool, .irregular("fare", .passatoprossimo), good(20))
+        // venire and dire come later in the Presente; the Passato prossimo goes on with vedere (visto, but vedo).
+        let added = pool.finishLesson(at: now).map(\.unit)
+        XCTAssertTrue(added.contains(.irregular("vedere", .passatoprossimo)))
+        XCTAssertFalse(added.contains(.irregular("venire", .passatoprossimo)))
+        XCTAssertFalse(added.contains(.irregular("dire", .passatoprossimo)))
+    }
+
     func testLessonFillsWithDifferentVerbsAndMixes() {
         var rng = SeededGenerator(state: 7)
         let pool = LearningPool.initial(at: now - 2 * 86_400)
