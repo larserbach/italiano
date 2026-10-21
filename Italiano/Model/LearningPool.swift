@@ -12,6 +12,7 @@ import Foundation
 /// Presente and reaches the Passato prossimo through itself, never through another verb's Passato prossimo.
 /// A unit in a later tense only unlocks while the same group or verb still performs well in every earlier
 /// tense in the pool.
+/// A group in a later tense only asks about verbs already met in the Presente (`verbs(of:)`).
 struct LearningPool: Codable, Equatable {
     /// The last answers of a unit, with the person each was about.
     struct Window: Codable, Equatable {
@@ -95,6 +96,13 @@ struct LearningPool: Codable, Equatable {
     }
 
     func contains(_ unit: PoolUnit) -> Bool { units.contains(unit) }
+
+    /// Whether the verb is in the pool in the Presente, in its group or on its own.
+    func hasMet(_ verb: String) -> Bool { contains(PoolUnit(verb: verb, tense: .presente)) }
+
+    /// The verbs a unit asks about now. A group in a later tense leaves out verbs not met in the Presente
+    /// yet, so venivo waits for venire · Presente.
+    func verbs(of unit: PoolUnit) -> [String] { unit.verbs.filter(hasMet) }
 
     /// Added less than a day ago; lessons then ask about it more often.
     func isFresh(_ unit: PoolUnit, at now: Date) -> Bool {

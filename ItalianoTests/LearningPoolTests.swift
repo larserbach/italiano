@@ -197,6 +197,16 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertFalse(added.contains(.irregular("dire", .passatoprossimo)))
     }
 
+    func testAGroupInALaterTenseOnlyAsksAboutVerbsMetInThePresente() {
+        var pool = LearningPool(units: [.group(.ire, .presente), .group(.ire, .imperfetto)], at: now)
+        // venire is regular in the Imperfetto (venivo), but not met yet: it is irregular in the Presente.
+        XCTAssertTrue(PoolUnit.group(.ire, .imperfetto).verbs.contains("venire"))
+        XCTAssertFalse(pool.verbs(of: .group(.ire, .imperfetto)).contains("venire"))
+        XCTAssertTrue(pool.verbs(of: .group(.ire, .imperfetto)).contains("dormire"))
+        pool = LearningPool(units: pool.units + [.irregular("venire", .presente)], at: now)
+        XCTAssertTrue(pool.verbs(of: .group(.ire, .imperfetto)).contains("venire"))
+    }
+
     func testLessonFillsWithDifferentVerbsAndMixes() {
         var rng = SeededGenerator(state: 7)
         let pool = LearningPool.initial(at: now - 2 * 86_400)
