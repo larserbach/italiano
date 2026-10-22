@@ -12,6 +12,30 @@ struct SettingsView: View {
                 ScreenHeader(title: "Einstellungen", lede: "")
 
                 VStack(alignment: .leading, spacing: 7) {
+                    ControlLabel("Lernpfad")
+                    NavigationLink {
+                        LearningPathInfoView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("So funktioniert's").font(.system(size: 15, weight: .medium))
+                                Text("Wie die Lektionen Fragen wählen und wann neue Verben und Zeiten dazukommen.")
+                                    .font(.system(size: 13.5))
+                                    .foregroundStyle(Theme.inkSoft)
+                                    .multilineTextAlignment(.leading)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(Theme.inkSoft)
+                        }
+                        .card()
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Tutorials")
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Die kleinen Hinweise, die beim ersten Besuch eines Bildschirms erscheinen, wieder anzeigen.")

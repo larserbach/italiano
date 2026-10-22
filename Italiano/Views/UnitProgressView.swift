@@ -54,7 +54,6 @@ struct UnitProgressView: View {
                         }
                     }
                     .buttonStyle(GhostButtonStyle(fullWidth: false))
-                    explanation
 
                     VStack(alignment: .leading, spacing: 10) {
                         ControlLabel("Zeiten")
@@ -83,28 +82,6 @@ struct UnitProgressView: View {
         case .verb(let verb):
             return "„\(VerbLibrary.verb(verb).meaning)“ · \(VerbLibrary.verb(verb).groupLabel)"
         }
-    }
-
-    private var explanation: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("So funktioniert's").font(.system(size: 14, weight: .semibold))
-            Text("""
-                Regelmäßige Formen zählen für ihre Gruppe, unregelmäßige für das Verb allein – je Zeit: \
-                scrivere zählt im Presente für -ere, im Passato prossimo (scritto) für sich. Jede erste Antwort \
-                ist **Gut** (ohne Hilfe), **Richtig** (Verb oder Zeit nachgeschaut, zählt halb) oder **Nochmal** \
-                (falsch oder „?“). Sind von den letzten \(Curriculum.windowSize) Antworten mindestens \
-                \(DaysText.percent(Curriculum.goodBar)) gut und jede Person mindestens \(Curriculum.answersPerPerson)-mal \
-                dabei, kommt Neues dazu – in einer späteren Zeit nur, wenn auch alle früheren Zeiten gerade so \
-                gut laufen.
-                Je Person: **Abruf** (wie sicher jetzt), **Stabilität** (Tage, bis der Abruf auf die Hälfte \
-                fällt), **Schwierigkeit** (1–10). Daraus wählt die Lektion die Fragen.
-                """)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.inkSoft)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
     }
 }
 

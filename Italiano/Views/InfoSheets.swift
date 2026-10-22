@@ -220,8 +220,8 @@ struct FamilyInfoView: View {
     }
 }
 
-/// A heading with a paragraph, list or table, in the tense and group sheets.
-private struct InfoSection: View {
+/// A heading with a paragraph, list or table, in the tense and group sheets and the learning path's explanation.
+struct InfoSection: View {
     let section: TenseInfo.Section
 
     var body: some View {
