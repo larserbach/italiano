@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 
 /// A text field that keeps the keyboard open when Return is pressed, so the
-/// learner can type answer after answer without the keyboard bouncing.
+/// learner can type answer after answer without the keyboard bouncing. It closes the
+/// keyboard while the field is read-only and focuses again when it becomes editable.
 struct AnswerField: UIViewRepresentable {
     @Binding var text: String
     var isEditable: Bool
@@ -36,8 +37,17 @@ struct AnswerField: UIViewRepresentable {
         field.textColor = UIColor(Theme.ink)
         if context.coordinator.focusedToken != focusToken {
             context.coordinator.focusedToken = focusToken
-            // After the update: a new field is not in a window yet and can't take focus.
-            DispatchQueue.main.async { field.becomeFirstResponder() }
+            context.coordinator.focusPending = true
+        }
+        if isEditable {
+            if context.coordinator.focusPending {
+                context.coordinator.focusPending = false
+                // After the update: a new field is not in a window yet and can't take focus.
+                DispatchQueue.main.async { field.becomeFirstResponder() }
+            }
+        } else if field.isFirstResponder {
+            // While the answer is being reviewed the keyboard gets out of the way.
+            field.resignFirstResponder()
         }
     }
 
@@ -46,6 +56,8 @@ struct AnswerField: UIViewRepresentable {
     final class Coordinator: NSObject, UITextFieldDelegate {
         var parent: AnswerField
         var focusedToken: Int?
+        /// A focus request that arrived while the field was read-only; it is served once it is editable again.
+        var focusPending = false
 
         init(parent: AnswerField) { self.parent = parent }
 
