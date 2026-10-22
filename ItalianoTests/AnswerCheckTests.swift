@@ -67,6 +67,7 @@ final class AnswerCheckTests: XCTestCase {
         XCTAssertEqual(AnswerCheck(slip, for: first), .almost)
         lesson.submit(slip)
         XCTAssertEqual(lesson.feedback, .almost(first.answer))
+        XCTAssertTrue(lesson.countsHalf)
         XCTAssertEqual(store.log.entries.last?.rating, .correct)
         XCTAssertTrue(lesson.isReviewing)
         XCTAssertEqual(lesson.current, first)
@@ -77,6 +78,34 @@ final class AnswerCheckTests: XCTestCase {
         lesson.submit("")
         XCTAssertEqual(lesson.cardNumber, card + 1)
         XCTAssertFalse(lesson.isReviewing)
+    }
+
+    func testNothingCountsHalfInTheRepeatRounds() throws {
+        seedPool([("parlare", .presente)], in: defaults)
+        let store = makeStore(defaults)
+        store.conjugation.length = .count(1)
+        let lesson = ConjugationLesson(store: store)
+        let item = try XCTUnwrap(lesson.current)
+        let slip = String(item.answer.dropLast()) + "x"
+        lesson.submit(slip)
+        lesson.submit("") // Verstanden
+        XCTAssertEqual(lesson.phase, .roundComplete)
+
+        // A slip again in round 2: the same feedback, but it no longer counts.
+        lesson.startNextRound()
+        XCTAssertEqual(lesson.current, item)
+        lesson.submit(slip)
+        XCTAssertEqual(lesson.feedback, .almost(item.answer))
+        XCTAssertFalse(lesson.countsHalf)
+        lesson.submit("") // Verstanden
+
+        // Looked up and right in round 3.
+        lesson.startNextRound()
+        lesson.noteLookup()
+        lesson.submit(item.answer)
+        XCTAssertEqual(lesson.feedback, .correct(item.answer))
+        XCTAssertFalse(lesson.countsHalf)
+        XCTAssertEqual(store.log.entries.count, 1)
     }
 
     func testOneEditApart() {

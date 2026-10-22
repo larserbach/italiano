@@ -66,6 +66,7 @@ final class LessonTests: XCTestCase {
         lesson.noteLookup()
         XCTAssertTrue(lesson.lookedUp)
         lesson.submit(first.answer)
+        XCTAssertTrue(lesson.countsHalf)
         XCTAssertEqual(store.state(of: MemoryKey(verb: first.verb, tense: first.tense, person: first.person))?.lastRating, .correct)
         XCTAssertEqual(store.log.entries.last?.rating, .correct)
     }

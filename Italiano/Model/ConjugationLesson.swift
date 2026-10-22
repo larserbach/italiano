@@ -67,6 +67,17 @@ final class ConjugationLesson: Identifiable {
     var phase: LessonPhase { rounds.phase }
     var current: ConjugationItem? { rounds.current }
 
+    /// Whether the answer just given counts half: a slip, or a right answer after a lookup, in round 1. Answers
+    /// in the repeat rounds do not count at all.
+    var countsHalf: Bool {
+        guard rounds.isFirstAttempt else { return false }
+        switch feedback {
+        case .almost: return true
+        case .correct: return lookedUp
+        default: return false
+        }
+    }
+
     /// After a slip, a wrong answer or a reveal the card stays until the learner confirms.
     var isReviewing: Bool {
         switch feedback {
