@@ -3,26 +3,15 @@ import SwiftUI
 struct ConjugationSettingsView: View {
     @Environment(ProgressStore.self) private var store
     @Environment(\.speech) private var speech
-    @State private var sheet: InfoSheet?
     @State private var lesson: ConjugationLesson?
 
     private let lengths: [LessonLength] = [.count(5), .count(10), .count(20)]
 
     var body: some View {
-        @Bindable var store = store
-        let mode = store.conjugation.mode
-
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 ScreenHeader(title: "Coniugazione",
-                             lede: mode == .path
-                                 ? "Der Lernpfad wählt die Verben und Zeiten für dich und bringt Neues, sobald du so weit bist."
-                                 : "Übe frei mit allem, was schon in deinem Lernpfad ist.")
-
-                Picker("Modus", selection: $store.conjugation.mode) {
-                    ForEach(ConjugationMode.allCases) { Text($0.label).tag($0) }
-                }
-                .pickerStyle(.segmented)
+                             lede: "Der Lernpfad wählt die Verben und Zeiten für dich und bringt Neues, sobald du so weit bist.")
 
                 VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Lektionslänge")
@@ -34,18 +23,14 @@ struct ConjugationSettingsView: View {
                     }
                 }
 
-                switch mode {
-                case .path: LearningPathSection()
-                case .free: freeSelection
-                }
+                LearningPathSection()
             }
             .padding(.horizontal, 18)
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
         .safeAreaInset(edge: .bottom) {
-            StartBar(title: "Lektion starten",
-                     disabled: mode == .free && ConjugationLesson.freePool(store).isEmpty) {
+            StartBar(title: "Lektion starten", disabled: false) {
                 lesson = ConjugationLesson(store: store, speech: speech)
             }
         }
@@ -61,39 +46,8 @@ struct ConjugationSettingsView: View {
                 .accessibilityLabel("Statistik")
             }
         }
-        .infoSheet($sheet)
         .fullScreenCover(item: $lesson) { lesson in
             ConjugationLessonView(lesson: lesson)
-        }
-    }
-
-    @ViewBuilder
-    private var freeSelection: some View {
-        @Bindable var store = store
-        VStack(alignment: .leading, spacing: 7) {
-            ControlLabel("Verben")
-            VerbPicker(selection: $store.conjugation.verbs,
-                       available: Set(store.unlockedVerbs),
-                       level: { store.level(of: $0, tenses: store.conjugation.tenses) },
-                       isMistake: { store.isRecentMistake(verb: $0, tenses: store.conjugation.tenses) },
-                       preview: .tenseLevels(store.levels(of:)),
-                       onDetails: { sheet = .verb($0) })
-        }
-
-        VStack(alignment: .leading, spacing: 7) {
-            ControlLabel("Zeiten")
-            FlowLayout {
-                ForEach(store.unlockedTenses) { tense in
-                    TenseChip(tense: tense,
-                              active: store.conjugation.tenses.contains(tense),
-                              toggle: { store.conjugation.tenses.toggleKeepingOne(tense) },
-                              info: { sheet = .tense(tense) })
-                }
-            }
-            Text("Neue Verben und Zeiten schaltest du im Lernpfad frei.")
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.inkSoft)
-                .padding(.top, 4)
         }
     }
 }
@@ -216,36 +170,5 @@ private struct LearningPathSection: View {
             parts.append("mehr nötig: " + progress.missingPersons.map { Pronoun.italian[$0] }.joined(separator: ", "))
         }
         return parts.joined(separator: " · ")
-    }
-}
-
-private struct TenseChip: View {
-    let tense: Tense
-    let active: Bool
-    let toggle: () -> Void
-    let info: () -> Void
-
-    var body: some View {
-        HStack(spacing: 0) {
-            Button(action: toggle) {
-                Text(tense.label)
-                    .font(.system(size: 14, weight: active ? .medium : .regular))
-                    .padding(.vertical, 7)
-                    .padding(.horizontal, 12)
-            }
-            Rectangle().fill(active ? Theme.gold : Theme.line).frame(width: 1)
-            Button(action: info) {
-                Text("i")
-                    .font(Theme.display(13, weight: .regular).italic())
-                    .foregroundStyle(Theme.inkSoft)
-                    .frame(width: 28)
-            }
-            .accessibilityLabel("Erklärung zu \(tense.label)")
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(Theme.ink)
-        .fixedSize()
-        .background(active ? Theme.goldSoft : Theme.paperRaised, in: RoundedRectangle(cornerRadius: 8))
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(active ? Theme.gold : Theme.line))
     }
 }

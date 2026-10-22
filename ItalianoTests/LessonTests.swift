@@ -11,9 +11,6 @@ final class LessonTests: XCTestCase {
 
     func testWrongAnswerIsRepeatedInNextRound() {
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["parlare"]
-        store.conjugation.tenses = [.presente]
         store.conjugation.length = .count(5)
         let lesson = ConjugationLesson(store: store)
         XCTAssertEqual(lesson.rounds.roundTotal, 5)
@@ -27,8 +24,6 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(lesson.phase, .roundComplete)
         XCTAssertEqual(lesson.rounds.roundMissedCount, 5)
         XCTAssertEqual(store.level(of: firstVerb, tense: .presente), 0)
-        XCTAssertTrue(store.isRecentMistake(verb: "parlare", tenses: [.presente]))
-        XCTAssertFalse(store.isRecentMistake(verb: "parlare", tenses: [.imperfetto]))
 
         lesson.startNextRound()
         XCTAssertEqual(lesson.rounds.round, 2)
@@ -92,16 +87,12 @@ final class LessonTests: XCTestCase {
         XCTAssertEqual(store.level(of: "credere", tense: .presente), 0) // not in the pool
         store.practise("parlare", .presente, answers: 10)
         XCTAssertEqual(store.level(of: "parlare", tense: .presente), 10)
-        XCTAssertEqual(store.level(of: "parlare", tenses: [.presente, .imperfetto]), 5)
     }
 
     func testGenderIsSetForEveryPassatoProssimo() {
         seedPool([("parlare", .presente), ("parlare", .passatoprossimo),
                         ("arrivare", .presente), ("arrivare", .passatoprossimo)], in: defaults)
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["arrivare", "parlare"]
-        store.conjugation.tenses = [.passatoprossimo, .presente]
         store.conjugation.length = .count(20)
         let lesson = ConjugationLesson(store: store)
         var seen: [ConjugationItem] = []
@@ -119,11 +110,9 @@ final class LessonTests: XCTestCase {
     }
 
     func testOtherGenderAnswerGetsSpecificFeedback() throws {
-        seedPool([("tornare", .presente), ("tornare", .passatoprossimo)], in: defaults)
+        // Only essere in the Passato prossimo, so every card agrees with a gender (sono stato / stata).
+        seedPool([("essere", .passatoprossimo)], in: defaults)
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["tornare"]
-        store.conjugation.tenses = [.passatoprossimo]
         let lesson = ConjugationLesson(store: store)
         let item = try XCTUnwrap(lesson.current)
         let other = try XCTUnwrap(item.otherGenderAnswer)

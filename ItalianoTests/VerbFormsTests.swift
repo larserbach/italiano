@@ -20,9 +20,9 @@ final class VerbFormsTests: XCTestCase {
     }
 
     func testImperativeHasNoIoForm() {
-        let pool = ConjugationLesson.pool(verbs: ["parlare"], tenses: [.imperativo, .presente])
-        XCTAssertEqual(pool.count, 11)
-        XCTAssertFalse(pool.contains { $0.tense == .imperativo && $0.person == 0 })
+        XCTAssertFalse(VerbLibrary.verb("parlare").hasForm(.imperativo, 0))
+        XCTAssertTrue(VerbLibrary.verb("parlare").hasForm(.presente, 0))
+        XCTAssertEqual(PoolUnit.group(.are, .imperativo).persons, [1, 2, 3, 4, 5])
     }
 
     func testSpellingNotesCoverSpecialVerbs() {

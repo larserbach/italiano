@@ -113,8 +113,6 @@ final class AnswerHistoryTests: XCTestCase {
         defaults.removePersistentDomain(forName: "AnswerHistoryTests")
         // The statistics window is relative to the real date.
         let store = makeStore(defaults, clock: TestClock(now: .now), historyURL: url)
-        store.conjugation.verbs = ["parlare"]
-        store.conjugation.tenses = [.presente]
         store.conjugation.length = .count(1)
         let lesson = ConjugationLesson(store: store)
         lesson.submit("sbagliato")

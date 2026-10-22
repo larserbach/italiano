@@ -1,51 +1,22 @@
 import SwiftUI
 
-/// What long-pressing a verb chip previews.
-enum VerbPreview {
-    /// The verb's level in every tense.
-    case tenseLevels((String) -> [Tense: Int])
-    /// Basic facts about the verb (meaning, group, Passato prossimo) and its level.
-    case basic
-
-    var isBasic: Bool { if case .basic = self { true } else { false } }
-
-    func tenseLevels(of verb: String) -> [Tense: Int]? {
-        if case .tenseLevels(let levels) = self { levels(verb) } else { nil }
-    }
-}
-
-/// The verb chips of both exercises' settings, in the sections of `VerbLibrary.groups`, each with its ring.
+/// The verb chips of the Essere o avere? settings, in the sections of `VerbLibrary.groups`, each with its ring.
 struct VerbPicker: View {
     @Binding var selection: Set<String>
-    /// Limits the picker to these verbs; groups without any are left out.
-    var available: Set<String>? = nil
     let level: (String) -> Int
-    /// Shows the chip in red, for a mistake in the last lesson.
-    var isMistake: (String) -> Bool = { _ in false }
-    let preview: VerbPreview
     /// Adds "Verb-Details" to the long-press menu.
     var onDetails: ((String) -> Void)? = nil
 
     @AppStorage(Tutorial.verbRing.defaultsKey) private var coachSeen = false
 
-    private var groups: [VerbGroupSection] {
-        guard let available else { return VerbLibrary.groups }
-        return VerbLibrary.groups.compactMap { group in
-            let verbs = group.verbs.filter(available.contains)
-            return verbs.isEmpty ? nil : VerbGroupSection(label: group.label, verbs: verbs)
-        }
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if !coachSeen {
-                CoachMark(text: preview.isBasic ? "Der Ring zeigt das Level des Verbs."
-                              : "Der Ring zeigt den Fortschritt der Verbgruppe (in Zeiten, in denen das Verb unregelmäßig ist: des Verbs) in den gewählten Zeiten."
-                              + (onDetails == nil ? "" : " Lange drücken für Details."),
+                CoachMark(text: "Der Ring zeigt das Level des Verbs.",
                           dismiss: { withAnimation { coachSeen = true } })
                     .transition(.opacity)
             }
-            ForEach(groups) { group in
+            ForEach(VerbLibrary.groups) { group in
                 VStack(alignment: .leading, spacing: 6) {
                     let allSelected = group.verbs.allSatisfy(selection.contains)
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -72,22 +43,19 @@ struct VerbPicker: View {
                     }
                     FlowLayout {
                         ForEach(group.verbs, id: \.self) { verb in
-                            let mistake = isMistake(verb)
                             Button {
                                 selection.toggleKeepingOne(verb)
                             } label: {
                                 HStack(spacing: 7) {
-                                    VerbRing(level: level(verb), mistake: mistake)
+                                    VerbRing(level: level(verb))
                                     Text(verb)
                                 }
                                 // Pulls the ring into the chip's padding, so it is no taller than a plain chip.
                                 .padding(.leading, -6)
                                 .padding(.vertical, -2)
                             }
-                            .buttonStyle(ChipStyle(active: selection.contains(verb),
-                                                   accent: mistake ? Theme.brick : nil))
+                            .buttonStyle(ChipStyle(active: selection.contains(verb)))
                             .modifier(VerbPreviewMenu(verb: verb,
-                                                      tenseLevels: preview.tenseLevels(of: verb),
                                                       level: level(verb),
                                                       onDetails: onDetails.map { onDetails in
                                 { verb in
@@ -124,11 +92,10 @@ private struct CoachMark: View {
     }
 }
 
-/// Long-press on a verb chip: previews the verb (level per tense, or basic facts), with a link to the verb sheet.
+/// Long-press on a verb chip: previews basic facts about the verb (meaning, group, Passato prossimo) and its
+/// level, with a link to the verb sheet.
 private struct VerbPreviewMenu: ViewModifier {
     let verb: String
-    /// The level per tense, or nil for the basic preview.
-    let tenseLevels: [Tense: Int]?
     let level: Int
     let onDetails: ((String) -> Void)?
 
@@ -138,18 +105,11 @@ private struct VerbPreviewMenu: ViewModifier {
                 Button("Verb-Details", systemImage: "info.circle") { onDetails(verb) }
             }
         } preview: {
-            VStack(alignment: .leading, spacing: 12) {
-                if let tenseLevels {
-                    Text(verb).font(Theme.display(20))
-                    TenseBreakdown(levels: tenseLevels)
-                } else {
-                    BasicVerbInfo(verb: VerbLibrary.verb(verb), level: level)
-                }
-            }
-            .padding(18)
-            .frame(width: 300, alignment: .leading)
-            .background(Theme.paper)
-            .foregroundStyle(Theme.ink)
+            BasicVerbInfo(verb: VerbLibrary.verb(verb), level: level)
+                .padding(18)
+                .frame(width: 300, alignment: .leading)
+                .background(Theme.paper)
+                .foregroundStyle(Theme.ink)
         }
     }
 }

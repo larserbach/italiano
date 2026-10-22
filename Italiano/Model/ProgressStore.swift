@@ -16,8 +16,6 @@ final class ProgressStore {
     private(set) var memory: LearningMemory { didSet { save(memory, key: Keys.memory) } }
     /// The groups and irregular verbs in play, per tense.
     private(set) var pool: LearningPool { didSet { save(pool, key: Keys.pool) } }
-    /// "verb|tense" pairs answered wrong in round 1 of the most recently started lesson (shown in red).
-    private(set) var lastMistakes: Set<String> { didSet { save(lastMistakes, key: Keys.lastMistakes) } }
     /// Separate mastery for essere/avere — it measures a different skill. Only first attempts count, each
     /// moving the verb's level one step up or down.
     private(set) var auxLevels: [String: Int] { didSet { save(auxLevels, key: Keys.auxLevels) } }
@@ -35,7 +33,6 @@ final class ProgressStore {
         static let settings = "coniugazione-settings"
         static let memory = "coniugazione-group-memory"
         static let pool = "coniugazione-group-pool"
-        static let lastMistakes = "coniugazione-tense-mistakes"
         static let auxSettings = "coniugazione-aux-settings"
         static let auxLevels = "coniugazione-aux-levels"
         static let readAloud = "read-aloud"
@@ -49,6 +46,8 @@ final class ProgressStore {
         // Per-verb data from before mastery was tracked per tense.
         static let legacyLevels = "coniugazione-levels"
         static let legacyLastMistakes = "coniugazione-last-mistakes"
+        // The red marks of the last lesson's mistakes, shown in free practice.
+        static let lastMistakes = "coniugazione-tense-mistakes"
     }
 
     init(defaults: UserDefaults = .standard, historyURL: URL? = AnswerHistory.defaultURL,
@@ -57,11 +56,7 @@ final class ProgressStore {
         self.now = now
         history = AnswerHistory(fileURL: historyURL)
         log = AnswerLog(fileURL: logURL)
-        var conjugation = Self.load(ConjugationSettings.self, key: Keys.settings, from: defaults) ?? ConjugationSettings()
-        conjugation.verbs.formIntersection(VerbLibrary.orderedKeys)
-        if conjugation.verbs.isEmpty { conjugation.verbs = ConjugationSettings().verbs }
-        if conjugation.tenses.isEmpty { conjugation.tenses = [.presente] }
-        self.conjugation = conjugation
+        conjugation = Self.load(ConjugationSettings.self, key: Keys.settings, from: defaults) ?? ConjugationSettings()
 
         var aux = Self.load(AuxSettings.self, key: Keys.auxSettings, from: defaults) ?? AuxSettings()
         aux.verbs.formIntersection(VerbLibrary.orderedKeys)
@@ -69,7 +64,6 @@ final class ProgressStore {
         self.aux = aux
         readAloud = Self.load(Bool.self, key: Keys.readAloud, from: defaults) ?? true
 
-        lastMistakes = Self.load(Set<String>.self, key: Keys.lastMistakes, from: defaults) ?? []
         auxLevels = Self.load([String: Int].self, key: Keys.auxLevels, from: defaults) ?? [:]
         let start = now()
         memory = Self.load(LearningMemory.self, key: Keys.memory, from: defaults) ?? LearningMemory()
@@ -77,12 +71,11 @@ final class ProgressStore {
         var pool = storedPool ?? Self.migratedPool(from: defaults, at: start)
         pool.dropInvalidUnits()
         self.pool = pool
-        keepFreeSelectionUnlocked()
 
         // `didSet` doesn't run for assignments in init, so a migrated or cleaned-up pool is saved here.
         if storedPool != pool { save(pool, key: Keys.pool) }
         for key in [Keys.cellPool, Keys.cellMemory, Keys.halfLives, Keys.tenseLevels, Keys.curriculum,
-                    Keys.legacyLevels, Keys.legacyLastMistakes] {
+                    Keys.legacyLevels, Keys.legacyLastMistakes, Keys.lastMistakes] {
             defaults.removeObject(forKey: key)
         }
     }
@@ -129,20 +122,8 @@ final class ProgressStore {
         })
     }
 
-    /// What a verb chip's ring shows: the average over the given tenses, rounded down.
-    /// Tenses the verb has no forms in (potere has no imperative) are left out.
-    func level(of verb: String, tenses: Set<Tense>) -> Int {
-        let relevant = tenses.filter { VerbLibrary.verb(verb).hasTense($0) }
-        guard !relevant.isEmpty else { return 0 }
-        return relevant.map { level(of: verb, tense: $0) }.reduce(0, +) / relevant.count
-    }
-
-    func isRecentMistake(verb: String, tenses: Set<Tense>) -> Bool {
-        tenses.contains { lastMistakes.contains(Self.mistakeKey(verb, $0)) }
-    }
-
     /// Records a first answer: on the group pattern (regular forms) or the form (irregular ones), in the
-    /// unit's recent answers, and for the statistics, the answer log and the red markers.
+    /// unit's recent answers, and for the statistics and the answer log.
     func record(_ item: ConjugationItem, _ rating: Rating) {
         let time = now()
         let key = MemoryKey(verb: item.verb, tense: item.tense, person: item.person)
@@ -152,11 +133,8 @@ final class ProgressStore {
         log.append(AnswerLogEntry(date: time, verb: item.verb, tense: item.tense, person: item.person, gender: item.gender,
                                   rating: rating, retrievabilityBefore: before?.retrievability(at: time) ?? 0,
                                   stabilityBefore: before?.stability, stabilityAfter: memory[key]!.stability))
-        if rating == .again { lastMistakes.insert(Self.mistakeKey(item.verb, item.tense)) }
         history.record(verb: item.verb, tense: item.tense, correct: rating != .again, on: time)
     }
-
-    func resetLastMistakes() { lastMistakes = [] }
 
     /// Ends round 1: reports how the practised units moved since `before` (their shares when the lesson
     /// started) and unlocks what comes after every unit that now performs well.
@@ -167,40 +145,11 @@ final class ProgressStore {
         return LessonOutcome(changes: changes, additions: pool.finishLesson(at: now()))
     }
 
-    /// A lesson from the whole pool (learning path), or from the given verbs and tenses (free practice).
-    func pickLesson(length: Int, verbs: Set<String>? = nil, tenses: Set<Tense>? = nil) -> [FormKey] {
+    /// A lesson from the whole pool.
+    func pickLesson(length: Int) -> [FormKey] {
         var rng = SystemRandomNumberGenerator()
-        let units = pool.units.filter { unit in
-            (tenses?.contains(unit.tense) ?? true) && (verbs.map { !Set(pool.verbs(of: unit)).isDisjoint(with: $0) } ?? true)
-        }
-        return Curriculum.pickLesson(units: units, verbs: { unit in verbs.map { selected in pool.verbs(of: unit).filter(selected.contains) } ?? pool.verbs(of: unit) },
+        return Curriculum.pickLesson(units: pool.units, verbs: pool.verbs(of:),
                                      pool: pool, memory: memory, length: length, at: now(), using: &rng)
-    }
-
-    // MARK: Learning path
-
-    func isUnlocked(verb: String, tense: Tense) -> Bool { pool.contains(PoolUnit(verb: verb, tense: tense)) && pool.hasMet(verb) }
-
-    /// Verbs of the groups and irregular verbs in the pool, in path order.
-    var unlockedVerbs: [String] {
-        let verbs = Set(pool.units.flatMap(pool.verbs(of:)))
-        return Curriculum.verbOrder.filter(verbs.contains)
-    }
-
-    /// Tenses in the pool for at least one group or verb, in path order.
-    var unlockedTenses: [Tense] {
-        let tenses = Set(pool.units.map(\.tense))
-        return Curriculum.tenseOrder.filter(tenses.contains)
-    }
-
-    /// Free practice may only offer what is in the pool.
-    private func keepFreeSelectionUnlocked() {
-        var settings = conjugation
-        settings.verbs.formIntersection(unlockedVerbs)
-        if settings.verbs.isEmpty { settings.verbs = [unlockedVerbs[0]] }
-        settings.tenses.formIntersection(unlockedTenses)
-        if settings.tenses.isEmpty { settings.tenses = [.presente] }
-        if settings.verbs != conjugation.verbs || settings.tenses != conjugation.tenses { conjugation = settings }
     }
 
     // MARK: Essere o avere
@@ -213,21 +162,17 @@ final class ProgressStore {
 
     // MARK: Reset
 
-    /// Clears memory and progress (both exercises), the learning pool, the recent mistakes, the statistics and
-    /// the answer log. The other settings are kept; free practice falls back to what is in the pool.
+    /// Clears memory and progress (both exercises), the learning pool, the statistics and the answer log.
+    /// The settings are kept.
     func resetProgress() {
         memory = LearningMemory()
         log.reset()
         pool = .initial(at: now())
-        keepFreeSelectionUnlocked()
-        lastMistakes = []
         auxLevels = [:]
         history.reset()
     }
 
     // MARK: Helpers
-
-    private static func mistakeKey(_ verb: String, _ tense: Tense) -> String { "\(verb)|\(tense.rawValue)" }
 
     private static func step(_ level: Int, correct: Bool) -> Int {
         correct ? min(maxLevel, level + 1) : max(0, level - 1)

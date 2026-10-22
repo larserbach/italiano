@@ -33,13 +33,13 @@ final class LearningPoolTests: XCTestCase {
     func testStartsWithAllAreVerbsAndEssere() {
         let store = makeStore(defaults)
         XCTAssertEqual(store.pool.units, [.group(.are, .presente), .irregular("essere", .presente)])
-        XCTAssertEqual(Set(store.unlockedVerbs), Set(PoolUnit.group(.are, .presente).verbs + ["essere"]))
+        let verbs = store.pool.units.flatMap(store.pool.verbs(of:))
+        XCTAssertEqual(Set(verbs), Set(PoolUnit.group(.are, .presente).verbs + ["essere"]))
         // andare counts for -are where it is regular (andavo), essere nowhere.
-        XCTAssertFalse(store.unlockedVerbs.contains("andare"))
+        XCTAssertFalse(verbs.contains("andare"))
         XCTAssertTrue(VerbFamily.are.verbs.contains("andare"))
         XCTAssertFalse(VerbFamily.ere.verbs.contains("essere"))
-        XCTAssertEqual(store.unlockedVerbs.count, 21)
-        XCTAssertEqual(store.unlockedTenses, [.presente])
+        XCTAssertEqual(verbs.count, 21)
     }
 
     func testDropsUnitsOfVerbsInTensesTheyAreRegularIn() throws {
@@ -241,13 +241,6 @@ final class LearningPoolTests: XCTestCase {
             total += picked.count
         }
         XCTAssertGreaterThan(Double(noi) / Double(total), 0.18) // a sixth would be even
-    }
-
-    func testFreePracticeKeepsToTheChosenVerbsAndTenses() {
-        let store = makeStore(defaults)
-        let picked = store.pickLesson(length: 10, verbs: ["parlare", "abitare"], tenses: [.presente])
-        XCTAssertFalse(picked.isEmpty)
-        XCTAssertTrue(picked.allSatisfy { ["parlare", "abitare"].contains($0.verb) && $0.tense == .presente })
     }
 
     func testPoolRoundTripsThroughJSON() throws {

@@ -58,10 +58,9 @@ final class AnswerCheckTests: XCTestCase {
     }
 
     func testAlmostCountsHalfStaysAndIsRepeated() throws {
+        // Only the -are verbs, so no answer is as short as essere's è.
+        seedPool([("parlare", .presente)], in: defaults)
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["parlare"]
-        store.conjugation.tenses = [.presente]
         let lesson = ConjugationLesson(store: store)
         let first = try XCTUnwrap(lesson.current)
         let slip = String(first.answer.dropLast()) + "x"

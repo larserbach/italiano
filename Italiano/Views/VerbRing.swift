@@ -3,7 +3,6 @@ import SwiftUI
 /// Ten arc segments showing a verb chip's level (0…10), with the number in the middle.
 struct VerbRing: View {
     let level: Int
-    var mistake = false
 
     private let segments = ProgressStore.maxLevel
     /// Degrees left open between two segments.
@@ -13,12 +12,12 @@ struct VerbRing: View {
         ZStack {
             ForEach(0..<segments, id: \.self) { index in
                 segment(index)
-                    .stroke(index < level ? (mistake ? Theme.brick : Theme.gold) : Theme.line,
+                    .stroke(index < level ? Theme.gold : Theme.line,
                             style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
             }
             Text("\(level)")
                 .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(mistake ? Theme.brick : Theme.ink)
+                .foregroundStyle(Theme.ink)
         }
         .frame(width: 26, height: 26)
         .accessibilityElement()

@@ -35,9 +35,12 @@ final class MigrationTests: XCTestCase {
     func testOlderProgressKeysAreRemoved() throws {
         defaults.set(try JSONEncoder().encode(["parlare": 7]), forKey: "coniugazione-levels")
         defaults.set(try JSONEncoder().encode(["parlare": ["presente": 3]]), forKey: "coniugazione-tense-levels")
+        // The red marks of free practice.
+        defaults.set(try JSONEncoder().encode(["parlare|presente"]), forKey: "coniugazione-tense-mistakes")
         let store = makeStore(defaults)
         XCTAssertEqual(store.pool.units, LearningPool.startUnits)
         XCTAssertNil(defaults.data(forKey: "coniugazione-levels"))
         XCTAssertNil(defaults.data(forKey: "coniugazione-tense-levels"))
+        XCTAssertNil(defaults.data(forKey: "coniugazione-tense-mistakes"))
     }
 }

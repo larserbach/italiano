@@ -97,7 +97,6 @@ struct IconButton: View {
 
 struct ChipStyle: ButtonStyle {
     var active: Bool
-    var accent: Color? = nil
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -106,7 +105,7 @@ struct ChipStyle: ButtonStyle {
             .padding(.vertical, 7)
             .padding(.horizontal, 12)
             .background(active ? Theme.goldSoft : Theme.paperRaised, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(accent ?? (active ? Theme.gold : Theme.line)))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(active ? Theme.gold : Theme.line))
             .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
