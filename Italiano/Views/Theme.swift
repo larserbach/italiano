@@ -14,6 +14,16 @@ enum Theme {
     static let brick = Color(light: 0xA6483A, dark: 0xD98A7C)
     static let brickBackground = Color(light: 0xF3DFDA, dark: 0x3D2825)
     static let line = Color(light: 0xDAD0B8, dark: 0x3A3F47)
+    /// One chart colour per person (io … loro), always in this order, so a person keeps its colour whichever
+    /// persons are shown. Checked for colour-blind separation against `paperRaised` in both modes.
+    static let persons = [
+        Color(light: 0x2A78D6, dark: 0x3987E5),
+        Color(light: 0xEB6834, dark: 0xD95926),
+        Color(light: 0x1BAF7A, dark: 0x199E70),
+        Color(light: 0xEDA100, dark: 0xC98500),
+        Color(light: 0xE87BA4, dark: 0xD55181),
+        Color(light: 0x008300, dark: 0x008300),
+    ]
 
     static func display(_ size: CGFloat, weight: Font.Weight = .medium) -> Font {
         .system(size: size, weight: weight, design: .serif)

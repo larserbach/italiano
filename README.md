@@ -31,6 +31,7 @@ After each answer in Coniugazione the right form is read aloud (without the pron
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 A regular group's page on the Coniugazione screen explains how the group builds its forms, with the endings set apart on example verbs. It also lists what to watch out for: spelling traps, the verbs with essere, own participles and verbs with own forms in some tenses.
+The pages of groups and irregular verbs chart the Abruf (retrievability) of each person over time, rebuilt from the answer log. Chips pick the tense and the persons; dragging across the chart reads out the values at that moment.
 A one-time hint explains the verb rings; the settings screen (gear on the home screen) shows such hints again.
 The settings screen also has a "So funktioniert's" page: it explains how lessons pick their questions and when new groups, verbs and tenses unlock.
 The same screen can reset all progress (levels, the learning path and statistics) after a confirmation. Exercise settings stay.
