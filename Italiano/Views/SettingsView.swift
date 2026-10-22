@@ -12,24 +12,6 @@ struct SettingsView: View {
                 ScreenHeader(title: "Einstellungen", lede: "")
 
                 VStack(alignment: .leading, spacing: 7) {
-                    ControlLabel("Aussprache")
-                    VStack(alignment: .leading, spacing: 12) {
-                        Toggle("Antworten vorlesen", isOn: Binding(
-                            get: { store.readAloud },
-                            set: { store.readAloud = $0 }))
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(Theme.ink)
-                            .tint(Theme.olive)
-                        Text("Nach jeder Antwort wird die richtige italienische Form vorgelesen, in Coniugazione und Essere o avere?, auch im Stummmodus. Natürlicher klingen die Stimmen „Erweitert“ oder „Premium“: Einstellungen › Bedienungshilfen › Gesprochene Inhalte › Stimmen › Italienisch.")
-                            .font(.system(size: 13.5))
-                            .foregroundStyle(Theme.inkSoft)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .card()
-                }
-
-                VStack(alignment: .leading, spacing: 7) {
                     ControlLabel("Tutorials")
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Die kleinen Hinweise, die beim ersten Besuch eines Bildschirms erscheinen, wieder anzeigen.")
