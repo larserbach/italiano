@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+/// One card of a conjugation lesson: a verb in a tense and person, and in the Passato prossimo a gender.
 struct ConjugationItem: Hashable {
     let verb: String
     let tense: Tense
@@ -8,13 +9,11 @@ struct ConjugationItem: Hashable {
     /// Set for every passato prossimo question, also for verbs with avere where it doesn't
     /// change the answer: showing it only for essere verbs would give away the auxiliary.
     var gender: Gender?
-    var firstAttempt = true
 
+    /// Identifies the form in the summary's list of missed forms.
     var key: String { "\(verb)|\(tense.rawValue)|\(person)|\(gender?.rawValue ?? "")" }
-    var cell: Cell { Cell(verb: verb, tense: tense) }
     /// The group (or irregular verb) in that tense this question belongs to.
     var unit: PoolUnit { PoolUnit(verb: verb, tense: tense) }
-    var form: FormKey { FormKey(verb: verb, tense: tense, person: person) }
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
@@ -28,21 +27,25 @@ struct ConjugationItem: Hashable {
     }
 }
 
+/// One conjugation lesson: picks the cards, checks the answers, records first attempts and reads the
+/// right form aloud.
 @Observable
 final class ConjugationLesson: Identifiable {
     enum Feedback: Equatable {
         case none
         case correct(String)
-        /// An accent or one letter off: counts half and is not repeated.
+        /// An accent or one letter off: counts half and comes back in the next round.
         case almost(String)
         case wrong(String)
         /// Right verb form, but for the other gender.
         case wrongGender(String)
+        /// The learner asked for the answer ("?"); counts as wrong.
         case revealed(String)
     }
 
     private let store: ProgressStore
     private let speech: Speaking
+    /// Set while a right answer waits for the next card, so pressing Return again does nothing.
     private var busy = false
 
     private(set) var rounds = LessonRounds<ConjugationItem>([])
@@ -66,10 +69,10 @@ final class ConjugationLesson: Identifiable {
     var phase: LessonPhase { rounds.phase }
     var current: ConjugationItem? { rounds.current }
 
-    /// After a wrong answer or a reveal the card stays until the learner confirms.
+    /// After a slip, a wrong answer or a reveal the card stays until the learner confirms.
     var isReviewing: Bool {
         switch feedback {
-        case .wrong, .wrongGender, .revealed: true
+        case .almost, .wrong, .wrongGender, .revealed: true
         default: false
         }
     }
@@ -106,6 +109,7 @@ final class ConjugationLesson: Identifiable {
         let selected: [FormKey]
         switch settings.mode {
         case .path:
+            // The path's pool has no fixed size; `pickLesson` stops when it runs out.
             selected = store.pickLesson(length: settings.length.resolve(poolSize: .max))
         case .free:
             selected = store.pickLesson(length: settings.length.resolve(poolSize: Self.freePool(store).count),
@@ -125,13 +129,14 @@ final class ConjugationLesson: Identifiable {
 
     func submit(_ guess: String) {
         guard let item = current, !busy else { return }
+        // On a card held for review, Return confirms like "Verstanden".
         if isReviewing {
             nextCard()
             return
         }
         busy = true
         let check = AnswerCheck(guess, for: item)
-        if item.firstAttempt {
+        if rounds.isFirstAttempt {
             let rating: Rating = switch check {
             case .right: lookedUp ? .correct : .good
             case .almost: .correct
@@ -141,25 +146,22 @@ final class ConjugationLesson: Identifiable {
         }
 
         switch check {
-        case .right, .almost:
+        case .right:
             rounds.recordCorrect()
-            feedback = check == .right ? .correct(item.answer) : .almost(item.answer)
-            // A slip stays up longer, so the right spelling can be read. The next card waits for the
-            // spoken form too.
-            let delay = check == .right ? 0.6 : 1.8
+            feedback = .correct(item.answer)
+            // The next card waits a moment, so the green answer can be seen, and for the spoken form too.
             let card = cardNumber
-            let wait = DispatchGroup()
-            wait.enter()
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) { wait.leave() }
-            wait.enter()
-            speech.speak(item.answer) { wait.leave() }
-            wait.notify(queue: .main) { [weak self] in
+            speech.speak(item.answer, atLeast: rounds.pauseAfterRight) { [weak self] in
                 guard let self, self.cardNumber == card else { return }
                 self.nextCard()
             }
-        case .wrong, .wrongGender:
+        case .almost, .wrong, .wrongGender:
             recordMiss(item)
-            feedback = check == .wrongGender ? .wrongGender(item.answer) : .wrong(item.answer)
+            feedback = switch check {
+            case .almost: .almost(item.answer)
+            case .wrongGender: .wrongGender(item.answer)
+            default: .wrong(item.answer)
+            }
             busy = false
             speech.speak(item.answer)
         }
@@ -167,7 +169,7 @@ final class ConjugationLesson: Identifiable {
 
     func reveal() {
         guard let item = current, !busy, !isReviewing else { return }
-        if item.firstAttempt { recordFirstAttempt(item, .again) }
+        if rounds.isFirstAttempt { recordFirstAttempt(item, .again) }
         recordMiss(item)
         feedback = .revealed(item.answer)
         speech.speak(item.answer)
@@ -198,6 +200,7 @@ final class ConjugationLesson: Identifiable {
         feedback = .none
         lookedUp = false
         if current != nil { cardNumber += 1 }
+        // Only round 1 counts for the pool, so what it unlocks is settled as soon as round 1 is through.
         if rounds.round == 1, phase != .question, outcome == nil {
             outcome = store.finishLesson(practised: answeredUnits, before: sharesBefore)
         }
@@ -209,19 +212,21 @@ final class ConjugationLesson: Identifiable {
     }
 
     private func recordMiss(_ item: ConjugationItem) {
-        var retry = item
-        retry.firstAttempt = false
         let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
-        rounds.recordMiss(retry: retry, key: item.key,
-                          label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
+        rounds.recordMiss(key: item.key, label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
 }
 
-func normalize(_ text: String) -> String {
-    text.trimmingCharacters(in: .whitespacesAndNewlines)
-        .lowercased()
-        .replacingOccurrences(of: "’", with: "'")
-        .replacingOccurrences(of: "‘", with: "'")
-        .split(whereSeparator: \.isWhitespace)
-        .joined(separator: " ")
+/// What round 1 of a conjugation lesson changed.
+struct LessonOutcome {
+    /// A unit's share of Good points in its last answers, before and after the lesson.
+    struct ProgressChange: Identifiable {
+        let unit: PoolUnit
+        let from: Double?
+        let to: Double?
+        var id: PoolUnit { unit }
+    }
+
+    let changes: [ProgressChange]
+    let additions: [LearningPool.Addition]
 }

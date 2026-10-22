@@ -67,6 +67,41 @@ final class SpeechTests: XCTestCase {
         XCTAssertEqual(lesson.cardNumber, card + 1)
     }
 
+    private func makeQuiz() -> (AuxQuiz, FakeSpeech) {
+        let store = makeStore(defaults)
+        store.aux.verbs = ["arrivare"]
+        let speech = FakeSpeech()
+        return (AuxQuiz(store: store, speech: speech), speech)
+    }
+
+    func testAuxQuizSpeaksTheFullFormAfterAWrongChoice() throws {
+        let (quiz, speech) = makeQuiz()
+        let item = try XCTUnwrap(quiz.current)
+        quiz.choose(Conjugator.averePresente[item.person])
+        XCTAssertEqual(speech.spoken, [item.fullForm])
+
+        // "Weiter" stops the form if it is still being spoken.
+        quiz.next()
+        XCTAssertTrue(speech.pending.isEmpty)
+    }
+
+    func testAuxQuizWaitsForTheSpeechBeforeTheNextQuestion() throws {
+        let (quiz, speech) = makeQuiz()
+        let item = try XCTUnwrap(quiz.current)
+        quiz.choose(item.correctForm)
+        XCTAssertEqual(speech.spoken, [item.fullForm])
+
+        // The 0.6 s pause is over, but the form is still being spoken.
+        RunLoop.main.run(until: Date().addingTimeInterval(0.9))
+        XCTAssertEqual(quiz.current, item)
+        XCTAssertTrue(quiz.isAnswered)
+
+        speech.finish()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        XCTAssertNotEqual(quiz.current, item)
+        XCTAssertFalse(quiz.isAnswered)
+    }
+
     func testSwitchedOffSpeechFinishesRightAway() {
         let speech = SystemSpeech { false }
         let done = expectation(description: "completion")

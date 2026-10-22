@@ -17,6 +17,7 @@ struct AnswerCounts: Codable, Equatable {
     static func += (lhs: inout AnswerCounts, rhs: AnswerCounts) { lhs = lhs + rhs }
 }
 
+/// The time ranges the statistics screen offers.
 enum StatsRange: String, CaseIterable, Identifiable {
     case days3, days14, months3, months6, months12, all
 
@@ -47,6 +48,7 @@ struct StatsBucket: Identifiable {
     var id: Date { start }
 }
 
+/// One row of a breakdown: a verb type in one tense, or a tense in the overview.
 struct GroupStats: Identifiable {
     let label: String
     let counts: AnswerCounts
@@ -59,10 +61,11 @@ struct VerbMistakes: Identifiable {
     var id: String { verb }
 }
 
-/// Answer log for the statistics, aggregated per day and verb×tense. A day is the finest
+/// First answers for the statistics, counted per day and verb×tense. A day is the finest
 /// resolution any chart needs, so this stays small even after years of practice.
 @Observable
 final class AnswerHistory {
+    /// The "Alle" range uses the narrowest bars (days, weeks, months) that stay within this many.
     static let maxBuckets = 31
 
     /// "yyyy-MM-dd" → "verb|tense" → counts
@@ -121,6 +124,7 @@ final class AnswerHistory {
         }
         let unit: Calendar.Component
         let from: Date
+        // Today is the last bar, so "3 T" goes back 2 days and "12 M" 11 months.
         switch range {
         case .days3: unit = .day; from = back(.day, 2)
         case .days14: unit = .day; from = back(.day, 13)
@@ -128,6 +132,7 @@ final class AnswerHistory {
         case .months6: unit = .weekOfYear; from = back(.month, 6)
         case .months12: unit = .month; from = back(.month, 11)
         case .all:
+            // A day recorded after today (the clock was set back) must not start the chart in the future.
             let first = min(firstDay ?? today, today)
             unit = [Calendar.Component.day, .weekOfYear, .month]
                 .first { bucketStarts(from: first, to: now, unit: $0).count <= Self.maxBuckets } ?? .month
@@ -168,6 +173,7 @@ final class AnswerHistory {
     /// A verb's row in `byGroup`, with a rank that orders rows like the verb picker.
     private static func statsGroup(_ verb: Verb, tense: Tense) -> (rank: Int, label: String) {
         if verb.isIrregular(in: tense) { return (Int.max, "Unregelmäßig") }
+        // Twice the group's index leaves room for "-are mit essere" right after "-are mit avere".
         let rank = 2 * VerbGroup.allCases.firstIndex(of: verb.group)!
         if tense == .passatoprossimo, verb.group == .are {
             return (verb.auxiliary == .avere ? rank : rank + 1, "-are mit \(verb.auxiliary.rawValue)")
@@ -179,6 +185,7 @@ final class AnswerHistory {
         countsPerVerb(in: window, tense: tense)
             .filter { $0.value.mistakes > 0 }
             .map { VerbMistakes(verb: $0.key, counts: $0.value) }
+            // Most mistakes first, ties in alphabetical order.
             .sorted { ($0.counts.mistakes, $1.verb) > ($1.counts.mistakes, $0.verb) }
             .prefix(limit)
             .map { $0 }

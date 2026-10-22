@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Close, mute, and how far the learner is through the current round.
 struct LessonTopBar: View {
     let answered: Int
     let total: Int
@@ -31,27 +32,21 @@ struct LessonTopBar: View {
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.inkSoft)
                 .monospacedDigit()
+                // Room for "20/20", so the bar keeps its length as the count grows.
                 .frame(minWidth: 46, alignment: .trailing)
         }
     }
 }
 
+/// The line above a card's prompt: a tag ("Neu", the tense) and the repeat round.
 struct CardMeta: View {
     let tag: String?
     let round: Int
-    var onTagTap: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             if let tag {
-                if let onTagTap {
-                    Button(action: onTagTap) {
-                        Text(tag).underline(color: Theme.goldSoft)
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    Text(tag)
-                }
+                Text(tag)
             }
             if round > 1 {
                 Text("Wiederholungsrunde \(round)")

@@ -23,6 +23,7 @@ struct AnswerField: UIViewRepresentable {
         field.smartDashesType = .no
         field.returnKeyType = .go
         field.enablesReturnKeyAutomatically = false
+        // Take the width SwiftUI offers instead of sizing to the text.
         field.setContentHuggingPriority(.defaultLow, for: .horizontal)
         field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
@@ -35,6 +36,7 @@ struct AnswerField: UIViewRepresentable {
         field.textColor = UIColor(Theme.ink)
         if context.coordinator.focusedToken != focusToken {
             context.coordinator.focusedToken = focusToken
+            // After the update: a new field is not in a window yet and can't take focus.
             DispatchQueue.main.async { field.becomeFirstResponder() }
         }
     }
@@ -51,6 +53,7 @@ struct AnswerField: UIViewRepresentable {
             parent.text = field.text ?? ""
         }
 
+        /// Blocks typing instead of disabling the field, which would close the keyboard.
         func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
             parent.isEditable
         }

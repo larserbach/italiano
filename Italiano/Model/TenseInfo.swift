@@ -1,3 +1,4 @@
+/// The explanation sheet for one tense. The texts are in TenseInfo+Content.swift.
 struct TenseInfo {
     struct Section: Identifiable {
         let heading: String
@@ -18,6 +19,7 @@ struct TenseInfo {
         case table(columns: [String], rows: [[String]])
     }
 
+    /// The German counterpart, shown under the title.
     let translation: String
     let sections: [Section]
 

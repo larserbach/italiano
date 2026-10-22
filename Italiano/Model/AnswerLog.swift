@@ -18,10 +18,11 @@ struct AnswerLogEntry: Codable, Equatable, Identifiable {
     var id: String { "\(date.timeIntervalSinceReferenceDate)|\(verb)|\(tense.rawValue)|\(person)" }
 }
 
-/// Every first answer, one JSON line each, so the verb detail screen can show what happened and
-/// the data stays usable for fitting a scheduler later. Appends instead of rewriting the file.
+/// Every first answer, one JSON line each, so the progress screen of a group or irregular verb can show
+/// what happened and the data stays usable for fitting a scheduler later. Appends instead of rewriting the file.
 @Observable
 final class AnswerLog {
+    /// Beyond this the oldest entries are dropped when the log loads, so the file can't grow without bound.
     static let maxEntries = 10_000
 
     private(set) var entries: [AnswerLogEntry]
@@ -56,12 +57,11 @@ final class AnswerLog {
             _ = try? handle.seekToEnd()
             try? handle.write(contentsOf: line)
         } else {
+            // The first entry creates the file, and Application Support, which a fresh install doesn't have.
             try? FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
             try? line.write(to: fileURL, options: .atomic)
         }
     }
-
-    func entries(for verb: String) -> [AnswerLogEntry] { entries.filter { $0.verb == verb } }
 
     func reset() {
         entries = []

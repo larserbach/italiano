@@ -1,6 +1,34 @@
-// The 30 most frequent irregular verbs. Hand-maintained: unlike VerbCatalog.swift their forms
-// cannot be derived, so every tense that cannot be built from other forms is spelled out.
-// Condizionale (from the Futuro stem) and Passato prossimo (participle + auxiliary) are still derived.
+// The 30 most frequent verbs usually taught as irregular. Hand-maintained: unlike VerbCatalog.swift,
+// every tense that cannot be built from other forms is spelled out. Condizionale (from the Futuro stem)
+// and Passato prossimo (participle + auxiliary) are still derived. Which tenses really leave the ending
+// group is worked out from these forms (`Verb.irregularTenses`); conoscere turns out regular in all.
+
+/// An irregular verb: everything that cannot be derived is spelled out.
+struct IrregularVerbSeed {
+    let infinitive: String
+    /// The infinitive's ending group (fare → -are, bere → -ere, dire → -ire), for reference only.
+    let ending: VerbGroup
+    let meaning: String
+    /// One German verb for prompts and derived German forms, e.g. "machen" for "machen, tun".
+    let germanInfinitive: String
+    let presente: [String]
+    let imperfetto: [String]
+    let futuro: [String]
+    let congiuntivo: [String]
+    /// `nil` for verbs without an imperative (potere, dovere, volere, piacere).
+    let imperativo: [String?]?
+    /// Further accepted tu-imperatives by person, e.g. fai next to fa'.
+    var imperativoAlternatives: [Int: [String]] = [:]
+    let participle: String
+    let auxiliary: Auxiliary
+    let dePresente: [String]
+    let dePraeteritum: [String]
+    let deParticiple: String
+    let deAuxiliary: GermanAuxiliary
+    var deImperative: String = ""
+    /// Complete German imperative where the default pattern does not fit (seien sie, gehen sie aus).
+    var deImperativo: [String?]? = nil
+}
 
 enum IrregularVerbCatalog {
     static let seeds: [IrregularVerbSeed] = [

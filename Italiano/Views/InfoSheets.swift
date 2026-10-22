@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// The explanation sheets for a tense or a verb, opened from prompts, chips and the verb picker.
 enum InfoSheet: Identifiable {
     case tense(Tense)
     case verb(String)
@@ -117,7 +118,6 @@ struct ConjugationTable: View {
                     .foregroundStyle(Theme.inkSoft)
             }
         }
-        .onAppear { if !verb.hasTense(tense) { tense = .presente } }
     }
 }
 
