@@ -44,6 +44,7 @@ struct UnitProgressView: View {
     var body: some View {
         // Retrievability falls by the minute, so the screen refreshes itself.
         TimelineView(.periodic(from: .now, by: 30)) { _ in
+            let entries = store.log.entries.filter { subject.includes($0.verb, $0.tense) }
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     ScreenHeader(title: subject.title, lede: lede)
@@ -55,6 +56,10 @@ struct UnitProgressView: View {
                     }
                     .buttonStyle(GhostButtonStyle(fullWidth: false))
 
+                    if !entries.isEmpty {
+                        RetrievabilityChart(subject: subject, entries: entries)
+                    }
+
                     VStack(alignment: .leading, spacing: 10) {
                         ControlLabel("Zeiten")
                         ForEach(subject.tenses) { tense in
@@ -62,7 +67,7 @@ struct UnitProgressView: View {
                         }
                     }
 
-                    AnswerLogList(entries: store.log.entries.filter { subject.includes($0.verb, $0.tense) })
+                    AnswerLogList(entries: entries)
                 }
                 .padding(.horizontal, 18)
                 .padding(.top, 8)
