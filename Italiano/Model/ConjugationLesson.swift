@@ -80,6 +80,7 @@ final class ConjugationLesson: Identifiable {
     init(store: ProgressStore, speech: Speaking = SilentSpeech()) {
         self.store = store
         self.speech = speech
+        speech.warmUp()
         start()
     }
 
