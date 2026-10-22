@@ -68,6 +68,7 @@ struct ConjugationLessonView: View {
                 .overlay(alignment: .bottom) {
                     feedbackText
                         .font(.system(size: 14))
+                        .multilineTextAlignment(.center)
                         .padding(.top, 10)
                         .alignmentGuide(.bottom) { $0[.top] }
                 }
