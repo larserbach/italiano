@@ -69,7 +69,7 @@ struct GhostButtonStyle: ButtonStyle {
     }
 }
 
-/// A small outlined square holding one system symbol. VoiceOver reads `label`.
+/// A small round glass button holding one system symbol. VoiceOver reads `label`.
 struct IconButton: View {
     let symbol: String
     let label: String
@@ -84,22 +84,14 @@ struct IconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: symbol)
+                .font(.system(size: 16, weight: .semibold))
+                .frame(width: 22, height: 22)
                 .contentTransition(.symbolEffect(.replace))
         }
-        .buttonStyle(Style())
+        .buttonStyle(.glass)
+        .buttonBorderShape(.circle)
+        .tint(Theme.ink)
         .accessibilityLabel(label)
-    }
-
-    private struct Style: ButtonStyle {
-        func makeBody(configuration: Configuration) -> some View {
-            configuration.label
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Theme.inkSoft)
-                .frame(width: 36, height: 32)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Theme.line))
-                .contentShape(Rectangle())
-                .opacity(configuration.isPressed ? 0.6 : 1)
-        }
     }
 }
 

@@ -94,25 +94,21 @@ struct ConjugationLessonView: View {
             HStack(spacing: 8) {
                 Spacer()
                 if !lesson.isReviewing {
-                    Button(action: lesson.reveal) {
-                        Image(systemName: "questionmark")
-                            .font(.system(size: 14, weight: .semibold))
-                            .frame(width: 20, height: 20)
-                    }
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.circle)
-                    .tint(Theme.ink)
-                    .accessibilityLabel("Ich weiß es nicht")
+                    IconButton("questionmark", label: "Ich weiß es nicht", action: lesson.reveal)
                 }
                 Button(action: submit) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 14, weight: .bold))
-                        .frame(width: 20, height: 20)
+                    if lesson.isReviewing {
+                        Text("Verstanden")
+                            .font(.system(size: 15, weight: .bold))
+                            .frame(height: 22)
+                    } else {
+                        Label("Prüfen", systemImage: "arrow.up")
+                            .font(.system(size: 15, weight: .bold))
+                            .frame(height: 22)
+                    }
                 }
                 .buttonStyle(.glassProminent)
-                .buttonBorderShape(.circle)
                 .tint(Theme.gold)
-                .accessibilityLabel(lesson.isReviewing ? "Verstanden" : "Prüfen")
             }
         }
         .padding(.leading, 16)
