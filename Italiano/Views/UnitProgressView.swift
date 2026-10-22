@@ -189,9 +189,13 @@ private struct PersonTable: View {
     }
 }
 
-/// Every first answer, newest first, grouped by day.
+/// Every first answer, newest first, grouped by day. Shows a page of answers at a time; a button below
+/// adds the next page.
 private struct AnswerLogList: View {
     let entries: [AnswerLogEntry]
+    @State private var shown = Self.pageSize
+
+    private static let pageSize = 20
 
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
@@ -211,12 +215,18 @@ private struct AnswerLogList: View {
                     }
                 }
             }
+            let more = min(Self.pageSize, entries.count - shown)
+            if more > 0 {
+                Button("\(more) weitere anzeigen") { shown += Self.pageSize }
+                    .buttonStyle(GhostButtonStyle())
+                    .padding(.top, 12)
+            }
         }
     }
 
     private var days: [(day: Date, entries: [AnswerLogEntry])] {
         let calendar = Calendar.current
-        let grouped = Dictionary(grouping: entries.reversed()) { calendar.startOfDay(for: $0.date) }
+        let grouped = Dictionary(grouping: entries.suffix(shown).reversed()) { calendar.startOfDay(for: $0.date) }
         return grouped.keys.sorted(by: >).map { ($0, grouped[$0]!) }
     }
 
