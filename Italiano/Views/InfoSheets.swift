@@ -1,17 +1,20 @@
 import SwiftUI
 
-/// The explanation sheets for a tense or a verb, opened from prompts, chips and the verb picker.
+/// The explanation sheets for a tense, a verb or a regular group, opened from prompts, the verb picker and the
+/// progress screens.
 enum InfoSheet: Identifiable {
     case tense(Tense)
     case verb(String)
     /// The verb sheet with the essere/avere level instead of the per-tense levels, for the Aux screens.
     case auxVerb(String)
+    case family(VerbFamily)
 
     var id: String {
         switch self {
         case .tense(let tense): "tense-\(tense.rawValue)"
         case .verb(let verb): "verb-\(verb)"
         case .auxVerb(let verb): "aux-verb-\(verb)"
+        case .family(let family): "family-\(family.rawValue)"
         }
     }
 }
@@ -23,6 +26,7 @@ extension View {
             case .tense(let tense): TenseInfoView(tense: tense)
             case .verb(let verb): VerbInfoView(verb: VerbLibrary.verb(verb))
             case .auxVerb(let verb): VerbInfoView(verb: VerbLibrary.verb(verb), showsTenseLevels: false)
+            case .family(let family): FamilyInfoView(family: family)
             }
         }
     }
@@ -82,6 +86,8 @@ struct VerbInfoView: View {
 /// All six forms of one tense, Italian next to German. Tense chips switch between tenses.
 struct ConjugationTable: View {
     let verb: Verb
+    /// Sets each form's ending apart from the stem, for the group sheets.
+    var highlightsEndings = false
     @State private var tense: Tense = .presente
 
     var body: some View {
@@ -102,8 +108,7 @@ struct ConjugationTable: View {
                         GridRow {
                             Text(Pronoun.italian[person])
                                 .foregroundStyle(Theme.inkSoft)
-                            Text(form)
-                                .fontWeight(.semibold)
+                            formText(form)
                             Text(verb.german(tense, person))
                                 .font(.system(size: 13))
                                 .foregroundStyle(Theme.inkSoft)
@@ -118,6 +123,15 @@ struct ConjugationTable: View {
                     .foregroundStyle(Theme.inkSoft)
             }
         }
+    }
+
+    private func formText(_ form: String) -> Text {
+        guard highlightsEndings else { return Text(form).fontWeight(.semibold) }
+        let parts = FamilyInfo.split(form, infinitive: verb.infinitive)
+        var ending = AttributedString(parts.ending)
+        ending.font = .system(size: 15, weight: .semibold)
+        ending.foregroundColor = Theme.gold
+        return Text(AttributedString(parts.start) + ending)
     }
 }
 
@@ -154,20 +168,67 @@ struct TenseInfoView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.inkSoft)
                 }
-                ForEach(info.sections) { section in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(section.heading)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Theme.gold)
-                        content(section.content)
-                    }
-                }
+                ForEach(info.sections) { InfoSection(section: $0) }
             }
             .padding(24)
         }
         .screenBackground()
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+    }
+}
+
+/// How a regular group builds its forms, with example verbs to see the endings on and what to watch out for.
+struct FamilyInfoView: View {
+    let family: VerbFamily
+    @Environment(\.dismiss) private var dismiss
+    @State private var example: String?
+
+    var body: some View {
+        let info = FamilyInfo.of(family)
+        let verb = VerbLibrary.verb(example ?? info.examples[0])
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 4) {
+                    SheetTitle(title: family.label) { dismiss() }
+                    Text(info.summary)
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.inkSoft)
+                }
+                InfoSection(section: .init(heading: "Bildung", content: .list(info.formation)))
+                VStack(alignment: .leading, spacing: 10) {
+                    infoHeading("Beispiele")
+                    FlowLayout {
+                        ForEach(info.examples, id: \.self) { option in
+                            Button(option) { example = option }
+                                .buttonStyle(ChipStyle(active: option == verb.infinitive))
+                        }
+                    }
+                    Text("„\(verb.meaning)“ · Passato prossimo mit \(verb.auxiliary.rawValue)")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.inkSoft)
+                    ConjugationTable(verb: verb, highlightsEndings: true)
+                        .padding(.top, 4)
+                }
+                ForEach(info.sections) { InfoSection(section: $0) }
+            }
+            .padding(24)
+        }
+        .screenBackground()
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+/// A heading with a paragraph, list or table, in the tense and group sheets.
+private struct InfoSection: View {
+    let section: TenseInfo.Section
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            infoHeading(section.heading)
+            content(section.content)
+        }
     }
 
     @ViewBuilder
@@ -207,6 +268,12 @@ struct TenseInfoView: View {
             }
         }
     }
+}
+
+private func infoHeading(_ text: String) -> some View {
+    Text(text)
+        .font(.system(size: 13, weight: .semibold))
+        .foregroundStyle(Theme.gold)
 }
 
 private func listText(_ item: TenseInfo.ListItem) -> AttributedString {

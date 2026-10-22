@@ -47,10 +47,13 @@ struct UnitProgressView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     ScreenHeader(title: subject.title, lede: lede)
-                    if case .verb(let verb) = subject {
-                        Button("Konjugation ansehen") { sheet = .verb(verb) }
-                            .buttonStyle(GhostButtonStyle(fullWidth: false))
+                    Button("Konjugation ansehen") {
+                        sheet = switch subject {
+                        case .family(let family): .family(family)
+                        case .verb(let verb): .verb(verb)
+                        }
                     }
+                    .buttonStyle(GhostButtonStyle(fullWidth: false))
                     explanation
 
                     VStack(alignment: .leading, spacing: 10) {
