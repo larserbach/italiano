@@ -177,10 +177,11 @@ struct ConjugationLessonView: View {
         switch lesson.feedback {
         case .none: Text(" ")
         case .correct(let answer):
-            Text(lesson.lookedUp ? "Giusto! \(answer) · nachgeschaut, zählt halb" : "Giusto! \(answer)")
+            Text(lesson.countsHalf ? "Giusto! \(answer) · nachgeschaut, zählt halb" : "Giusto! \(answer)")
                 .foregroundStyle(Theme.olive)
         case .almost(let answer):
-            Text("Fast richtig! Geschrieben wird: \(answer) · zählt halb").foregroundStyle(Theme.gold)
+            Text(lesson.countsHalf ? "Fast richtig! Geschrieben wird: \(answer) · zählt halb" : "Fast richtig! Geschrieben wird: \(answer)")
+                .foregroundStyle(Theme.gold)
         case .wrong(let answer): Text("Nicht ganz — richtig wäre: \(answer)").foregroundStyle(Theme.brick)
         case .wrongGender(let answer):
             Text("Fast — das Partizip passt sich an (\(genderHint)): \(answer)").foregroundStyle(Theme.brick)
