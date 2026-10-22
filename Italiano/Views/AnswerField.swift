@@ -14,7 +14,7 @@ struct AnswerField: UIViewRepresentable {
         let field = UITextField()
         field.delegate = context.coordinator
         field.font = .systemFont(ofSize: 18)
-        field.textAlignment = .center
+        field.textAlignment = .natural
         field.placeholder = "deine Antwort"
         field.autocapitalizationType = .none
         field.autocorrectionType = .no
