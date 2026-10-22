@@ -29,9 +29,6 @@ final class SpeechTests: XCTestCase {
 
     private func makeLesson() -> (ConjugationLesson, FakeSpeech) {
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["parlare"]
-        store.conjugation.tenses = [.presente]
         let speech = FakeSpeech()
         return (ConjugationLesson(store: store, speech: speech), speech)
     }

@@ -9,8 +9,7 @@ It has two exercises. Irregular verbs work in both, and the conjugation exercise
   show the German form, with the Italian infinitive and the tense underneath. Wrong answers come back in
   repeat rounds. A missing accent or one wrong letter (parlero, parlaimo) counts half and isn't repeated,
   unless it gives another form of the verb (parli for parlo) or a spelling trap (pagerò, viaggierò).
-  Mastery (0–10) is tracked per verb and tense. A verb's ring shows its level in the
-  selected tenses, and a long press shows every tense. Weaker verb/tense pairs come up more often.
+  Mastery (0–10) is tracked per verb and tense. Weaker verb/tense pairs come up more often.
   In the Passato prossimo an italic *m* or *f* next to the German pronoun says which form is wanted
   (sono arrivato / arrivata). It is picked at random and shown for avere verbs too, so it doesn't give
   away the auxiliary.
@@ -32,8 +31,8 @@ After each answer in Coniugazione the right form is read aloud (without the pron
 
 Tap a tense name to see how that tense is formed and used, including spelling traps like viaggiare → viaggerò. Tap a verb to see what it means, its spelling notes and a conjugation table for every tense.
 A one-time hint explains the verb rings; the settings screen (gear on the home screen) shows such hints again.
-The same screen can reset all progress (levels, statistics and the red mistake marks) after a confirmation. Exercise settings stay.
-Settings and progress are saved on the device. A fresh install starts the Coniugazione page with only parlare, Presente indicativo and 5 questions selected.
+The same screen can reset all progress (levels, the learning path and statistics) after a confirmation. Exercise settings stay.
+Settings and progress are saved on the device. A fresh install starts the learning path with the -are verbs and essere in the Presente, and 5 questions per lesson.
 
 ## Run it on your iPhone
 

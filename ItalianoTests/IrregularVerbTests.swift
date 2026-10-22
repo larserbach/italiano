@@ -70,11 +70,9 @@ final class IrregularVerbTests: XCTestCase {
     func testImperativeAlternativesAreAccepted() throws {
         let defaults = UserDefaults(suiteName: "IrregularVerbTests")!
         defaults.removePersistentDomain(forName: "IrregularVerbTests")
-        seedPool([("fare", .presente), ("fare", .imperativo)], in: defaults)
+        // Only fare in the Imperativo: a lesson of 5 asks every person.
+        seedPool([("fare", .imperativo)], in: defaults)
         let store = makeStore(defaults)
-        store.conjugation.mode = .free
-        store.conjugation.verbs = ["fare"]
-        store.conjugation.tenses = [.imperativo]
         store.conjugation.length = .count(5)
         let lesson = ConjugationLesson(store: store)
         while let item = lesson.current, item.person != 1 {
@@ -88,19 +86,9 @@ final class IrregularVerbTests: XCTestCase {
     }
 
     func testVerbsWithoutImperativeAreSkipped() {
-        let pool = ConjugationLesson.pool(verbs: ["potere", "andare"], tenses: [.imperativo])
-        XCTAssertEqual(pool.count, 5)
-        XCTAssertTrue(pool.allSatisfy { $0.verb == "andare" })
-
-        let defaults = UserDefaults(suiteName: "IrregularVerbTests2")!
-        defaults.removePersistentDomain(forName: "IrregularVerbTests2")
-        seedPool([("potere", .presente)], in: defaults)
-        let store = makeStore(defaults)
-        store.practise("potere", .presente, answers: 20)
-        XCTAssertGreaterThan(store.level(of: "potere", tense: .presente), 0)
-        // potere has no imperative, so it does not pull the average down.
-        XCTAssertEqual(store.level(of: "potere", tenses: [.presente, .imperativo]),
-                       store.level(of: "potere", tense: .presente))
+        XCTAssertFalse(VerbLibrary.verb("potere").hasTense(.imperativo))
+        XCTAssertFalse(PoolUnit.irregular("potere", .imperativo).isValid)
+        XCTAssertEqual(PoolUnit.irregular("andare", .imperativo).persons, [1, 2, 3, 4, 5])
     }
 
     func testTableFormsShowGendersAndVariants() {
@@ -157,15 +145,5 @@ final class IrregularVerbTests: XCTestCase {
         let window = history.window(for: .days3)
         XCTAssertEqual(history.byGroup(in: window, tense: .presente).map(\.label), ["-are", "Unregelmäßig"])
         XCTAssertTrue(history.byGroup(in: window, tense: .passatoprossimo).isEmpty)
-    }
-
-    func testSavedSettingsDoNotSwitchOnIrregularVerbs() {
-        let defaults = UserDefaults(suiteName: "IrregularVerbTests3")!
-        defaults.removePersistentDomain(forName: "IrregularVerbTests3")
-        let regular = Set(VerbCatalog.seeds.map(\.infinitive))
-        seedPool(regular.map { ($0, .presente) }, in: defaults)
-        let first = makeStore(defaults)
-        first.conjugation.verbs = regular
-        XCTAssertEqual(makeStore(defaults).conjugation.verbs, regular)
     }
 }

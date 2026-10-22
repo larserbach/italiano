@@ -64,8 +64,6 @@ final class ConjugationLesson: Identifiable {
     /// Units with a first answer in this lesson.
     private var answeredUnits: Set<PoolUnit> = []
 
-    var isPathLesson: Bool { store.conjugation.mode == .path }
-
     var phase: LessonPhase { rounds.phase }
     var current: ConjugationItem? { rounds.current }
 
@@ -84,38 +82,11 @@ final class ConjugationLesson: Identifiable {
         start()
     }
 
-    /// The free-practice pool: every form of the selected verbs and tenses that the path has unlocked.
-    static func freePool(_ store: ProgressStore) -> [ConjugationItem] {
-        pool(verbs: store.conjugation.verbs, tenses: store.conjugation.tenses)
-            .filter { store.isUnlocked(verb: $0.verb, tense: $0.tense) }
-    }
-
-    static func pool(verbs: Set<String>, tenses: Set<Tense>) -> [ConjugationItem] {
-        var pool: [ConjugationItem] = []
-        for verb in VerbLibrary.orderedKeys where verbs.contains(verb) {
-            for tense in Tense.allCases where tenses.contains(tense) {
-                for person in tense.persons where VerbLibrary.verb(verb).hasForm(tense, person) {
-                    pool.append(ConjugationItem(verb: verb, tense: tense, person: person))
-                }
-            }
-        }
-        return pool
-    }
-
     func start() {
-        store.resetLastMistakes()
         outcome = nil
         answeredUnits = []
-        let settings = store.conjugation
-        let selected: [FormKey]
-        switch settings.mode {
-        case .path:
-            // The path's pool has no fixed size; `pickLesson` stops when it runs out.
-            selected = store.pickLesson(length: settings.length.resolve(poolSize: .max))
-        case .free:
-            selected = store.pickLesson(length: settings.length.resolve(poolSize: Self.freePool(store).count),
-                                        verbs: settings.verbs, tenses: settings.tenses)
-        }
+        // The path's pool has no fixed size; `pickLesson` stops when it runs out.
+        let selected = store.pickLesson(length: store.conjugation.length.resolve(poolSize: .max))
         let units = Set(selected.map { PoolUnit(verb: $0.verb, tense: $0.tense) })
         newUnits = units.filter { store.progress(of: $0).answers == 0 }
         sharesBefore = Dictionary(uniqueKeysWithValues: units.compactMap { unit in store.progress(of: unit).share.map { (unit, $0) } })

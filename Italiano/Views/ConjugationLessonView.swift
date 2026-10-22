@@ -33,7 +33,7 @@ struct ConjugationLessonView: View {
                     firstTry: lesson.rounds.firstTryCorrect, accuracy: lesson.rounds.accuracy,
                     missedTitle: "Diese Formen waren kniffelig", missed: lesson.rounds.missedForms,
                     back: { dismiss() },
-                    repeatTitle: lesson.isPathLesson ? "Nächste Lektion" : "Lektion wiederholen",
+                    repeatTitle: "Nächste Lektion",
                     repeatAction: lesson.start,
                     sections: summarySections)
             }
