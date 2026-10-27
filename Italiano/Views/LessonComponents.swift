@@ -83,11 +83,25 @@ struct RoundCompleteView: View {
     }
 }
 
+/// Whether a share went up or down, as the summary shows it: by the rounded percentages, so 45 % → 45 % is no change.
+enum Trend {
+    case up, down, same
+
+    /// Nil when there is no value before, for something new.
+    init?(from: Double?, to: Double?) {
+        guard let from, let to else { return nil }
+        let (a, b) = (Int((from * 100).rounded()), Int((to * 100).rounded()))
+        self = b > a ? .up : b < a ? .down : .same
+    }
+}
+
 /// An extra list in the lesson summary, such as what the lesson unlocked.
 struct SummarySection: Identifiable {
     struct Row: Identifiable {
         let label: String
         let value: String
+        /// Shown after the value as an arrow.
+        var trend: Trend? = nil
         var id: String { label }
     }
 
@@ -104,8 +118,9 @@ struct SummaryView: View {
     let total: Int
     let firstTry: Int
     let accuracy: Int
-    let missedTitle: String
-    let missed: [MissedForm]
+    /// The forms that needed more than one try, with the right answer; left out where the sections say more.
+    var missedTitle = ""
+    var missed: [MissedForm] = []
     let back: () -> Void
     let repeatTitle: String
     let repeatAction: () -> Void
@@ -165,12 +180,19 @@ struct SummaryView: View {
     }
 
     private func rowList(_ rows: [SummarySection.Row]) -> some View {
-        VStack(spacing: 0) {
+        // Where some rows have an arrow, the others keep its space, so the values line up.
+        let trends = rows.contains { $0.trend != nil }
+        return VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
                     Text(row.label).foregroundStyle(Theme.inkSoft)
                     Spacer()
-                    Text(row.value).fontWeight(.semibold)
+                    Text(row.value).fontWeight(.semibold).monospacedDigit()
+                    if let trend = row.trend {
+                        TrendArrow(trend: trend)
+                    } else if trends {
+                        Color.clear.frame(width: 14, height: 1)
+                    }
                 }
                 .font(.system(size: 14.5))
                 .padding(.vertical, 10)
@@ -180,6 +202,24 @@ struct SummaryView: View {
                 }
             }
         }
+    }
+}
+
+/// Green up, red down, a grey dash for no change.
+private struct TrendArrow: View {
+    let trend: Trend
+
+    var body: some View {
+        let (symbol, color, label) = switch trend {
+        case .up: ("arrow.up", Theme.olive, "gestiegen")
+        case .down: ("arrow.down", Theme.brick, "gesunken")
+        case .same: ("minus", Theme.inkSoft, "unverändert")
+        }
+        Image(systemName: symbol)
+            .font(.system(size: 12, weight: .bold))
+            .foregroundStyle(color)
+            .frame(width: 14)
+            .accessibilityLabel(label)
     }
 }
 

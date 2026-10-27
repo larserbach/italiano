@@ -110,6 +110,41 @@ final class LessonTests: XCTestCase {
         if let parlare { XCTAssertEqual(parlare.answer, "ho parlato") }
     }
 
+    func testRoundOneRecordsWhatEachAnswerDidToItsForm() throws {
+        seedPool([("parlare", .presente)], in: defaults)
+        let store = makeStore(defaults)
+        store.conjugation.length = .count(6) // every person of -are once
+        let lesson = ConjugationLesson(store: store)
+        for _ in 0..<6 { lesson.reveal(); lesson.submit("") }
+        XCTAssertEqual(lesson.phase, .roundComplete)
+        XCTAssertEqual(lesson.answeredForms.count, 6)
+        XCTAssertTrue(lesson.answeredForms.allSatisfy { $0.before == nil && abs($0.after - 0.3) < 1e-9 })
+
+        // The repeat rounds change nothing.
+        lesson.startNextRound()
+        let repeated = try XCTUnwrap(lesson.current)
+        lesson.submit(repeated.answer)
+        XCTAssertEqual(lesson.answeredForms.count, 6)
+
+        // The next lesson starts its own list: a wrong answer lowers a known form, a right one raises it.
+        lesson.start()
+        XCTAssertTrue(lesson.answeredForms.isEmpty)
+        let first = try XCTUnwrap(lesson.current)
+        lesson.reveal(); lesson.submit("")
+        lesson.submit(try XCTUnwrap(lesson.current).answer)
+        let (wrong, right) = (lesson.answeredForms[0], lesson.answeredForms[1])
+        XCTAssertEqual(wrong.label, "\(first.pronoun) · \(first.verb) · Pres.")
+        XCTAssertLessThan(wrong.after, try XCTUnwrap(wrong.before))
+        XCTAssertGreaterThan(right.after, try XCTUnwrap(right.before))
+    }
+
+    func testTrendsFollowTheRoundedPercentages() {
+        XCTAssertEqual(Trend(from: 0.45, to: 0.5), .up)
+        XCTAssertEqual(Trend(from: 0.5, to: 0.25), .down)
+        XCTAssertEqual(Trend(from: 0.451, to: 0.449), .same) // both 45 %
+        XCTAssertNil(Trend(from: nil, to: 0.3)) // new
+    }
+
     func testOtherGenderAnswerGetsSpecificFeedback() throws {
         // Only essere in the Passato prossimo, so every card agrees with a gender (sono stato / stata).
         seedPool([("essere", .passatoprossimo)], in: defaults)

@@ -1,10 +1,11 @@
 import Charts
 import SwiftUI
 
-/// Correct answers vs. mistakes over time: an overview broken down by tense, then one card per
-/// tense broken down by verb type.
+/// Correct answers vs. mistakes over time: an overview broken down by tense, the Abruf of a group or
+/// irregular verb, then one card per tense broken down by verb type.
 struct ConjugationStatsView: View {
     let history: AnswerHistory
+    @Environment(ProgressStore.self) private var store
     @AppStorage("stats-range") private var range: StatsRange = .days14
 
     var body: some View {
@@ -32,6 +33,10 @@ struct ConjugationStatsView: View {
                     }
 
                     StatsCard(history: history, window: window, tense: nil)
+
+                    if !store.log.entries.isEmpty {
+                        RetrievabilityCard(log: store.log.entries, start: window.start)
+                    }
 
                     ForEach(Tense.allCases) { tense in
                         StatsCard(history: history, window: window, tense: tense)

@@ -28,10 +28,9 @@ struct ConjugationLessonView: View {
                     title: "Lektion fertig!",
                     lede: lesson.rounds.missedForms.isEmpty
                         ? "Alles auf Anhieb richtig. Ottimo lavoro!"
-                        : "Ein paar Formen brauchten mehr als einen Versuch — die stehen unten noch mal.",
+                        : "Ein paar Formen brauchten mehr als einen Versuch — unten siehst du, was jede Antwort bewirkt hat.",
                     totalLabel: "Aufgaben", total: lesson.rounds.totalPlanned,
                     firstTry: lesson.rounds.firstTryCorrect, accuracy: lesson.rounds.accuracy,
-                    missedTitle: "Diese Formen waren kniffelig", missed: lesson.rounds.missedForms,
                     back: { dismiss() },
                     repeatTitle: "Nächste Lektion",
                     repeatAction: lesson.start,
@@ -222,10 +221,19 @@ struct ConjugationLessonView: View {
         }
         if !outcome.changes.isEmpty {
             sections.append(SummarySection(title: "Gut in den letzten \(Curriculum.windowSize) Antworten", rows: outcome.changes.map {
-                .init(label: $0.unit.label, value: "\($0.from.map(DaysText.percent) ?? "neu") → \($0.to.map(DaysText.percent) ?? "–")")
+                .init(label: $0.unit.label, value: change(from: $0.from, to: $0.to), trend: Trend(from: $0.from, to: $0.to))
+            }))
+        }
+        if !lesson.answeredForms.isEmpty {
+            sections.append(SummarySection(title: "Abruf je Form", rows: lesson.answeredForms.map {
+                .init(label: $0.label, value: change(from: $0.before, to: $0.after), trend: Trend(from: $0.before, to: $0.after))
             }))
         }
         return sections
+    }
+
+    private func change(from: Double?, to: Double?) -> String {
+        "\(from.map(DaysText.percent) ?? "neu") → \(to.map(DaysText.percent) ?? "–")"
     }
 
     private func submit() {

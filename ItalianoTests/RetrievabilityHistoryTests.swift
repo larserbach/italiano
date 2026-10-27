@@ -78,4 +78,13 @@ final class RetrievabilityHistoryTests: XCTestCase {
         XCTAssertNil(RetrievabilityHistory.value(at: start - 1, in: points))
         XCTAssertNil(RetrievabilityHistory.value(at: start + 11, in: points))
     }
+
+    func testCurvesAreClippedToThePeriod() {
+        let start = Date(timeIntervalSinceReferenceDate: 800_000_000)
+        let points = [RetrievabilityHistory.Point(date: start, value: 1), .init(date: start + 10, value: 0.5), .init(date: start + 20, value: 0.4)]
+        XCTAssertEqual(RetrievabilityHistory.clipped(points, from: start + 5),
+                       [.init(date: start + 5, value: 0.75), .init(date: start + 10, value: 0.5), .init(date: start + 20, value: 0.4)])
+        // A curve that begins within the period stays whole.
+        XCTAssertEqual(RetrievabilityHistory.clipped(points, from: start - 100), points)
+    }
 }
