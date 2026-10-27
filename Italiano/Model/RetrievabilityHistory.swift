@@ -23,6 +23,13 @@ enum RetrievabilityHistory {
         }
     }
 
+    /// The part of a curve from `start` on, beginning exactly at `start` where the curve began earlier.
+    static func clipped(_ points: [Point], from start: Date) -> [Point] {
+        let after = points.filter { $0.date > start }
+        guard let value = value(at: start, in: points) else { return after }
+        return [Point(date: start, value: value)] + after
+    }
+
     /// The value at `date`, between the two points around it; nil outside the curve.
     static func value(at date: Date, in points: [Point]) -> Double? {
         guard let first = points.first, let last = points.last, date >= first.date, date <= last.date else { return nil }

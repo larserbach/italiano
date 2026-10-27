@@ -19,6 +19,8 @@ struct ConjugationItem: Hashable {
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
     var pronoun: String { Pronoun.italian(person, gender: gender) }
     var marker: String? { gender?.marker }
+    /// The pronoun with the gender marker where there is one: "lui (m)".
+    var markedPronoun: String { marker.map { "\(pronoun) (\($0))" } ?? pronoun }
 
     /// The same form for the other gender, to recognise answers that only miss the agreement.
     var otherGenderAnswer: String? {
@@ -56,6 +58,8 @@ final class ConjugationLesson: Identifiable {
     private(set) var outcome: LessonOutcome?
     /// Groups and irregular verbs answered for the first time in this lesson, for the "Neu" badge.
     private(set) var newUnits: Set<PoolUnit> = []
+    /// Every first answer of round 1 with what it did to the form's retrievability, in the order asked.
+    private(set) var answeredForms: [AnsweredForm] = []
     /// Whether the learner opened the verb or tense description on the current card; a right answer then
     /// counts as Correct instead of Good.
     private(set) var lookedUp = false
@@ -96,6 +100,7 @@ final class ConjugationLesson: Identifiable {
     func start() {
         outcome = nil
         answeredUnits = []
+        answeredForms = []
         // The path's pool has no fixed size; `pickLesson` stops when it runs out.
         let selected = store.pickLesson(length: store.conjugation.length.resolve(poolSize: .max))
         let units = Set(selected.map { PoolUnit(verb: $0.verb, tense: $0.tense) })
@@ -190,14 +195,25 @@ final class ConjugationLesson: Identifiable {
     }
 
     private func recordFirstAttempt(_ item: ConjugationItem, _ rating: Rating) {
+        let key = MemoryKey(verb: item.verb, tense: item.tense, person: item.person)
+        let now = store.now()
+        let before = store.state(of: key)?.retrievability(at: now)
         store.record(item, rating)
         answeredUnits.insert(item.unit)
+        answeredForms.append(AnsweredForm(label: "\(item.markedPronoun) · \(item.verb) · \(item.tense.shortLabel)", before: before,
+                                          after: store.state(of: key)?.retrievability(at: now) ?? 0))
     }
 
     private func recordMiss(_ item: ConjugationItem) {
-        let pronoun = item.marker.map { "\(item.pronoun) (\($0))" } ?? item.pronoun
-        rounds.recordMiss(key: item.key, label: "\(pronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
+        rounds.recordMiss(key: item.key, label: "\(item.markedPronoun) · \(item.verb) · \(item.tense.label)", answer: item.answer)
     }
+}
+
+/// A first answer in round 1 and the form's retrievability right before it (nil the first time) and right after.
+struct AnsweredForm {
+    let label: String
+    let before: Double?
+    let after: Double
 }
 
 /// What round 1 of a conjugation lesson changed.

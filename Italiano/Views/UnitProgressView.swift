@@ -56,10 +56,6 @@ struct UnitProgressView: View {
                     }
                     .buttonStyle(GhostButtonStyle(fullWidth: false))
 
-                    if !entries.isEmpty {
-                        RetrievabilityChart(subject: subject, entries: entries)
-                    }
-
                     VStack(alignment: .leading, spacing: 10) {
                         ControlLabel("Zeiten")
                         ForEach(subject.tenses) { tense in
