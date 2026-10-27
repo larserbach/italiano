@@ -32,7 +32,8 @@ struct FamilyInfo {
         }
 
         // The verbs the caveats are about come first, then more from the start of the path.
-        var picks = [model] + regular.filter { $0.spellingNote != nil } + regular.filter { $0.auxiliary == .essere }.prefix(1)
+        var picks = [model] + regular.filter { $0.spellingNote != nil }
+        if let withEssere = regular.first(where: { $0.auxiliary == .essere }) { picks.append(withEssere) }
         for verb in regular where picks.count < maxExamples && !picks.contains(where: { $0.infinitive == verb.infinitive }) {
             picks.append(verb)
         }
