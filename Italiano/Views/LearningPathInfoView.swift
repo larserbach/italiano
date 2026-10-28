@@ -36,7 +36,7 @@ struct LearningPathInfoView: View {
                 .init(label: "Nur der erste Versuch:", text: "Was du in den Wiederholungsrunden einer Lektion beantwortest, zählt nicht mit."),
             ])),
             .init(heading: "Wann Neues dazukommt", content: .list([
-                .init(label: "Die Schwelle:", text: "Von den letzten \(Curriculum.windowSize) Antworten einer Gruppe oder eines unregelmäßigen Verbs in einer Zeit sind mindestens \(bar) gut, und jede Person war mindestens \(Curriculum.answersPerPerson)-mal dabei."),
+                .init(label: "Die Schwelle:", text: "Jede Person einer Gruppe oder eines unregelmäßigen Verbs in einer Zeit war mindestens \(Curriculum.answersPerPerson)-mal dran, und von ihren letzten \(Curriculum.answersKeptPerPerson) Antworten je Person sind zusammen mindestens \(bar) gut."),
                 .init(label: "Am Ende von Runde 1:", text: "Dann prüft die App, was die Schwelle erreicht hat, und schaltet frei, was danach kommt."),
                 .init(label: "Frühere Zeiten zuerst:", text: "Eine Gruppe oder ein Verb in einer späteren Zeit schaltet nur frei, solange dieselbe Gruppe bzw. dasselbe Verb auch in allen früheren Zeiten gerade mindestens \(bar) gut ist."),
                 .init(label: "Einmal geschafft:", text: "Was die Schwelle erreicht hat, bleibt geschafft (grüner Ring), auch wenn es später wieder schwächer läuft. Es kommt aber weiter in Lektionen vor."),

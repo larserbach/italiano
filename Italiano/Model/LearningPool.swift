@@ -4,8 +4,9 @@ import Foundation
 /// verb is irregular is decided per tense: scrivere counts for -ere in the Presente and on its own in the
 /// Passato prossimo.
 ///
-/// It starts with all -are verbs and essere in the Presente. A unit that performs well (≥ 80 % Good in its
-/// last 20 answers, a looked-up answer counting half, every person answered at least twice) unlocks:
+/// It starts with all -are verbs and essere in the Presente. A unit that performs well (every person answered
+/// at least twice, and ≥ 80 % Good in the last 4 answers of each person, a looked-up answer counting half)
+/// unlocks:
 /// a regular group the next group in the same tense and itself in the next tense; an irregular verb the
 /// next verb that is first irregular in the same tense, and itself in the next tense it is irregular in once a
 /// regular group has that tense. So a verb always starts in its first irregular tense: venire comes in the
@@ -14,48 +15,70 @@ import Foundation
 /// tense in the pool; whether every person is still in that tense's window does not matter there.
 /// A group in a later tense only asks about verbs already met in the Presente (`verbs(of:)`).
 struct LearningPool: Codable, Equatable {
-    /// The last answers of a unit, with the person each was about.
+    /// The last answers of a unit, with the person each was about: the last `answersKeptPerPerson` of each
+    /// person, so a person only loses an answer by being asked again and can't drift out behind the others.
     struct Window: Codable, Equatable {
         private(set) var ratings: [Rating] = []
         private(set) var persons: [Int] = []
 
+        init() {}
+
+        /// A window saved as the last 20 answers of the unit keeps what it holds of each person.
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            ratings = try container.decode([Rating].self, forKey: .ratings)
+            persons = try container.decode([Int].self, forKey: .persons)
+            trim()
+        }
+
         mutating func append(_ rating: Rating, person: Int) {
             ratings.append(rating)
             persons.append(person)
-            // A window saved with a larger size shrinks to the current one.
-            if ratings.count > Curriculum.windowSize {
-                ratings.removeFirst(ratings.count - Curriculum.windowSize)
-                persons.removeFirst(persons.count - Curriculum.windowSize)
-            }
+            trim()
         }
 
-        /// The answers that count: the last `windowSize`.
-        var recentRatings: ArraySlice<Rating> { ratings.suffix(Curriculum.windowSize) }
-        var recentPersons: ArraySlice<Int> { persons.suffix(Curriculum.windowSize) }
+        /// Drops each person's answers beyond their last `answersKeptPerPerson`.
+        private mutating func trim() {
+            var kept: [Int: Int] = [:]
+            let keep = persons.indices.reversed().filter { index in
+                kept[persons[index], default: 0] += 1
+                return kept[persons[index]]! <= Curriculum.answersKeptPerPerson
+            }.reversed()
+            guard keep.count < persons.count else { return }
+            ratings = keep.map { ratings[$0] }
+            persons = keep.map { persons[$0] }
+        }
+
+        func count(of person: Int) -> Int { persons.filter { $0 == person }.count }
 
         /// Share of Good points, nil without answers.
         var share: Double? {
-            recentRatings.isEmpty ? nil : recentRatings.map(\.goodPoints).reduce(0, +) / Double(recentRatings.count)
+            ratings.isEmpty ? nil : ratings.map(\.goodPoints).reduce(0, +) / Double(ratings.count)
         }
     }
 
     /// How a unit is doing against the bar.
     struct Progress: Equatable {
+        /// All answers kept, up to `answersKeptPerPerson` per person.
         let answers: Int
+        /// Answers toward `needed`: up to `answersPerPerson` per person.
+        let counted: Int
+        /// `answersPerPerson` for each of the unit's persons.
+        let needed: Int
         let share: Double?
-        /// Persons with fewer than two answers in the window.
+        /// Persons with fewer than `answersPerPerson` answers.
         let missingPersons: [Int]
         /// Already performed well once and unlocked what comes after it.
         let passed: Bool
 
         var performsWell: Bool {
-            answers >= Curriculum.windowSize && (share ?? 0) >= Curriculum.goodBar && missingPersons.isEmpty
+            missingPersons.isEmpty && (share ?? 0) >= Curriculum.goodBar
         }
 
-        /// 0…1 for rings and bars: the share against the bar, scaled down while the window is still filling.
+        /// 0…1 for rings and bars: the share against the bar, scaled down while persons still lack answers.
         var fraction: Double {
             if passed { return 1 }
-            let filled = min(1, Double(answers) / Double(Curriculum.windowSize))
+            let filled = needed == 0 ? 1 : Double(counted) / Double(needed)
             return min(1, (share ?? 0) / Curriculum.goodBar) * filled
         }
     }
@@ -111,8 +134,11 @@ struct LearningPool: Codable, Equatable {
 
     func progress(of unit: PoolUnit) -> Progress {
         let window = windows[unit] ?? Window()
-        let missing = unit.persons.filter { person in window.recentPersons.filter { $0 == person }.count < Curriculum.answersPerPerson }
-        return Progress(answers: window.recentRatings.count, share: window.share, missingPersons: missing, passed: passed.contains(unit))
+        let counts = unit.persons.map { min(window.count(of: $0), Curriculum.answersPerPerson) }
+        let missing = zip(unit.persons, counts).filter { $0.1 < Curriculum.answersPerPerson }.map(\.0)
+        return Progress(answers: window.ratings.count, counted: counts.reduce(0, +),
+                        needed: unit.persons.count * Curriculum.answersPerPerson, share: window.share,
+                        missingPersons: missing, passed: passed.contains(unit))
     }
 
     // MARK: Answers and lessons

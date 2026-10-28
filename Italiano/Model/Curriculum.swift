@@ -24,9 +24,10 @@ enum Curriculum {
         verbOrder.filter { VerbLibrary.verb($0).isIrregular(in: tense) }
     }
 
-    /// A unit performs well with this share of Good points in its last `windowSize` answers …
+    /// A unit performs well with this share of Good points in the last `answersKeptPerPerson` answers of each
+    /// person …
     static let goodBar = 0.8
-    static let windowSize = 20
+    static let answersKeptPerPerson = 4
     /// … and every person answered at least this often among them.
     static let answersPerPerson = 2
 
