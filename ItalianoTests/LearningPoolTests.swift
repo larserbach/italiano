@@ -158,6 +158,23 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ere, .passatoprossimo), .group(.are, .imperfetto)])
     }
 
+    func testAPersonMissingFromAnEarlierTenseDoesNotHoldBack() {
+        // -are · Presente passed, then io drifted out of its last 20 answers; the share stays at 100 %.
+        var pool = LearningPool.initial(at: now)
+        let presente = PoolUnit.group(.are, .presente)
+        answer(&pool, presente, good(20))
+        _ = pool.finishLesson(at: now)
+        let others = Array(presente.persons.dropFirst())
+        for index in 0..<20 {
+            pool.record(.pattern(PatternKey(family: .are, tense: .presente, person: others[index % others.count])), .good)
+        }
+        XCTAssertEqual(pool.progress(of: presente).missingPersons, [presente.persons[0]])
+        let passato = PoolUnit.group(.are, .passatoprossimo)
+        answer(&pool, passato, good(20))
+        XCTAssertTrue(pool.blockers(of: passato).isEmpty)
+        XCTAssertTrue(pool.finishLesson(at: now).map(\.unit).contains(.group(.are, .imperfetto)))
+    }
+
     func testOnlyTheSameGroupOrVerbHoldsBack() {
         var pool = LearningPool(units: [.group(.are, .presente), .group(.ere, .presente), .group(.ere, .passatoprossimo),
                                         .irregular("essere", .presente)], at: now)
