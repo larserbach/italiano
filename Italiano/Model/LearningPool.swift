@@ -10,8 +10,8 @@ import Foundation
 /// next verb that is first irregular in the same tense, and itself in the next tense it is irregular in once a
 /// regular group has that tense. So a verb always starts in its first irregular tense: venire comes in the
 /// Presente and reaches the Passato prossimo through itself, never through another verb's Passato prossimo.
-/// A unit in a later tense only unlocks while the same group or verb still performs well in every earlier
-/// tense in the pool.
+/// A unit in a later tense only unlocks while the same group or verb is still at ≥ 80 % Good in every earlier
+/// tense in the pool; whether every person is still in that tense's window does not matter there.
 /// A group in a later tense only asks about verbs already met in the Presente (`verbs(of:)`).
 struct LearningPool: Codable, Equatable {
     /// The last answers of a unit, with the person each was about.
@@ -121,8 +121,9 @@ struct LearningPool: Codable, Equatable {
         windows[key.unit, default: Window()].append(rating, person: key.person)
     }
 
-    /// The same group or irregular verb in earlier tenses that does not perform well right now; while there
-    /// is any, the unit unlocks nothing.
+    /// The same group or irregular verb in earlier tenses whose share of Good is below the bar right now;
+    /// while there is any, the unit unlocks nothing. Only the share counts: every person was answered
+    /// enough there when it passed, and a well-known person drifting out of its window does not hold back.
     func blockers(of unit: PoolUnit) -> [PoolUnit] {
         let earlier = Curriculum.tenseOrder.prefix { $0 != unit.tense }
         return earlier.compactMap { tense -> PoolUnit? in
@@ -130,7 +131,7 @@ struct LearningPool: Codable, Equatable {
             case .group(let family, _): .group(family, tense)
             case .irregular(let verb, _): .irregular(verb, tense)
             }
-            return contains(other) && !progress(of: other).performsWell ? other : nil
+            return contains(other) && (progress(of: other).share ?? 0) < Curriculum.goodBar ? other : nil
         }
     }
 
