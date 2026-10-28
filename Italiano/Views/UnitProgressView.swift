@@ -123,7 +123,7 @@ private struct UnitCard: View {
             }
             if inPool {
                 Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 4) {
-                    row("Antworten", "\(progress.answers) von \(Curriculum.windowSize)")
+                    row("Antworten", "\(progress.counted) von \(progress.needed) nötig")
                     row("Davon gut", progress.share.map { "\(DaysText.percent($0)) (nötig \(DaysText.percent(Curriculum.goodBar)))" } ?? "–")
                     row("Zu wenig geübt", progress.missingPersons.isEmpty ? "–" : progress.missingPersons.map { Pronoun.italian[$0] }.joined(separator: ", "))
                 }

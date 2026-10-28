@@ -220,7 +220,7 @@ struct ConjugationLessonView: View {
             }, highlighted: true))
         }
         if !outcome.changes.isEmpty {
-            sections.append(SummarySection(title: "Gut in den letzten \(Curriculum.windowSize) Antworten", rows: outcome.changes.map {
+            sections.append(SummarySection(title: "Gut in den letzten \(Curriculum.answersKeptPerPerson) Antworten je Person", rows: outcome.changes.map {
                 .init(label: $0.unit.label, value: change(from: $0.from, to: $0.to), trend: Trend(from: $0.from, to: $0.to))
             }))
         }

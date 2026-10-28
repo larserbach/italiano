@@ -156,17 +156,17 @@ private struct LearningPathSection: View {
                     }
                 }
             }
-            Text("Neues kommt, wenn von den letzten \(Curriculum.windowSize) Antworten einer Gruppe oder eines unregelmäßigen Verbs mindestens \(DaysText.percent(Curriculum.goodBar)) gut sind – in späteren Zeiten nur, solange auch die früheren Zeiten so gut laufen. Tippe eine Zeile an für Details.")
+            Text("Neues kommt, wenn von den letzten \(Curriculum.answersKeptPerPerson) Antworten je Person einer Gruppe oder eines unregelmäßigen Verbs mindestens \(DaysText.percent(Curriculum.goodBar)) gut sind – in späteren Zeiten nur, solange auch die früheren Zeiten so gut laufen. Tippe eine Zeile an für Details.")
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.inkSoft)
         }
     }
 
     private func status(_ progress: LearningPool.Progress) -> String {
-        var parts = ["\(progress.answers) von \(Curriculum.windowSize) Antworten"]
+        var parts = ["\(progress.counted) von \(progress.needed) Antworten"]
         if let share = progress.share { parts.append("\(DaysText.percent(share)) gut") }
-        // Only once the window is half full: before that most persons are missing anyway.
-        if !progress.missingPersons.isEmpty, progress.answers >= Curriculum.windowSize / 2 {
+        // Only once half the needed answers are there: before that most persons are missing anyway.
+        if !progress.missingPersons.isEmpty, progress.counted >= progress.needed / 2 {
             parts.append("mehr nötig: " + progress.missingPersons.map { Pronoun.italian[$0] }.joined(separator: ", "))
         }
         return parts.joined(separator: " · ")

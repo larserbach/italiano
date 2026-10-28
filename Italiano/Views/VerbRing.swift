@@ -56,6 +56,6 @@ struct ProgressRing: View {
         .frame(width: 26, height: 26)
         .accessibilityElement()
         .accessibilityLabel((progress.passed ? "geschafft, " : "")
-                            + "\(progress.share.map { DaysText.percent($0) } ?? "noch keine Antworten") gut, \(progress.answers) von \(Curriculum.windowSize) Antworten")
+                            + "\(progress.share.map { DaysText.percent($0) } ?? "noch keine Antworten") gut, \(progress.counted) von \(progress.needed) nötigen Antworten")
     }
 }
