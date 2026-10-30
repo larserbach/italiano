@@ -247,7 +247,7 @@ final class LearningPoolTests: XCTestCase {
         var rng = SeededGenerator(state: 7)
         let pool = LearningPool.initial(at: now - 2 * 86_400)
         for _ in 0..<20 {
-            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: LearningMemory(),
                                                length: 10, at: now, using: &rng)
             XCTAssertEqual(picked.count, 10)
             XCTAssertEqual(Set(picked).count, 10)
@@ -256,7 +256,7 @@ final class LearningPoolTests: XCTestCase {
             XCTAssertLessThanOrEqual(regular.count, 5)
         }
         // A long lesson repeats -are patterns with other verbs to fill up.
-        let long = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
+        let long = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: LearningMemory(),
                                          length: 20, at: now, using: &rng)
         XCTAssertEqual(long.count, 20)
         XCTAssertEqual(Set(long).count, 20)
@@ -271,7 +271,7 @@ final class LearningPoolTests: XCTestCase {
         }
         var noi = 0, total = 0
         for _ in 0..<50 {
-            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: memory,
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: memory,
                                                length: 10, at: now, using: &rng)
             noi += picked.filter { $0.person == 3 }.count
             total += picked.count
