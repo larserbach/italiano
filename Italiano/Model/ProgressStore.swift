@@ -149,7 +149,7 @@ final class ProgressStore {
     func pickLesson(length: Int) -> [FormKey] {
         var rng = SystemRandomNumberGenerator()
         return Curriculum.pickLesson(units: pool.units, verbs: pool.verbs(of:),
-                                     pool: pool, memory: memory, length: length, at: now(), using: &rng)
+                                     memory: memory, length: length, at: now(), using: &rng)
     }
 
     // MARK: Essere o avere

@@ -127,11 +127,6 @@ struct LearningPool: Codable, Equatable {
     /// yet, so venivo waits for venire · Presente.
     func verbs(of unit: PoolUnit) -> [String] { unit.verbs.filter(hasMet) }
 
-    /// Added less than a day ago; lessons then ask about it more often.
-    func isFresh(_ unit: PoolUnit, at now: Date) -> Bool {
-        addedAt[unit].map { MemoryState.days(from: $0, to: now) < 1 } ?? false
-    }
-
     func progress(of unit: PoolUnit) -> Progress {
         let window = windows[unit] ?? Window()
         let counts = unit.persons.map { min(window.count(of: $0), Curriculum.answersPerPerson) }

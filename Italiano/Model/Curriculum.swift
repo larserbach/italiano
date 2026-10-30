@@ -31,11 +31,11 @@ enum Curriculum {
     /// … and every person answered at least this often among them.
     static let answersPerPerson = 2
 
-    /// Picks `length` questions, favouring what is least known, difficult, freshly added, or in a person ×
+    /// Picks `length` questions, favouring what is least known, difficult, or in a person ×
     /// tense that lags behind the rest. For a regular group the verb is chosen at random from `verbs`
     /// (different verbs within a lesson where possible). At most 4 questions per unit, unless there are too
     /// few units to fill the lesson.
-    static func pickLesson<R: RandomNumberGenerator>(units: [PoolUnit], verbs: (PoolUnit) -> [String], pool: LearningPool,
+    static func pickLesson<R: RandomNumberGenerator>(units: [PoolUnit], verbs: (PoolUnit) -> [String],
                                                      memory: LearningMemory, length: Int, at now: Date,
                                                      using rng: inout R) -> [FormKey] {
         let keys = units.flatMap(\.keys)
@@ -58,7 +58,6 @@ enum Curriculum {
                 // The default difficulty of 5 leaves the need as it is.
                 var need = (1 - known[key]!) * (0.7 + 0.06 * (memory[key]?.difficulty ?? 5))
                 need += personBoost[PersonTense(key)] ?? 0
-                if pool.isFresh(key.unit, at: now) { need += 0.3 }
                 return (key, pow(Double.random(in: 0.001..<1, using: &rng), 1 / max(0.01, need * need)))
             }
             .sorted { $0.1 > $1.1 }
