@@ -82,11 +82,11 @@ final class LessonTests: XCTestCase {
     func testRingsShowProgressTowardPerformingWell() {
         let store = makeStore(defaults)
         XCTAssertEqual(store.level(of: "parlare", tense: .presente), 0)
-        store.practise("parlare", .presente, answers: 10) // half the window, all Good
+        store.practise("parlare", .presente, answers: 6) // one of the two answers per person, all Good
         XCTAssertEqual(store.level(of: "parlare", tense: .presente), 5)
         XCTAssertEqual(store.level(of: "abitare", tense: .presente), 5) // same group
         XCTAssertEqual(store.level(of: "credere", tense: .presente), 0) // not in the pool
-        store.practise("parlare", .presente, answers: 10)
+        store.practise("parlare", .presente, answers: 6)
         XCTAssertEqual(store.level(of: "parlare", tense: .presente), 10)
     }
 

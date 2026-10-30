@@ -55,25 +55,46 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertEqual(saved.units, [.group(.are, .presente), .irregular("essere", .presente)])
     }
 
-    func testTheWindowKeepsTheLastTwentyAnswers() {
+    func testEachPersonKeepsItsLastFourAnswers() {
         var pool = LearningPool.initial(at: now)
         let are = PoolUnit.group(.are, .presente)
-        answer(&pool, are, Array(repeating: .again, count: 10) + good(20))
-        XCTAssertEqual(pool.progress(of: are).answers, 20)
-        XCTAssertEqual(pool.progress(of: are).share, 1)
+        let io = MemoryKey.pattern(PatternKey(family: .are, tense: .presente, person: are.persons[0]))
+        for rating in Array(repeating: Rating.again, count: 3) + good(4) { pool.record(io, rating) }
+        // However often the others are asked, io keeps its last 4 answers.
+        for index in 0..<40 {
+            pool.record(.pattern(PatternKey(family: .are, tense: .presente, person: are.persons[1 + index % 5])), .good)
+        }
+        let progress = pool.progress(of: are)
+        XCTAssertEqual(progress.answers, 24)
+        XCTAssertEqual(progress.counted, 12)
+        XCTAssertEqual(progress.needed, 12)
+        XCTAssertEqual(progress.share, 1)
+        XCTAssertTrue(progress.missingPersons.isEmpty)
+        XCTAssertTrue(progress.performsWell)
     }
 
-    func testAWindowSavedWithFortyAnswersCountsOnlyTheLastTwenty() throws {
-        var window = LearningPool.Window()
-        for index in 0..<40 { window.append(index < 20 ? .again : .good, person: index % 6) }
-        var saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(window)) as? [String: Any])
-        saved["ratings"] = Array(repeating: "again", count: 20) + Array(repeating: "good", count: 20)
-        saved["persons"] = (0..<40).map { $0 % 6 }
+    func testAPersonWithTooFewAnswersHoldsBack() {
+        var pool = LearningPool.initial(at: now)
+        let are = PoolUnit.group(.are, .presente)
+        for index in 0..<40 {
+            pool.record(.pattern(PatternKey(family: .are, tense: .presente, person: are.persons[1 + index % 5])), .good)
+        }
+        pool.record(.pattern(PatternKey(family: .are, tense: .presente, person: are.persons[0])), .good)
+        XCTAssertEqual(pool.progress(of: are).missingPersons, [are.persons[0]])
+        XCTAssertFalse(pool.progress(of: are).performsWell)
+    }
+
+    func testAWindowSavedAsTheLastTwentyAnswersKeepsFourPerPerson() throws {
+        var saved = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(LearningPool.Window())) as? [String: Any])
+        saved["ratings"] = Array(repeating: "again", count: 2) + Array(repeating: "good", count: 24)
+        saved["persons"] = (0..<26).map { $0 % 6 }
         var old = try JSONDecoder().decode(LearningPool.Window.self, from: JSONSerialization.data(withJSONObject: saved))
+        // Persons 0 and 1 had 5 answers, the oldest one Again: it goes.
+        XCTAssertEqual(old.ratings.count, 24)
         XCTAssertEqual(old.share, 1)
-        XCTAssertEqual(old.recentRatings.count, 20)
+        XCTAssertEqual((0..<6).map(old.count(of:)), [4, 4, 4, 4, 4, 4])
         old.append(.again, person: 0)
-        XCTAssertEqual(old.ratings.count, 20)
+        XCTAssertEqual(old.count(of: 0), 4)
     }
 
     func testAGroupThatPerformsWellBringsTheNextGroupAndItsNextTense() {
@@ -113,10 +134,25 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
     }
 
-    func testFewerThanTwentyAnswersAreNotEnough() {
+    func testFewerThanTwoAnswersPerPersonAreNotEnough() {
         var pool = LearningPool.initial(at: now)
-        answer(&pool, .group(.are, .presente), good(19))
+        answer(&pool, .group(.are, .presente), good(11))
         XCTAssertTrue(pool.finishLesson(at: now).isEmpty)
+        var twice = LearningPool.initial(at: now)
+        answer(&twice, .group(.are, .presente), good(12))
+        XCTAssertFalse(twice.finishLesson(at: now).isEmpty)
+    }
+
+    func testALaterTenseOpensOnlyThroughTheSameGroup() {
+        var pool = LearningPool(units: [.group(.are, .presente), .group(.are, .passatoprossimo), .group(.ere, .presente)], at: now)
+        answer(&pool, .group(.are, .presente), good(20))
+        _ = pool.finishLesson(at: now)
+        // -are · Passato prossimo brings -are · Imperfetto, not -ere · Passato prossimo …
+        answer(&pool, .group(.are, .passatoprossimo), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.are, .imperfetto)])
+        // … that comes from -ere · Presente, together with the next group in the Presente.
+        answer(&pool, .group(.ere, .presente), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ire, .presente), .group(.ere, .passatoprossimo)])
     }
 
     func testTheLastGroupOnlyBringsItsNextTense() {
@@ -155,7 +191,7 @@ final class LearningPoolTests: XCTestCase {
         // One more and the Presente is back at 80 %: the Passato prossimo unlocks its next steps.
         answer(&pool, .group(.are, .presente), good(1))
         XCTAssertTrue(pool.blockers(of: passato).isEmpty)
-        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ere, .passatoprossimo), .group(.are, .imperfetto)])
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.are, .imperfetto)])
     }
 
     func testOnlyTheSameGroupOrVerbHoldsBack() {
@@ -211,7 +247,7 @@ final class LearningPoolTests: XCTestCase {
         var rng = SeededGenerator(state: 7)
         let pool = LearningPool.initial(at: now - 2 * 86_400)
         for _ in 0..<20 {
-            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: LearningMemory(),
                                                length: 10, at: now, using: &rng)
             XCTAssertEqual(picked.count, 10)
             XCTAssertEqual(Set(picked).count, 10)
@@ -220,7 +256,7 @@ final class LearningPoolTests: XCTestCase {
             XCTAssertLessThanOrEqual(regular.count, 5)
         }
         // A long lesson repeats -are patterns with other verbs to fill up.
-        let long = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: LearningMemory(),
+        let long = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: LearningMemory(),
                                          length: 20, at: now, using: &rng)
         XCTAssertEqual(long.count, 20)
         XCTAssertEqual(Set(long).count, 20)
@@ -235,7 +271,7 @@ final class LearningPoolTests: XCTestCase {
         }
         var noi = 0, total = 0
         for _ in 0..<50 {
-            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, pool: pool, memory: memory,
+            let picked = Curriculum.pickLesson(units: pool.units, verbs: \.verbs, memory: memory,
                                                length: 10, at: now, using: &rng)
             noi += picked.filter { $0.person == 3 }.count
             total += picked.count

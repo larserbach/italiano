@@ -36,13 +36,13 @@ struct LearningPathInfoView: View {
                 .init(label: "Nur der erste Versuch:", text: "Was du in den Wiederholungsrunden einer Lektion beantwortest, zählt nicht mit."),
             ])),
             .init(heading: "Wann Neues dazukommt", content: .list([
-                .init(label: "Die Schwelle:", text: "Von den letzten \(Curriculum.windowSize) Antworten einer Gruppe oder eines unregelmäßigen Verbs in einer Zeit sind mindestens \(bar) gut, und jede Person war mindestens \(Curriculum.answersPerPerson)-mal dabei."),
+                .init(label: "Die Schwelle:", text: "Jede Person einer Gruppe oder eines unregelmäßigen Verbs in einer Zeit war mindestens \(Curriculum.answersPerPerson)-mal dran, und von ihren letzten \(Curriculum.answersKeptPerPerson) Antworten je Person sind zusammen mindestens \(bar) gut."),
                 .init(label: "Am Ende von Runde 1:", text: "Dann prüft die App, was die Schwelle erreicht hat, und schaltet frei, was danach kommt."),
-                .init(label: "Frühere Zeiten zuerst:", text: "Eine Gruppe oder ein Verb in einer späteren Zeit schaltet nur frei, solange dieselbe Gruppe bzw. dasselbe Verb auch in allen früheren Zeiten gerade die Schwelle erreicht."),
+                .init(label: "Frühere Zeiten zuerst:", text: "Eine Gruppe oder ein Verb in einer späteren Zeit schaltet nur frei, solange dieselbe Gruppe bzw. dasselbe Verb auch in allen früheren Zeiten gerade mindestens \(bar) gut ist."),
                 .init(label: "Einmal geschafft:", text: "Was die Schwelle erreicht hat, bleibt geschafft (grüner Ring), auch wenn es später wieder schwächer läuft. Es kommt aber weiter in Lektionen vor."),
             ])),
             .init(heading: "Was dazukommt", content: .list([
-                .init(label: "Nach einer Gruppe:", text: "die nächste Gruppe in derselben Zeit und dieselbe Gruppe in der nächsten Zeit."),
+                .init(label: "Nach einer Gruppe:", text: "dieselbe Gruppe in der nächsten Zeit und, nur im Presente, die nächste Gruppe. Spätere Zeiten einer Gruppe kommen also nur über ihre eigene vorige Zeit."),
                 .init(label: "Nach einem unregelmäßigen Verb:", text: "das nächste Verb, das in derselben Zeit zum ersten Mal unregelmäßig ist, und dasselbe Verb in seiner nächsten unregelmäßigen Zeit – sobald eine Gruppe diese Zeit schon hat."),
                 .init(label: "Reihenfolge der Gruppen:", text: VerbFamily.regular.map(\.label).joined(separator: " → ") + "."),
                 .init(label: "Reihenfolge der Zeiten:", text: Curriculum.tenseOrder.map(\.label).joined(separator: " → ") + "."),
@@ -50,7 +50,7 @@ struct LearningPathInfoView: View {
             ])),
             .init(heading: "Welche Fragen eine Lektion stellt", content: .list([
                 .init(label: "Gedächtnis:", text: "Für jede Person einer Gruppe und jede Form eines unregelmäßigen Verbs merkt sich die App den Abruf (wie sicher du sie jetzt weißt), die Stabilität (Tage, bis der Abruf auf die Hälfte fällt) und die Schwierigkeit (1–10)."),
-                .init(label: "Auswahl:", text: "Häufiger kommt, was du gerade am wenigsten sicher weißt, was dir schwerfällt und was in den letzten 24 Stunden dazugekommen ist – und Personen, die hinter den anderen zurückliegen."),
+                .init(label: "Auswahl:", text: "Häufiger kommt, was du gerade am wenigsten sicher weißt, was dir schwerfällt – und Personen, die hinter den anderen zurückliegen."),
                 .init(label: "Mischung:", text: "Meist höchstens 4 Fragen pro Gruppe oder Verb. Bei einer Gruppe wird das Verb zufällig gewählt, möglichst jedes Mal ein anderes."),
             ])),
             .init(heading: "Wo du es siehst", content: .list([
