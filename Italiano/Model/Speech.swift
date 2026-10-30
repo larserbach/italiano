@@ -84,24 +84,18 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     init(isEnabled: @escaping () -> Bool = { true }) {
         self.isEnabled = isEnabled
         super.init()
-        // Another app's audio (music starting, a call, headphones plugged in) can stop the engine. The
-        // buffers still waiting in the player are then never played back, so whatever waits for the text
-        // to be spoken would wait forever. The text is dropped instead, and the engine starts again with
-        // the next one.
         let center = NotificationCenter.default
-        center.addObserver(self, selector: #selector(audioWasDisturbed), name: .AVAudioEngineConfigurationChange, object: engine)
-        center.addObserver(self, selector: #selector(audioWasDisturbed), name: AVAudioSession.interruptionNotification, object: nil)
-        center.addObserver(self, selector: #selector(audioWasDisturbed), name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+        center.addObserver(self, selector: #selector(audioStopped), name: .AVAudioEngineConfigurationChange, object: engine)
+        center.addObserver(self, selector: #selector(audioStopped), name: AVAudioSession.interruptionNotification, object: nil)
     }
 
-    @objc private func audioWasDisturbed(_ notification: Notification) {
-        let interrupted = notification.name == AVAudioSession.interruptionNotification
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            // The engine may come back with a different output; the player is connected afresh.
-            if !interrupted { connectedFormat = nil }
-            stop()
-        }
+    /// The system stopped the engine: the output changed (music starting in another app, headphones) or
+    /// something interrupted it (a call). What the player still holds won't be played, so the text ends
+    /// here instead of keeping the lesson waiting; the engine starts again with the next one.
+    @objc private func audioStopped(_ notification: Notification) {
+        if let type = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+           type != AVAudioSession.InterruptionType.began.rawValue { return }
+        DispatchQueue.main.async { [weak self] in self?.stop() }
     }
 
     func speak(_ text: String, completion: @escaping () -> Void) {
@@ -119,7 +113,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
         let playback = Playback(utterance: utterance, completion: completion)
         current = playback
-        // Should the synthesizer stop delivering audio, the lesson still goes on.
+        // Should the audio stall in a way not covered above, the lesson still goes on.
         giveUp(on: playback, after: 5)
         synthesizer.write(utterance) { [weak self] buffer in
             // Called on a background queue; the main queue keeps the buffers in order.
@@ -214,7 +208,8 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     // MARK: - Audio setup
 
     /// Playback: heard in silent mode too, since the setting is the way to switch it off. Mixed with music
-    /// instead of stopping it. Also keeps the engine running; it stops after an interruption or route change.
+    /// instead of stopping it. Also keeps the engine running; the system stops it on an interruption or when
+    /// the output changes, for instance when another app starts playing.
     private func prepareAudio() {
         if !sessionReady {
             try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: .mixWithOthers)
@@ -227,8 +222,11 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         if !engine.isRunning { startEngine() }
     }
 
+    /// Also resets the player: once the engine has stopped, the player can still claim to be playing while
+    /// it plays nothing, so `play()` would be skipped and its buffers never heard nor reported as played.
     @discardableResult
     private func startEngine() -> Bool {
+        player.stop()
         engine.prepare()
         try? engine.start()
         return engine.isRunning
