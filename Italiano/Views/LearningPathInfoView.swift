@@ -42,7 +42,7 @@ struct LearningPathInfoView: View {
                 .init(label: "Einmal geschafft:", text: "Was die Schwelle erreicht hat, bleibt geschafft (grüner Ring), auch wenn es später wieder schwächer läuft. Es kommt aber weiter in Lektionen vor."),
             ])),
             .init(heading: "Was dazukommt", content: .list([
-                .init(label: "Nach einer Gruppe:", text: "die nächste Gruppe in derselben Zeit und dieselbe Gruppe in der nächsten Zeit."),
+                .init(label: "Nach einer Gruppe:", text: "dieselbe Gruppe in der nächsten Zeit und, nur im Presente, die nächste Gruppe. Spätere Zeiten einer Gruppe kommen also nur über ihre eigene vorige Zeit."),
                 .init(label: "Nach einem unregelmäßigen Verb:", text: "das nächste Verb, das in derselben Zeit zum ersten Mal unregelmäßig ist, und dasselbe Verb in seiner nächsten unregelmäßigen Zeit – sobald eine Gruppe diese Zeit schon hat."),
                 .init(label: "Reihenfolge der Gruppen:", text: VerbFamily.regular.map(\.label).joined(separator: " → ") + "."),
                 .init(label: "Reihenfolge der Zeiten:", text: Curriculum.tenseOrder.map(\.label).joined(separator: " → ") + "."),

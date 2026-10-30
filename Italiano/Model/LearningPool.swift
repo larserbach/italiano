@@ -7,7 +7,7 @@ import Foundation
 /// It starts with all -are verbs and essere in the Presente. A unit that performs well (every person answered
 /// at least twice, and ≥ 80 % Good in the last 4 answers of each person, a looked-up answer counting half)
 /// unlocks:
-/// a regular group the next group in the same tense and itself in the next tense; an irregular verb the
+/// a regular group itself in the next tense and, in the Presente only, the next group; an irregular verb the
 /// next verb that is first irregular in the same tense, and itself in the next tense it is irregular in once a
 /// regular group has that tense. So a verb always starts in its first irregular tense: venire comes in the
 /// Presente and reaches the Passato prossimo through itself, never through another verb's Passato prossimo.
@@ -187,7 +187,8 @@ struct LearningPool: Codable, Equatable {
         switch unit {
         case .group(let family, let tense):
             var result: [PoolUnit] = []
-            if let index = VerbFamily.regular.firstIndex(of: family), index + 1 < VerbFamily.regular.count {
+            // The next group only comes in the Presente; later tenses open per group, from its own earlier tense.
+            if tense == .presente, let index = VerbFamily.regular.firstIndex(of: family), index + 1 < VerbFamily.regular.count {
                 result.append(.group(VerbFamily.regular[index + 1], tense))
             }
             if let next = Self.nextTense(after: tense) { result.append(.group(family, next)) }

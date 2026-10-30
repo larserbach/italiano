@@ -143,6 +143,18 @@ final class LearningPoolTests: XCTestCase {
         XCTAssertFalse(twice.finishLesson(at: now).isEmpty)
     }
 
+    func testALaterTenseOpensOnlyThroughTheSameGroup() {
+        var pool = LearningPool(units: [.group(.are, .presente), .group(.are, .passatoprossimo), .group(.ere, .presente)], at: now)
+        answer(&pool, .group(.are, .presente), good(20))
+        _ = pool.finishLesson(at: now)
+        // -are · Passato prossimo brings -are · Imperfetto, not -ere · Passato prossimo …
+        answer(&pool, .group(.are, .passatoprossimo), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.are, .imperfetto)])
+        // … that comes from -ere · Presente, together with the next group in the Presente.
+        answer(&pool, .group(.ere, .presente), good(20))
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ire, .presente), .group(.ere, .passatoprossimo)])
+    }
+
     func testTheLastGroupOnlyBringsItsNextTense() {
         var pool = LearningPool(units: [.group(.isc, .presente)], at: now)
         answer(&pool, .group(.isc, .presente), good(20))
@@ -179,7 +191,7 @@ final class LearningPoolTests: XCTestCase {
         // One more and the Presente is back at 80 %: the Passato prossimo unlocks its next steps.
         answer(&pool, .group(.are, .presente), good(1))
         XCTAssertTrue(pool.blockers(of: passato).isEmpty)
-        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.ere, .passatoprossimo), .group(.are, .imperfetto)])
+        XCTAssertEqual(pool.finishLesson(at: now).map(\.unit), [.group(.are, .imperfetto)])
     }
 
     func testOnlyTheSameGroupOrVerbHoldsBack() {
