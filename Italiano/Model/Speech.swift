@@ -65,6 +65,10 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         let completion: () -> Void
         var scheduled = 0
         var played = 0
+        /// Seconds of audio handed to the player so far.
+        var duration: TimeInterval = 0
+        /// Only the latest deadline set by `giveUp` counts.
+        var deadline = 0
         /// The synthesizer has delivered everything it will deliver.
         var rendered = false
         var finished = false
@@ -80,6 +84,24 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     init(isEnabled: @escaping () -> Bool = { true }) {
         self.isEnabled = isEnabled
         super.init()
+        // Another app's audio (music starting, a call, headphones plugged in) can stop the engine. The
+        // buffers still waiting in the player are then never played back, so whatever waits for the text
+        // to be spoken would wait forever. The text is dropped instead, and the engine starts again with
+        // the next one.
+        let center = NotificationCenter.default
+        center.addObserver(self, selector: #selector(audioWasDisturbed), name: .AVAudioEngineConfigurationChange, object: engine)
+        center.addObserver(self, selector: #selector(audioWasDisturbed), name: AVAudioSession.interruptionNotification, object: nil)
+        center.addObserver(self, selector: #selector(audioWasDisturbed), name: AVAudioSession.mediaServicesWereResetNotification, object: nil)
+    }
+
+    @objc private func audioWasDisturbed(_ notification: Notification) {
+        let interrupted = notification.name == AVAudioSession.interruptionNotification
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            // The engine may come back with a different output; the player is connected afresh.
+            if !interrupted { connectedFormat = nil }
+            stop()
+        }
     }
 
     func speak(_ text: String, completion: @escaping () -> Void) {
@@ -97,6 +119,8 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.9
         let playback = Playback(utterance: utterance, completion: completion)
         current = playback
+        // Should the synthesizer stop delivering audio, the lesson still goes on.
+        giveUp(on: playback, after: 5)
         synthesizer.write(utterance) { [weak self] buffer in
             // Called on a background queue; the main queue keeps the buffers in order.
             DispatchQueue.main.async { self?.receive(buffer, for: playback) }
@@ -127,12 +151,18 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         guard current === playback, let pcm = buffer as? AVAudioPCMBuffer else { return }
         guard pcm.frameLength > 0 else {
             // The synthesizer ends an utterance with an empty buffer.
-            playback.rendered = true
-            finishIfPlayed(playback)
+            didRender(playback)
             return
         }
         connect(format: pcm.format)
+        guard engine.isRunning || startEngine() else {
+            // Nothing can be heard; playing the node now would raise an exception.
+            stop()
+            return
+        }
         playback.scheduled += 1
+        playback.duration += Double(pcm.frameLength) / pcm.format.sampleRate
+        giveUp(on: playback, after: 5)
         player.scheduleBuffer(pcm, completionCallbackType: .dataPlayedBack) { [weak self] _ in
             DispatchQueue.main.async {
                 playback.played += 1
@@ -140,6 +170,25 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
             }
         }
         if !player.isPlaying { player.play() }
+    }
+
+    /// The last bit of a text has been rendered: the player gets as long as it should take, plus a
+    /// margin, in case its playback stalls without any notification.
+    private func didRender(_ playback: Playback) {
+        guard !playback.rendered else { return }
+        playback.rendered = true
+        giveUp(on: playback, after: playback.duration + 1.5)
+        finishIfPlayed(playback)
+    }
+
+    /// Stops the text if it is still being read after `seconds`, replacing any earlier deadline.
+    private func giveUp(on playback: Playback, after seconds: TimeInterval) {
+        playback.deadline += 1
+        let deadline = playback.deadline
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+            guard let self, current === playback, playback.deadline == deadline else { return }
+            stop()
+        }
     }
 
     private func finishIfPlayed(_ playback: Playback) {
@@ -158,8 +207,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         DispatchQueue.main.async { [weak self] in
             guard let playback = self?.current, playback.utterance === utterance else { return }
-            playback.rendered = true
-            self?.finishIfPlayed(playback)
+            self?.didRender(playback)
         }
     }
 
@@ -176,10 +224,14 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         if connectedFormat == nil, let format = AVAudioFormat(standardFormatWithSampleRate: 22_050, channels: 1) {
             connect(format: format)
         }
-        if !engine.isRunning {
-            engine.prepare()
-            try? engine.start()
-        }
+        if !engine.isRunning { startEngine() }
+    }
+
+    @discardableResult
+    private func startEngine() -> Bool {
+        engine.prepare()
+        try? engine.start()
+        return engine.isRunning
     }
 
     /// The voice decides the format of its buffers; the player is connected to match.
@@ -188,10 +240,7 @@ final class SystemSpeech: NSObject, Speaking, AVSpeechSynthesizerDelegate {
         player.stop()
         engine.connect(player, to: engine.mainMixerNode, format: format)
         connectedFormat = format
-        if !engine.isRunning {
-            engine.prepare()
-            try? engine.start()
-        }
+        if !engine.isRunning { startEngine() }
     }
 
     private static func bestItalianVoice() -> AVSpeechSynthesisVoice? {
