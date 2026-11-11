@@ -176,7 +176,7 @@ private struct PersonTable: View {
             ForEach(unit.keys, id: \.person) { key in
                 let state = store.state(of: key)
                 GridRow {
-                    Text(Pronoun.italian[key.person])
+                    Text(Pronoun.italian(key.person, tense: unit.tense))
                     Text(state.map { DaysText.percent($0.retrievability(at: now)) } ?? "–")
                     Text(state.map { DaysText.of($0.stability) } ?? "–")
                     Text(state.map { DaysText.number($0.difficulty) } ?? "–")
@@ -248,7 +248,7 @@ private struct EntryRow: View {
                 Text(entry.date.formatted(.dateTime.hour().minute().locale(Locale(identifier: "de_DE"))))
                     .monospacedDigit()
                     .foregroundStyle(Theme.inkSoft)
-                Text("\(Pronoun.italian(entry.person, gender: entry.gender)) \(verb.italian(entry.tense, entry.person, gender: entry.gender))")
+                Text("\(Pronoun.italian(entry.person, tense: entry.tense, gender: entry.gender)) \(verb.italian(entry.tense, entry.person, gender: entry.gender))")
                     .fontWeight(.medium)
                 Text(entry.tense.shortLabel).foregroundStyle(Theme.inkSoft)
                 Spacer()

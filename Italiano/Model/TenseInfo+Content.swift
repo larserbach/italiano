@@ -158,7 +158,7 @@ extension TenseInfo {
                 .init(heading: "Bildung", content: .list([
                     .init(label: "tu bei -are:", text: "Endung -a, also anders als im Presente: parla!, viaggia!, scia!, manca!"),
                     .init(label: "tu bei -ere / -ire:", text: "Gleich der Presente-Form von tu: credi!, dormi!, capisci!"),
-                    .init(label: "Lei und Loro (höflich):", text: "In der App unter lui/lei und loro. Die Form kommt aus dem Congiuntivo — mit dessen Schreibregeln: parli!, viaggi!, scii!, manchi! bzw. parlino!, viaggino!"),
+                    .init(label: "Lei und Loro (höflich):", text: "Die Form kommt aus dem Congiuntivo — mit dessen Schreibregeln: parli!, viaggi!, scii!, manchi! bzw. parlino!, viaggino!"),
                     .init(label: "noi und voi:", text: "Genau wie im Presente: parliamo!, parlate!"),
                 ])),
                 .init(heading: "Verwendung", content: .paragraph("Für direkte Aufforderungen: „Parla!“ = „Sprich!“, „Parli!“ = „Sprechen Sie!“. Verneinung bei tu mit non + Infinitiv: „Non parlare!“ = „Sprich nicht!“. Bei allen anderen Formen reicht non davor: „Non parli!“")),

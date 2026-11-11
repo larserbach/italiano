@@ -118,8 +118,7 @@ struct Verb: Identifiable {
             .condizionale: Conjugator.wuerde(infinitive: seed.meaning),
             // German mostly uses the plain indicative where Italian needs the congiuntivo.
             .congiuntivo: seed.dePresente,
-            .imperativo: Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente,
-                                                infinitive: seed.meaning),
+            .imperativo: Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente),
         ]
     }
 
@@ -154,8 +153,7 @@ struct Verb: Identifiable {
             .condizionale: Conjugator.wuerde(infinitive: deInfinitive),
             .congiuntivo: seed.dePresente,
             .imperativo: seed.imperativo == nil ? Array(repeating: nil, count: 6)
-                : seed.deImperativo ?? Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente,
-                                                              infinitive: deInfinitive),
+                : seed.deImperativo ?? Conjugator.deImperativ(duForm: seed.deImperative, presente: seed.dePresente),
         ]
     }
 }

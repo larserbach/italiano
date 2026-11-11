@@ -19,6 +19,25 @@ final class VerbFormsTests: XCTestCase {
         }
     }
 
+    func testImperativePromptNamesTheAddressee() {
+        XCTAssertEqual(ImperativePrompt.form("sprich", person: 1), "sprich!")
+        XCTAssertEqual(ImperativePrompt.form("gehen sie aus", person: 2), "gehen Sie aus!")
+        XCTAssertEqual(ImperativePrompt.form("befinden sie sich", person: 5), "befinden Sie sich!")
+        XCTAssertEqual(ImperativePrompt.form("sprechen wir", person: 3), "sprechen wir!")
+        XCTAssertEqual(ImperativePrompt.note(2), "höflich")
+        XCTAssertEqual(ImperativePrompt.note(5), "höflich, mehrere")
+        XCTAssertNil(ImperativePrompt.note(3))
+        XCTAssertEqual(ImperativePrompt.capitalised("seien sie", person: 5), "seien Sie")
+    }
+
+    func testImperativeLabelsThePoliteAddress() {
+        XCTAssertEqual(Pronoun.italian(2, tense: .imperativo), "Lei")
+        XCTAssertEqual(Pronoun.italian(5, tense: .imperativo), "Loro")
+        XCTAssertEqual(Pronoun.italian(1, tense: .imperativo), "tu")
+        XCTAssertEqual(Pronoun.italian(2, tense: .presente), "lui/lei")
+        XCTAssertEqual(Pronoun.italian(2, tense: .passatoprossimo, gender: .feminine), "lei")
+    }
+
     func testImperativeHasNoIoForm() {
         XCTAssertFalse(VerbLibrary.verb("parlare").hasForm(.imperativo, 0))
         XCTAssertTrue(VerbLibrary.verb("parlare").hasForm(.presente, 0))

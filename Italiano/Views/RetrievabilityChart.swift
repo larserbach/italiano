@@ -104,17 +104,17 @@ private struct RetrievabilityChart: View {
                     } label: {
                         HStack(spacing: 7) {
                             Capsule().fill(Theme.persons[person]).frame(width: 14, height: 3)
-                            Text(Pronoun.italian[person])
+                            Text(Pronoun.italian(person, tense: tense))
                         }
                     }
                     .buttonStyle(ChipStyle(active: persons.contains(person)))
                 }
             }
-            chart(shown, from: from, to: now)
+            chart(shown, tense: tense, from: from, to: now)
         }
     }
 
-    private func chart(_ curves: [(person: Int, points: [RetrievabilityHistory.Point])], from start: Date, to end: Date) -> some View {
+    private func chart(_ curves: [(person: Int, points: [RetrievabilityHistory.Point])], tense: Tense, from start: Date, to end: Date) -> some View {
         let short = MemoryState.days(from: start, to: end) < 2
         return Chart {
             ForEach(curves, id: \.person) { curve in
@@ -131,7 +131,7 @@ private struct RetrievabilityChart: View {
                     .lineStyle(StrokeStyle(lineWidth: 1))
                     .annotation(position: .top, spacing: 0,
                                 overflowResolution: .init(x: .fit(to: .chart), y: .fit(to: .chart))) {
-                        readout(at: selection, curves: curves, short: short)
+                        readout(at: selection, curves: curves, tense: tense, short: short)
                     }
             }
         }
@@ -161,7 +161,7 @@ private struct RetrievabilityChart: View {
     }
 
     /// The values at the touched moment: the value first, the person after it.
-    private func readout(at date: Date, curves: [(person: Int, points: [RetrievabilityHistory.Point])], short: Bool) -> some View {
+    private func readout(at date: Date, curves: [(person: Int, points: [RetrievabilityHistory.Point])], tense: Tense, short: Bool) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(date.formatted((short ? Date.FormatStyle().hour().minute() : Date.FormatStyle().day().month(.abbreviated).hour().minute())
                 .locale(Locale(identifier: "de_DE"))))
@@ -172,7 +172,7 @@ private struct RetrievabilityChart: View {
                     HStack(spacing: 6) {
                         Capsule().fill(Theme.persons[curve.person]).frame(width: 10, height: 2)
                         Text(DaysText.percent(value)).font(.system(size: 12, weight: .semibold)).monospacedDigit()
-                        Text(Pronoun.italian[curve.person]).font(.system(size: 12)).foregroundStyle(Theme.inkSoft)
+                        Text(Pronoun.italian(curve.person, tense: tense)).font(.system(size: 12)).foregroundStyle(Theme.inkSoft)
                     }
                 }
             }

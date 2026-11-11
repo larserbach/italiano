@@ -106,10 +106,10 @@ struct ConjugationTable: View {
                 ForEach(Array(tense.persons), id: \.self) { person in
                     if let form = verb.tableForm(tense, person) {
                         GridRow {
-                            Text(Pronoun.italian[person])
+                            Text(Pronoun.italian(person, tense: tense))
                                 .foregroundStyle(Theme.inkSoft)
                             formText(form)
-                            Text(verb.german(tense, person))
+                            Text(tense == .imperativo ? ImperativePrompt.capitalised(verb.german(tense, person), person: person) : verb.german(tense, person))
                                 .font(.system(size: 13))
                                 .foregroundStyle(Theme.inkSoft)
                         }

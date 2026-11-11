@@ -136,7 +136,16 @@ struct ConjugationLessonView: View {
             let marker = Text(item.marker.map { " \($0)" } ?? "")
                 .font(Theme.display(22, weight: .medium).italic())
                 .foregroundStyle(Theme.gold)
-            Text("\(pronoun)\(marker)  \(verb.german(item.tense, item.person))")
+            let german = verb.german(item.tense, item.person)
+            // An imperative names its addressee itself; "er/sie sprechen sie" would read as a statement.
+            let note = Text(ImperativePrompt.note(item.person).map { "  (\($0))" } ?? "")
+                .font(Theme.display(22))
+                .fontWeight(.regular)
+                .foregroundStyle(Theme.inkSoft)
+            let text = item.tense == .imperativo
+                ? Text("\(ImperativePrompt.form(german, person: item.person))\(note)")
+                : Text("\(pronoun)\(marker)  \(german)")
+            text
                 .font(Theme.display(30, weight: .semibold))
                 .multilineTextAlignment(.center)
                 .accessibilityLabel(spokenPrompt(item: item, verb: verb))
@@ -166,6 +175,10 @@ struct ConjugationLessonView: View {
 
     /// For VoiceOver, with the m/f marker spelled out (männlich, weiblich).
     private func spokenPrompt(item: ConjugationItem, verb: Verb) -> String {
+        if item.tense == .imperativo {
+            let form = ImperativePrompt.form(verb.german(item.tense, item.person), person: item.person)
+            return ImperativePrompt.note(item.person).map { "\(form) \($0)" } ?? form
+        }
         var pronoun = Pronoun.german(item.person, gender: item.gender)
         if let gender = item.gender { pronoun += ", \(gender.spokenName)," }
         return "\(pronoun) \(verb.german(item.tense, item.person))"

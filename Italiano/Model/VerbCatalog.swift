@@ -93,7 +93,7 @@ enum VerbCatalog {
             deFuturo: ["werde reisen", "wirst reisen", "wird reisen", "werden reisen", "werdet reisen", "werden reisen"],
             participle: "viaggiato", auxiliary: .avere,
             deParticiple: "gereist", deAuxiliary: .sein,
-            deImperative: "reis"
+            deImperative: "reise"
         ),
         VerbSeed(
             infinitive: "passeggiare", group: .are, meaning: "spazieren gehen",
@@ -189,7 +189,7 @@ enum VerbCatalog {
             deFuturo: ["werde dauern", "wirst dauern", "wird dauern", "werden dauern", "werdet dauern", "werden dauern"],
             participle: "durato", auxiliary: .essere,
             deParticiple: "gedauert", deAuxiliary: .haben,
-            deImperative: "dauer"
+            deImperative: "dauere"
         ),
         VerbSeed(
             infinitive: "entrare", group: .are, meaning: "eintreten",

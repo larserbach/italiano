@@ -17,7 +17,7 @@ struct ConjugationItem: Hashable {
     var answer: String { VerbLibrary.verb(verb).italian(tense, person, gender: gender) }
     /// The main form plus accepted variants (fa' and fai).
     var accepted: [String] { VerbLibrary.verb(verb).acceptedAnswers(tense, person, gender: gender) }
-    var pronoun: String { Pronoun.italian(person, gender: gender) }
+    var pronoun: String { Pronoun.italian(person, tense: tense, gender: gender) }
     var marker: String? { gender?.marker }
     /// The pronoun with the gender marker where there is one: "lui (m)".
     var markedPronoun: String { marker.map { "\(pronoun) (\($0))" } ?? pronoun }

@@ -19,6 +19,14 @@ final class AnswerCheckTests: XCTestCase {
         XCTAssertEqual(check("", "parlare", .presente, 0), .wrong)
     }
 
+    func testExclamationMarkIsOptional() {
+        XCTAssertEqual(check("parla!", "parlare", .imperativo, 1), .right)
+        XCTAssertEqual(check("Parlino !", "parlare", .imperativo, 5), .right)
+        XCTAssertEqual(check("fa'!", "fare", .imperativo, 1), .right)
+        XCTAssertEqual(check("sii!", "essere", .imperativo, 1), .right)
+        XCTAssertEqual(check("!", "parlare", .imperativo, 1), .wrong)
+    }
+
     func testMissingOrWrongAccentsAreAlmost() {
         XCTAssertEqual(check("parlero", "parlare", .futuro, 0), .almost)
         XCTAssertEqual(check("parleró", "parlare", .futuro, 0), .almost)

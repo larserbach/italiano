@@ -85,8 +85,10 @@ enum AnswerCheck: Equatable {
 }
 
 /// Lowercased, without outer spaces and with single inner ones; curly apostrophes (fa’) count as straight.
+/// Exclamation marks are dropped: an imperative may be typed with one (parla!).
 func normalize(_ text: String) -> String {
-    text.trimmingCharacters(in: .whitespacesAndNewlines)
+    text.replacingOccurrences(of: "!", with: "")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
         .lowercased()
         .replacingOccurrences(of: "’", with: "'")
         .replacingOccurrences(of: "‘", with: "'")

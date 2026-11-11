@@ -699,7 +699,7 @@
    ],
    "imperativo": [
     null,
-    "reis",
+    "reise",
     "reisen sie",
     "reisen wir",
     "reist",
@@ -818,10 +818,10 @@
    "imperativo": [
     null,
     "geh spazieren",
-    "spazieren gehen sie",
-    "spazieren gehen wir",
+    "gehen sie spazieren",
+    "gehen wir spazieren",
     "geht spazieren",
-    "spazieren gehen sie"
+    "gehen sie spazieren"
    ]
   }
  },
@@ -1172,10 +1172,10 @@
    "imperativo": [
     null,
     "fahr Ski",
-    "Ski fahren sie",
-    "Ski fahren wir",
+    "fahren sie Ski",
+    "fahren wir Ski",
     "fahrt Ski",
-    "Ski fahren sie"
+    "fahren sie Ski"
    ]
   }
  },
@@ -1408,10 +1408,10 @@
    "imperativo": [
     null,
     "komm an",
-    "ankommen sie",
-    "ankommen wir",
+    "kommen sie an",
+    "kommen wir an",
     "kommt an",
-    "ankommen sie"
+    "kommen sie an"
    ]
   }
  },
@@ -1643,7 +1643,7 @@
    ],
    "imperativo": [
     null,
-    "dauer",
+    "dauere",
     "dauern sie",
     "dauern wir",
     "dauert",
@@ -1762,10 +1762,10 @@
    "imperativo": [
     null,
     "tritt ein",
-    "eintreten sie",
-    "eintreten wir",
+    "treten sie ein",
+    "treten wir ein",
     "tretet ein",
-    "eintreten sie"
+    "treten sie ein"
    ]
   }
  },
@@ -2234,10 +2234,10 @@
    "imperativo": [
     null,
     "kehr zurück",
-    "zurückkehren sie",
-    "zurückkehren wir",
+    "kehren sie zurück",
+    "kehren wir zurück",
     "kehrt zurück",
-    "zurückkehren sie"
+    "kehren sie zurück"
    ]
   }
  },
@@ -3296,10 +3296,10 @@
    "imperativo": [
     null,
     "reise ab",
-    "abreisen sie",
-    "abreisen wir",
+    "reisen sie ab",
+    "reisen wir ab",
     "reist ab",
-    "abreisen sie"
+    "reisen sie ab"
    ]
   }
  },
@@ -4122,10 +4122,10 @@
    "imperativo": [
     null,
     "gib nach",
-    "nachgeben sie",
-    "nachgeben wir",
+    "geben sie nach",
+    "geben wir nach",
     "gebt nach",
-    "nachgeben sie"
+    "geben sie nach"
    ]
   }
  },
@@ -4476,10 +4476,10 @@
    "imperativo": [
     null,
     "geh hinunter",
-    "hinuntergehen sie",
-    "hinuntergehen wir",
+    "gehen sie hinunter",
+    "gehen wir hinunter",
     "geht hinunter",
-    "hinuntergehen sie"
+    "gehen sie hinunter"
    ]
   }
  },
@@ -4948,10 +4948,10 @@
    "imperativo": [
     null,
     "zieh an",
-    "anziehen sie",
-    "anziehen wir",
+    "ziehen sie an",
+    "ziehen wir an",
     "zieht an",
-    "anziehen sie"
+    "ziehen sie an"
    ]
   }
  },
@@ -5420,10 +5420,10 @@
    "imperativo": [
     null,
     "biete an",
-    "anbieten sie",
-    "anbieten wir",
+    "bieten sie an",
+    "bieten wir an",
     "bietet an",
-    "anbieten sie"
+    "bieten sie an"
    ]
   }
  },
@@ -6246,10 +6246,10 @@
    "imperativo": [
     null,
     "schlag vor",
-    "vorschlagen sie",
-    "vorschlagen wir",
+    "schlagen sie vor",
+    "schlagen wir vor",
     "schlagt vor",
-    "vorschlagen sie"
+    "schlagen sie vor"
    ]
   }
  },
@@ -6600,10 +6600,10 @@
    "imperativo": [
     null,
     "gib zurück",
-    "zurückgeben sie",
-    "zurückgeben wir",
+    "geben sie zurück",
+    "geben wir zurück",
     "gebt zurück",
-    "zurückgeben sie"
+    "geben sie zurück"
    ]
   }
  }

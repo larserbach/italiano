@@ -148,8 +148,14 @@ enum Conjugator {
         return auxiliaries.enumerated().map { "\($1) \(reflexivePronouns[$0]) \(verb)" }
     }
 
-    /// The du form as given, ihr from the Präsens, and the infinitive with sie (formal address) or wir.
-    static func deImperativ(duForm: String, presente: [String], infinitive: String) -> [String?] {
-        [nil, duForm, "\(infinitive) sie", "\(infinitive) wir", presente[4], "\(infinitive) sie"]
+    /// The du form as given and ihr from the Präsens. For sie (formal address) and wir the pronoun follows the
+    /// verb of the Präsens form, so what a separable verb splits off stays behind: "fahren Ski" → "fahren sie Ski".
+    static func deImperativ(duForm: String, presente: [String]) -> [String?] {
+        func inverted(_ form: String, _ pronoun: String) -> String {
+            var words = form.split(separator: " ").map(String.init)
+            words.insert(pronoun, at: 1)
+            return words.joined(separator: " ")
+        }
+        return [nil, duForm, inverted(presente[5], "sie"), inverted(presente[3], "wir"), presente[4], inverted(presente[5], "sie")]
     }
 }

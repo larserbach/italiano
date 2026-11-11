@@ -70,8 +70,36 @@ enum Pronoun {
         return gender == .masculine ? "lui" : "lei"
     }
 
+    /// In the Imperativo the 3rd persons are the polite address: Lei and Loro.
+    static func italian(_ person: Int, tense: Tense, gender: Gender? = nil) -> String {
+        guard tense == .imperativo else { return italian(person, gender: gender) }
+        return switch person {
+        case 2: "Lei"
+        case 5: "Loro"
+        default: italian[person]
+        }
+    }
+
     static func german(_ person: Int, gender: Gender?) -> String {
         guard person == 2, let gender else { return german[person] }
         return gender == .masculine ? "er" : "sie"
+    }
+}
+
+/// How an imperative is asked in German. The form already says who is addressed ("sprechen Sie!"), so no
+/// pronoun leads it; a note follows where the form alone leaves it open.
+enum ImperativePrompt {
+    /// By person: lui/lei and loro are the polite address (Lei, Loro), and "sprechen wir!" needs no note.
+    private static let notes: [String?] = [nil, "du", "höflich", nil, "ihr", "höflich, mehrere"]
+
+    static func note(_ person: Int) -> String? { notes[person] }
+
+    /// The stored form as a command: "gehen sie aus" → "gehen Sie aus!".
+    static func form(_ german: String, person: Int) -> String { capitalised(german, person: person) + "!" }
+
+    /// The stored form with the polite Sie capitalised.
+    static func capitalised(_ german: String, person: Int) -> String {
+        guard person == 2 || person == 5 else { return german }
+        return german.split(separator: " ").map { $0 == "sie" ? "Sie" : String($0) }.joined(separator: " ")
     }
 }
